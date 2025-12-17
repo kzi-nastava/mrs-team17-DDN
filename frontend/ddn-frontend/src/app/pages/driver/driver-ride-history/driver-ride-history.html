@@ -1,0 +1,38 @@
+
+<div class="page">
+  <h1>Driver – Ride History</h1>
+
+  <div class="card-fixed">
+    <div class="filter">
+      <div class="field">
+        <span>From:</span>
+        <input type="date" />
+      </div>
+
+      <div class="field">
+        <span>To:</span>
+        <input type="date" />
+      </div>
+
+      <button>Filter</button>
+    </div>
+
+    <div class="table header">
+      <span>Date</span>
+      <span>Route</span>
+      <span>Price</span>
+      <span>Status</span>
+    </div>
+
+<div
+  class="table row clickable"
+  (click)="openRideDetails(1)"
+>
+  <span>13.12.2025</span>
+  <span>FTN → Železnička</span>
+  <span>820 RSD</span>
+  <span class="completed">Completed</span>
+</div>
+
+  </div>
+</div>
