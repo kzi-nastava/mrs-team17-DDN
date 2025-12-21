@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-driver-profile',
-  imports: [],
+  standalone: true,
+  imports: [RouterLink],
   templateUrl: './driver-profile.html',
   styleUrl: './driver-profile.css',
 })
