@@ -5,6 +5,7 @@ import { DriverRideDetailsComponent } from './pages/driver/driver-ride-details/d
 import { DriverHomeComponent } from './pages/driver/driver-home/driver-home';
 import { DriverLayoutComponent } from './pages/driver/driver-layout/driver-layout';
 import { DriverProfile } from './pages/driver/driver-profile/driver-profile';
+import { DriverPasswordChangeComponent } from './pages/driver/driver-password-change/driver-password-change';
 
 
 
@@ -19,6 +20,7 @@ export const routes: Routes = [
       { path: 'home', component: DriverHomeComponent },
       { path: 'ride-history', component: DriverRideHistoryComponent },
       { path: 'ride-details/:id', component: DriverRideDetailsComponent },
+      { path: 'password-change', component: DriverPasswordChangeComponent },
       { path: 'profile', component: DriverProfile },
     ],
   },
