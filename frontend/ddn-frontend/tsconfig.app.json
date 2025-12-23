@@ -8,7 +8,7 @@
   },
   "include": [
     "src/**/*.ts"
-  ],
+, "src/app/pages/user/success-password/success-password.spec.ts"  ],
   "exclude": [
     "src/**/*.spec.ts"
   ]
