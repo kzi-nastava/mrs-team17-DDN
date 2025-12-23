@@ -59,5 +59,5 @@ export const routes: Routes = [
   },
 
   // Wildcard → redirect to login
-  { path: '**', redirectTo: '/login' }
+  //{ path: '**', redirectTo: '/login' }
 ];
