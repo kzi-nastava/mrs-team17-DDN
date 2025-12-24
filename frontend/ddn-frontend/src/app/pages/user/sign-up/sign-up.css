@@ -1,0 +1,113 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+  color: #ffffff;
+}
+
+/*  Background host element */
+:host {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: url('/background.webp') no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/*  Wrapper za signup karticu */
+.signup-wrapper {
+  width: 500px;
+  padding: 40px 32px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(15px);
+  border-radius: 18px;
+  /*box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);*/
+  text-align: center;
+}
+
+/*  Logo */
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.logo-container img {
+  max-width: 100px;
+  height: auto;
+}
+
+/*  Title */
+.signup-wrapper h2 {
+  font-size: 26px;
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+/*  Input group */
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 13px 16px;
+  border-radius: 30px;
+  margin-bottom: 16px;
+}
+
+.input-group img {
+  width: 18px;
+  height: 18px;
+  opacity: 0.8;
+}
+
+.input-group input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 15px;
+}
+
+.input-group input::placeholder {
+  color: #ddd;
+}
+
+.input-group input:focus {
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+
+
+
+
+/*  Submit button (strelica) */
+.arrow-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-top: 12px;
+}
+
+.arrow-btn:hover {
+  transform: translateX(4px);
+}
+
+.arrow-btn img {
+  width: 40px;
+  height: 40px;
+  display: block;
+  margin: auto;
+}

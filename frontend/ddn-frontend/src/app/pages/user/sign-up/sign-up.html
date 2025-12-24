@@ -1,0 +1,89 @@
+<div class="signup-wrapper">
+  <div class="logo-container">
+    <img src="/logo.png" alt="Taxi Logo" />
+  </div>
+
+  <h2>WELCOME</h2>
+
+  <form class="signup-form" [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
+
+    <div class="input-group">
+      <img src="/mail.png" alt="email" />
+      <input
+        type="email"
+        placeholder="Email address"
+        formControlName="email"
+      />
+    </div>
+    <div *ngIf="signUpForm.get('email')?.invalid && signUpForm.get('email')?.touched"
+         class="error">
+      Valid email is required
+    </div>
+
+    <div class="input-group">
+      <img src="/locked-computer.png" alt="password" />
+      <input
+        type="password"
+        placeholder="Password"
+        formControlName="password"
+      />
+    </div>
+    <div *ngIf="signUpForm.get('password')?.invalid && signUpForm.get('password')?.touched"
+         class="error">
+      Password is required (min 6 characters)
+    </div>
+
+    <div class="input-group">
+      <img src="/locked-computer.png" alt="confirm" />
+      <input
+        type="password"
+        placeholder="Confirm password"
+        formControlName="confirmPassword"
+      />
+    </div>
+    <div *ngIf="signUpForm.get('confirmPassword')?.invalid && signUpForm.get('confirmPassword')?.touched"
+         class="error">
+      Confirm password is required
+    </div>
+
+    <div class="input-group">
+      <img src="/user.png" alt="name" />
+      <input
+        type="text"
+        placeholder="Name"
+        formControlName="name"
+      />
+    </div>
+
+    <div class="input-group">
+      <img src="/user.png" alt="surname" />
+      <input
+        type="text"
+        placeholder="Surname"
+        formControlName="surname"
+      />
+    </div>
+
+    <div class="input-group">
+      <img src="/pin.png" alt="address" />
+      <input
+        type="text"
+        placeholder="Address"
+        formControlName="address"
+      />
+    </div>
+
+    <div class="input-group">
+      <img src="/telephone.png" alt="number" />
+      <input
+        type="text"
+        placeholder="Phone number"
+        formControlName="number"
+      />
+    </div>
+
+    <button class="arrow-btn" type="submit" [disabled]="signUpForm.invalid">
+      <img src="/right-arrow.png" alt="arrow" />
+    </button>
+  </form>
+</div>

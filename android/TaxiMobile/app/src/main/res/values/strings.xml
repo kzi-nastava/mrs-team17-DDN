@@ -1,0 +1,63 @@
+<resources>
+    <string name="app_name">TaxiMobile</string>
+
+    <!-- Drawer -->
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+
+    <!-- Drawer menu items -->
+    <string name="menu_home">Home</string>
+    <string name="menu_history">Ride history</string>
+    <string name="menu_profile">Profile</string>
+    <string name="menu_support">Support</string>
+    <string name="menu_logout">Log out</string>
+
+    <!-- Home screen -->
+    <string name="home_title">Taxi Mobile</string>
+    <string name="home_welcome">Home Screen</string>
+
+    <!-- Filter -->
+    <string name="filter_from">From:</string>
+    <string name="filter_to">To:</string>
+    <string name="filter_btn">Filter</string>
+
+    <!-- Ride History -->
+    <string name="title_ride_history">Driver – Ride History</string>
+
+    <!-- Table headers -->
+    <string name="header_date">Date</string>
+    <string name="header_route">Route</string>
+    <string name="header_price">Price</string>
+    <string name="header_status">Status</string>
+
+    <!-- Ride Details -->
+    <string name="title_ride_details">Driver – Ride Details</string>
+
+    <string name="label_ride_information">Ride information</string>
+    <string name="label_date">Date</string>
+    <string name="label_route">Route</string>
+    <string name="label_price">Price</string>
+    <string name="label_status">Status</string>
+
+    <string name="label_passenger">Passenger</string>
+    <string name="label_name">Name</string>
+    <string name="label_email">Email</string>
+
+    <string name="label_map_placeholder">Map will be displayed here</string>
+    <string name="panic_yes">Yes</string>
+    <string name="panic_no">No</string>
+
+    <string name="ride_information">Ride information</string>
+    <string name="date_start">DATE START</string>
+    <string name="date_end">DATE END</string>
+    <string name="route">ROUTE</string>
+    <string name="price">PRICE</string>
+    <string name="status">STATUS</string>
+    <string name="panic">PANIC</string>
+    <string name="passenger">Passenger</string>
+    <string name="name">NAME</string>
+    <string name="email">EMAIL</string>
+    <string name="map_placeholder">Map will be displayed here</string>
+
+
+</resources>
