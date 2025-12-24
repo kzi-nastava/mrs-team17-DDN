@@ -58,6 +58,8 @@
     <string name="name">NAME</string>
     <string name="email">EMAIL</string>
     <string name="map_placeholder">Map will be displayed here</string>
+    <string name="date_format_hint">dd.MM.yyyy</string>
+
 
 
 </resources>

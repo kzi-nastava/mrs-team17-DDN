@@ -1,8 +1,10 @@
 package com.example.taximobile;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -11,6 +13,7 @@ import com.example.taximobile.databinding.ActivityDriverRideHistoryBinding;
 import com.example.taximobile.models.Ride;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class DriverRideHistoryActivity extends DriverBaseActivity {
 
@@ -24,6 +27,10 @@ public class DriverRideHistoryActivity extends DriverBaseActivity {
         binding = ActivityDriverRideHistoryBinding.bind(v);
 
         toolbar.setTitle(getString(R.string.title_ride_history));
+
+        // DATE PICKERS
+        binding.etFrom.setOnClickListener(v1 -> showDatePicker(binding.etFrom));
+        binding.etTo.setOnClickListener(v1 -> showDatePicker(binding.etTo));
 
         ArrayList<Ride> rides = new ArrayList<>();
 
@@ -72,7 +79,6 @@ public class DriverRideHistoryActivity extends DriverBaseActivity {
         ));
 
         binding.recyclerRides.setLayoutManager(new LinearLayoutManager(this));
-
         binding.recyclerRides.setAdapter(new RideAdapter(rides, ride -> {
             Intent i = new Intent(this, DriverRideDetailsActivity.class);
 
@@ -90,5 +96,27 @@ public class DriverRideHistoryActivity extends DriverBaseActivity {
 
             startActivity(i);
         }));
+    }
+
+    private void showDatePicker(EditText target) {
+        Calendar calendar = Calendar.getInstance();
+
+        DatePickerDialog dialog = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    String date = String.format(
+                            "%02d.%02d.%d",
+                            dayOfMonth,
+                            month + 1,
+                            year
+                    );
+                    target.setText(date);
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        );
+
+        dialog.show();
     }
 }
