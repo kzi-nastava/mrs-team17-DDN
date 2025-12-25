@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TaxiMobile">
         <activity
+            android:name=".ChangePasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DriverProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".DriverRideDetailsActivity"
             android:exported="false" />
         <activity
