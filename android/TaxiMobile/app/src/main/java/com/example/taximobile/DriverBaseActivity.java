@@ -50,6 +50,9 @@ public abstract class DriverBaseActivity extends AppCompatActivity {
             if (item.getItemId() == R.id.nav_history) {
                 startActivity(new Intent(this, DriverRideHistoryActivity.class));
             }
+            if (item.getItemId() == R.id.nav_profile) {
+                startActivity(new Intent(this, DriverProfileActivity.class));
+            }
             drawerLayout.closeDrawers();
             return true;
         });
