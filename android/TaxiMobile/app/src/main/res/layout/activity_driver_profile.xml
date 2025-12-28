@@ -31,7 +31,8 @@
         <Button
             android:backgroundTint="@color/bg_dark"
             android:id="@+id/btnUploadPicture"
-            android:layout_width="match_parent"
+            android:layout_width="250dp"
+            android:layout_gravity="center_horizontal"
             android:layout_height="wrap_content"
             android:text="@string/picture_upload_text"
             android:layout_marginTop="8dp" />
@@ -94,7 +95,8 @@
         <Button
             android:backgroundTint="@color/bg_dark"
             android:id="@+id/btnRequestUpdate"
-            android:layout_width="match_parent"
+            android:layout_width="250dp"
+            android:layout_gravity="center_horizontal"
             android:layout_height="wrap_content"
             android:text="@string/request_profile_update_text"
             android:layout_marginTop="18dp" />
@@ -102,7 +104,8 @@
         <Button
             android:backgroundTint="@color/bg_dark"
             android:id="@+id/btnRequestPasswordChange"
-            android:layout_width="match_parent"
+            android:layout_width="250dp"
+            android:layout_gravity="center_horizontal"
             android:layout_height="wrap_content"
             android:text="@string/password_change_text"
             android:layout_marginTop="10dp" />
