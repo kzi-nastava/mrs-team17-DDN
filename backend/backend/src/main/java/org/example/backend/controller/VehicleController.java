@@ -11,7 +11,19 @@ import java.util.List;
 public class VehicleController {
 
     @GetMapping("/active")
-    public ResponseEntity<List<ActiveVehicleResponseDto>> getActiveVehicles() {
+    public ResponseEntity<List<ActiveVehicleResponseDto>> getActiveVehicles(
+            @RequestParam(required = false) Double minLat,
+            @RequestParam(required = false) Double maxLat,
+            @RequestParam(required = false) Double minLng,
+            @RequestParam(required = false) Double maxLng
+    ) {
+        boolean any = minLat != null || maxLat != null || minLng != null || maxLng != null;
+        boolean all = minLat != null && maxLat != null && minLng != null && maxLng != null;
+
+        if (any && !all) {
+            return ResponseEntity.badRequest().build();
+        }
+
         return ResponseEntity.ok(List.of());
     }
 }
