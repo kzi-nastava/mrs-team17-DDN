@@ -2,18 +2,19 @@ package org.example.backend.controller;
 
 import org.example.backend.dto.request.RideRatingRequestDto;
 import org.example.backend.dto.request.RideReportRequestDto;
-import org.example.backend.dto.response.RideTrackingResponseDto;
+import org.example.backend.dto.response.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.example.backend.dto.request.RideOrderRequestDto;
-import org.example.backend.dto.response.RideOrderResponseDto;
+
+import java.time.OffsetDateTime;
 import java.util.concurrent.ThreadLocalRandom;
-import org.example.backend.dto.response.RideDetailsResponseDto;
 import java.util.List;
 import org.example.backend.dto.request.OrderRideFromFavoriteRouteRequestDto;
 import org.example.backend.dto.request.StartRideRequestDto;
-import org.example.backend.dto.response.RideStartResponseDto;
+
 import java.time.LocalDateTime;
 
 @RestController
@@ -28,24 +29,39 @@ public class RideController {
     }
 
     @PostMapping("/{rideId}/reports")
-    public ResponseEntity<Void> reportRideIssue(
+    public ResponseEntity<RideReportResponseDto> reportRideIssue(
             @PathVariable Long rideId,
-            @RequestBody RideReportRequestDto request) {
+            @RequestBody RideReportRequestDto request
+    ) {
+        RideReportResponseDto response = new RideReportResponseDto();
+        response.setId(1L);
+        response.setRideId(rideId);
+        response.setDescription(request.getDescription());
+        response.setCreatedAt(OffsetDateTime.now());
 
-        return ResponseEntity.status(201).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     @PutMapping("/{rideId}/finish")
     public ResponseEntity<Void> finishRide(@PathVariable Long rideId) {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{rideId}/rating")
-    public ResponseEntity<Void> rateRide(
+    @PostMapping("/{rideId}/ratings")
+    public ResponseEntity<RideRatingResponseDto> rateRide(
             @PathVariable Long rideId,
-            @RequestBody RideRatingRequestDto request) {
+            @RequestBody RideRatingRequestDto request
+    ) {
+        RideRatingResponseDto response = new RideRatingResponseDto();
+        response.setId(1L);
+        response.setRideId(rideId);
+        response.setDriverRating(request.getDriverRating());
+        response.setVehicleRating(request.getVehicleRating());
+        response.setComment(request.getComment());
+        response.setCreatedAt(OffsetDateTime.now());
 
-        return ResponseEntity.status(201).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     @PostMapping
     public ResponseEntity<RideOrderResponseDto> orderRide(@Valid @RequestBody RideOrderRequestDto request) {
