@@ -80,5 +80,8 @@
     <string name="new_password_text">New password</string>
     <string name="confirm_password_text">Confirm new password</string>
     <string name="confirm_password_button_text">CONFIRM PASSWORD</string>
+    <string name="welcome">Welcome</string>
+    <string name="password">password\n</string>
+    <string name="forgot_password">Forgot password</string>
 
 </resources>
