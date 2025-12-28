@@ -61,7 +61,7 @@
 
     <!-- Profile -->
 
-    <string name="driver_profile_title">Driver - Profile</string>
+    <string name="driver_profile_title">Profile</string>
     <string name="content_description">Avatar</string>
     <string name="picture_upload_text">Upload new picture</string>
     <string name="working_hours_displayed">Active time (last 24h): 3h 37min / 8h</string>
