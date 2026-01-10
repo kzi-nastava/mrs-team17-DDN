@@ -1,0 +1,5 @@
+.admin-shell {
+  min-height: calc(100vh - 64px);
+  padding: 22px 18px;
+  box-sizing: border-box;
+}
