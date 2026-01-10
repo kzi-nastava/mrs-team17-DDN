@@ -7,6 +7,11 @@ import { DriverLayoutComponent } from './pages/driver/driver-layout/driver-layou
 import { DriverProfile } from './pages/driver/driver-profile/driver-profile';
 import { DriverPasswordChangeComponent } from './pages/driver/driver-password-change/driver-password-change';
 import { LoginComponent } from './pages/user/login/login.component';
+import { AdminLayout } from './pages/admin/admin-layout/admin-layout';
+import { AdminHome } from './pages/admin/admin-home/admin-home';
+import { AdminUpdateRequests } from './pages/admin/admin-update-requests/admin-update-requests';
+
+
 
 export const routes: Routes = [
   // Landing page
@@ -60,4 +65,16 @@ export const routes: Routes = [
 
   // Wildcard → redirect to login
   //{ path: '**', redirectTo: '/login' }
+
+  {
+    path: 'admin',
+    component: AdminLayout,
+    children: [
+      { path: 'home', component: AdminHome },
+      { path: 'update-requests', component: AdminUpdateRequests },
+    ],
+  },
+
+  { path: 'admin', redirectTo: 'admin/home', pathMatch: 'full' },
+
 ];
