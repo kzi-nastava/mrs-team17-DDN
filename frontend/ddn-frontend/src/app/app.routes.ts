@@ -8,6 +8,7 @@ import { DriverRideHistoryComponent } from './pages/driver/driver-ride-history/d
 import { DriverRideDetailsComponent } from './pages/driver/driver-ride-details/driver-ride-details';
 import { DriverPasswordChangeComponent } from './pages/driver/driver-password-change/driver-password-change';
 import { DriverProfile } from './pages/driver/driver-profile/driver-profile';
+import { DriverActiveRideComponent } from './pages/driver/driver-active-ride/driver-active-ride';
 
 import { LoginComponent } from './pages/user/login/login.component';
 import { RideTrackingComponent } from './pages/user/ride-tracking/ride-tracking';
@@ -18,6 +19,10 @@ import { AdminUpdateRequests } from './pages/admin/admin-update-requests/admin-u
 
 import { RIDE_TRACKING_DS } from './pages/user/ride-tracking/ride-tracking.datasource';
 import { RideTrackingMockDataSource } from './pages/user/ride-tracking/ride-tracking.mock.datasource';
+
+import { RIDE_LIFECYCLE_DS } from './pages/driver/driver-active-ride/ride-lifecycle.datasource';
+import { RideLifecycleMockDataSource } from './pages/driver/driver-active-ride/ride-lifecycle.mock.datasource';
+
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -70,10 +75,15 @@ export const routes: Routes = [
     component: DriverLayoutComponent,
     children: [
       { path: 'home', component: DriverHomeComponent },
+      {
+        path: 'active-ride',
+        component: DriverActiveRideComponent,
+        providers: [{ provide: RIDE_LIFECYCLE_DS, useClass: RideLifecycleMockDataSource }],},
       { path: 'ride-history', component: DriverRideHistoryComponent },
       { path: 'ride-details/:id', component: DriverRideDetailsComponent },
       { path: 'password-change', component: DriverPasswordChangeComponent },
       { path: 'profile', component: DriverProfile },
+      { path: '', redirectTo: 'home', pathMatch: 'full' },
     ],
   },
 
