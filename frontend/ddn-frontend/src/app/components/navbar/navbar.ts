@@ -1,11 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { DriverStateService } from '../../state/driver-state.service';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, CommonModule],
   templateUrl: './navbar.html',
-  styleUrls: ['./navbar.css']
+  styleUrls: ['./navbar.css'],
 })
-export class NavbarComponent {}
+export class NavbarComponent {
+  private driverState = inject(DriverStateService);
+  driverAvailable$ = this.driverState.available$;
+  
+}

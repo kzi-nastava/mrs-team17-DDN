@@ -1,0 +1,16 @@
+<nav class="user-navbar">
+  <div class="left">
+    <span class="logo" routerLink="/">Home</span>
+  </div>
+
+  <div class="center">
+    <a routerLink="/user/ride-tracking" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      Tracking
+    </a>
+  </div>
+
+  <div class="right">
+    <a routerLink="/user/profile" routerLinkActive="active">Profile</a>
+    <a routerLink="/login">Logout</a>
+  </div>
+</nav>
