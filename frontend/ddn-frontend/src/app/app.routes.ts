@@ -23,6 +23,7 @@ import { RideTrackingMockDataSource } from './pages/user/ride-tracking/ride-trac
 import { RIDE_LIFECYCLE_DS } from './pages/driver/driver-active-ride/ride-lifecycle.datasource';
 import { RideLifecycleMockDataSource } from './pages/driver/driver-active-ride/ride-lifecycle.mock.datasource';
 
+import { AdminCreateDriver } from './pages/admin/admin-create-driver/admin-create-driver';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -87,15 +88,47 @@ export const routes: Routes = [
     ],
   },
 
+  { path: 'login', component: LoginComponent },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./pages/user/reset-password/reset-password')
+        .then(m => m.ResetPassword)
+  },
+  {
+    path: 'new-password',
+    loadComponent: () =>
+      import('./pages/user/new-password/new-password')
+        .then(m => m.NewPassword)
+  },
+  {
+    path: 'success',
+    loadComponent: () =>
+      import('./pages/user/success-password/success-password')
+        .then(m => m.SuccessPassword)
+  },
+  {
+    path: 'sign-up',
+    loadComponent: () =>
+      import('./pages/user/sign-up/sign-up')
+        .then(m => m.SignUp)
+  },
+  {
+    path: 'sign-up-confirmed',
+    loadComponent: () =>
+      import('./pages/user/sign-up-confirmed/sign-up-confirmed')
+        .then(m => m.SignUpConfirmed)
+  },
+
   {
     path: 'admin',
     component: AdminLayout,
     children: [
       { path: 'home', component: AdminHome },
       { path: 'update-requests', component: AdminUpdateRequests },
-      { path: '', redirectTo: 'home', pathMatch: 'full' },
+      { path: 'create-driver', component: AdminCreateDriver },
+      { path: 'admin', redirectTo: 'admin/home', pathMatch: 'full' },
     ],
   },
 
-  // { path: '**', redirectTo: '' },
 ];
