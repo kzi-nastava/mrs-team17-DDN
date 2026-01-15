@@ -23,6 +23,12 @@ import { RideTrackingMockDataSource } from './pages/user/ride-tracking/ride-trac
 import { RIDE_LIFECYCLE_DS } from './pages/driver/driver-active-ride/ride-lifecycle.datasource';
 import { RideLifecycleMockDataSource } from './pages/driver/driver-active-ride/ride-lifecycle.mock.datasource';
 
+import { AdminCreateDriver } from './pages/admin/admin-create-driver/admin-create-driver';
+
+import { UserLayout } from './pages/user/user-layout/user-layout';
+import { UserOrderRide } from './pages/user/user-order-ride/user-order-ride';
+import { UserFavouriteRides } from './pages/user/user-favourite-rides/user-favourite-rides';
+import { UserFavouriteRideDetails } from './pages/user/user-favourite-ride-details/user-favourite-ride-details';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -34,6 +40,26 @@ export const routes: Routes = [
       { provide: RIDE_TRACKING_DS, useClass: RideTrackingMockDataSource },
     ],
   },
+
+  {
+  path: 'user',
+  component: UserLayout,
+  children: [
+    { path: 'home', loadComponent: () => import('./pages/user/user-home/user-home').then(m => m.UserHome) },
+    { path: 'ride-history', loadComponent: () => import('./pages/user/user-ride-history/user-ride-history').then(m => m.UserRideHistory) },
+    { path: 'reports', loadComponent: () => import('./pages/user/user-reports/user-reports').then(m => m.UserReports) },
+    { path: 'profile', loadComponent: () => import('./pages/user/user-profile/user-profile').then(m => m.UserProfile) },
+    { path: 'ride-tracking', component: RideTrackingComponent,
+      providers: [
+        { provide: RIDE_TRACKING_DS, useClass: RideTrackingMockDataSource },
+      ],
+    },
+    { path: 'order-ride', component: UserOrderRide },
+    { path: 'favourite-rides', component: UserFavouriteRides },
+    { path: 'favourite-rides/:id', component: UserFavouriteRideDetails },
+    ],
+  },
+
 
   { path: 'login', component: LoginComponent },
   {
@@ -87,15 +113,47 @@ export const routes: Routes = [
     ],
   },
 
+  { path: 'login', component: LoginComponent },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./pages/user/reset-password/reset-password')
+        .then(m => m.ResetPassword)
+  },
+  {
+    path: 'new-password',
+    loadComponent: () =>
+      import('./pages/user/new-password/new-password')
+        .then(m => m.NewPassword)
+  },
+  {
+    path: 'success',
+    loadComponent: () =>
+      import('./pages/user/success-password/success-password')
+        .then(m => m.SuccessPassword)
+  },
+  {
+    path: 'sign-up',
+    loadComponent: () =>
+      import('./pages/user/sign-up/sign-up')
+        .then(m => m.SignUp)
+  },
+  {
+    path: 'sign-up-confirmed',
+    loadComponent: () =>
+      import('./pages/user/sign-up-confirmed/sign-up-confirmed')
+        .then(m => m.SignUpConfirmed)
+  },
+
   {
     path: 'admin',
     component: AdminLayout,
     children: [
       { path: 'home', component: AdminHome },
       { path: 'update-requests', component: AdminUpdateRequests },
-      { path: '', redirectTo: 'home', pathMatch: 'full' },
+      { path: 'create-driver', component: AdminCreateDriver },
+      { path: 'admin', redirectTo: 'admin/home', pathMatch: 'full' },
     ],
   },
 
-  // { path: '**', redirectTo: '' },
 ];

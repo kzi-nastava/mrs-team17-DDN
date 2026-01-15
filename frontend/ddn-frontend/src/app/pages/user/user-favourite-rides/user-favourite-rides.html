@@ -1,0 +1,33 @@
+<div class="fav-page">
+  <div class="fav-card">
+
+    <h2 class="title">Favourite rides</h2>
+
+    <div class="table">
+      <div class="head">
+        <div class="col-date">Date</div>
+        <div class="col-route">Route</div>
+        <div class="col-price">Price</div>
+        <div class="col-actions"></div>
+        <div class="col-star"></div>
+      </div>
+
+      <div class="row" *ngFor="let r of favourites">
+        <div class="col-date">{{ r.date }}</div>
+        <div class="col-route">{{ r.route }}</div>
+        <div class="col-price">{{ r.priceRsd }} RSD</div>
+
+        <div class="col-actions">
+          <button class="details-btn" type="button" [routerLink]="['/user/favourite-rides', r.id]">
+            Details
+          </button>
+        </div>
+
+        <div class="col-star">
+          <span class="star" title="Favourite">★</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
