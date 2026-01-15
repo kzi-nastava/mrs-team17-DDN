@@ -1,0 +1,129 @@
+<div class="order-page">
+  <div class="order-container">
+
+    <div class="map-wrap">
+      <div id="orderMap" class="map"></div>
+    </div>
+
+    <div class="order-card">
+
+      <div class="order-row">
+        <div class="lbl">Order:</div>
+
+        <label class="radio">
+          <input type="radio" name="orderType" [(ngModel)]="orderType" value="now" />
+          <span>Now</span>
+        </label>
+
+        <label class="radio">
+          <input type="radio" name="orderType" [(ngModel)]="orderType" value="schedule" />
+          <span>Schedule</span>
+        </label>
+
+        <div class="pill pill-datetime">
+          <input type="datetime-local" [disabled]="orderType !== 'schedule'" />
+          <img class="icon" src="/clock.svg" alt="" />
+        </div>
+      </div>
+
+      <div class="form-grid"> 
+        <div class="field-block">
+          <div class="lbl">From:</div>
+          <div class="field">
+            <input type="text" value="Futoška 10" />
+            <img class="field-icon-img" src="/location.svg" alt="" />
+          </div>
+        </div>
+
+        <div class="field-block">
+          <div class="lbl">To:</div>
+          <div class="field">
+            <input type="text" value="Futoška 55" />
+            <img class="field-icon-img" src="/location.svg" alt="" />
+          </div>
+        </div>
+
+        <div class="field-block span-2">
+          <div class="lbl">Checkpoints:</div>
+
+          <div class="adder">
+            <button class="plus-btn" type="button" (click)="addCheckpoint()">+</button>
+
+            <div class="field">
+              <input
+                type="text"
+                placeholder="Add checkpoint"
+                [(ngModel)]="checkpointInput"
+                (keydown.enter)="addCheckpoint()"
+              />
+              <img class="field-icon-img" src="/location.svg" alt="" />
+            </div>
+          </div>
+
+          <div class="list" *ngIf="checkpoints.length > 0">
+            <div class="list-item" *ngFor="let c of checkpoints; let i = index">
+              {{ i + 1 }}. {{ c }}
+            </div>
+          </div>
+        </div>
+
+        <div class="field-block span-2">
+          <div class="lbl">Link users:</div>
+
+          <div class="adder">
+            <button class="plus-btn" type="button" (click)="addUser()">+</button>
+
+            <div class="field">
+              <input type="text" placeholder="Email (optional)" [(ngModel)]="userEmailInput" (keydown.enter)="addUser()"/>
+              <img class="field-icon-img" src="/mail.svg" alt="" />
+            </div>
+          </div>
+
+          <div class="list" *ngIf="linkedUsers.length > 0">
+            <div class="list-item" *ngFor="let u of linkedUsers; let i = index">
+              {{ i + 1 }}. {{ u }}
+            </div>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <div class="lbl">Options:</div>
+          <div class="options-box">
+            <label class="opt">
+              <span class="opt-left">
+                <img class="opt-icon" src="/baby_seat.svg" alt="" />
+                <span>Baby Seat</span>
+              </span>
+              <input type="checkbox" />
+            </label>
+
+            <label class="opt">
+              <span class="opt-left">
+                <img class="opt-icon" src="/pet_friendly.svg" alt="" />
+                <span>Pet Friendly</span>
+              </span>
+              <input type="checkbox" />
+            </label>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <div class="lbl">Car type:</div>
+          <div class="field">
+            <img class="field-icon-img" src="/options.svg" alt="" />
+            <select required>
+              <option value="" selected disabled>Car Type</option>
+              <option>Standard</option>
+              <option>Luxury</option>
+              <option>Van</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="primary-action-driver">PLACE ORDER</button>
+      </div>
+    </div>
+  </div>
+</div>

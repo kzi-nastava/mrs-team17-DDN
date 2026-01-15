@@ -1,0 +1,26 @@
+<div class="content">
+  <div class="map-wrap">
+    <div id="map" class="map"></div>
+
+    <div class="map-legend">
+      <div class="legend-title">Active vehicles</div>
+
+      <div class="legend-row">
+        <span class="dot free"></span>
+        <span>Free: {{ freeCount }}</span>
+      </div>
+
+      <div class="legend-row">
+        <span class="dot busy"></span>
+        <span>Busy: {{ busyCount }}</span>
+      </div>
+    </div>
+
+    <button class="order-ride-btn" type="button" routerLink="/user/order-ride">
+      ORDER RIDE
+    </button>
+    <button class="favourite-rides-btn" type="button" routerLink="/user/favourite-rides">
+      FAVOURITE RIDES
+    </button>
+  </div>
+</div>
