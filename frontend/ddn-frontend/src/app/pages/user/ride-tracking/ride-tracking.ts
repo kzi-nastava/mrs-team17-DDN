@@ -3,9 +3,10 @@ import * as L from 'leaflet';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 import { UserNavbarComponent } from '../../../components/user-navbar/user-navbar';
-import { RIDE_TRACKING_DS } from './ride-tracking.datasource';
-import { TrackingState } from './ride-tracking.models';
+import { RIDE_TRACKING_DS } from '../../../api/user/ride-tracking.datasource';
+import { TrackingState } from '../../../api/user/models/ride-tracking.models';
 
 @Component({
   selector: 'app-ride-tracking',
@@ -16,35 +17,42 @@ import { TrackingState } from './ride-tracking.models';
 })
 export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   private ds = inject(RIDE_TRACKING_DS);
+  private route = inject(ActivatedRoute);
 
   private map!: L.Map;
-  private carMarker!: L.CircleMarker;
   private sub: Subscription | null = null;
 
-  etaMinutes = 7;
-  distanceKm = 3.4;
-  rideStatus = 'Driver approaching';
+  private pickupMarker: L.CircleMarker | null = null;
+  private destinationMarker: L.CircleMarker | null = null;
+  private carMarker: L.CircleMarker | null = null;
+  private routeLine: L.Polyline | null = null;
 
-  pickupLabel = 'Pickup address (mock)';
-  destinationLabel = 'Destination address (mock)';
-  vehicleLabel = 'Audi A6 (mock)';
-  driverLabel = 'Driver Name (mock)';
+  etaMinutes = 0;
+  distanceKm = 0;
+  rideStatus = '';
 
   reportOpen = false;
   reportText = '';
 
-  private rideId = 1;
-  private lastState: TrackingState | null = null;
+  private rideId!: number;
+  private initializedFromState = false;
 
   ngAfterViewInit(): void {
+    const raw = this.route.snapshot.paramMap.get('rideId');
+    this.rideId = Number(raw);
+
+    if (!Number.isFinite(this.rideId) || this.rideId <= 0) {
+      this.rideStatus = 'Invalid ride';
+      return;
+    }
+
     this.initMap();
 
-    this.sub = this.ds.watchTracking(this.rideId).subscribe((s) => {
-      this.lastState = s;
-      this.etaMinutes = s.etaMinutes;
-      this.distanceKm = s.distanceKm;
-      this.rideStatus = s.status;
-      this.carMarker.setLatLng([s.car.lat, s.car.lng]);
+    this.sub = this.ds.watchTracking(this.rideId).subscribe({
+      next: (s) => this.applyState(s),
+      error: () => {
+        this.rideStatus = 'Tracking not available';
+      },
     });
 
     setTimeout(() => this.map.invalidateSize(), 0);
@@ -66,19 +74,20 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   }
 
   submitReport(): void {
-    this.ds.submitInconsistency(this.rideId, this.reportText).subscribe(() => {
-      this.reportOpen = false;
-      this.reportText = '';
+    const text = this.reportText.trim();
+    if (text.length < 5) return;
+
+    this.ds.submitInconsistency(this.rideId, text).subscribe({
+      next: () => {
+        this.reportOpen = false;
+        this.reportText = '';
+      },
     });
   }
 
   private initMap(): void {
-    const pickup = { lat: 45.2671, lng: 19.8335 };
-    const destination = { lat: 45.2558, lng: 19.8452 };
-    const car = { lat: 45.2692, lng: 19.8298 };
-
     this.map = L.map('tracking-map', {
-      center: [pickup.lat, pickup.lng],
+      center: [45.2671, 19.8335],
       zoom: 13,
     });
 
@@ -86,45 +95,67 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(this.map);
+  }
 
-    L.circleMarker([pickup.lat, pickup.lng], {
-      radius: 8,
-      color: '#3498db',
-      fillColor: '#3498db',
-      fillOpacity: 0.9,
-      weight: 2,
-    }).addTo(this.map);
+  private applyState(s: TrackingState): void {
+    this.etaMinutes = s.etaMinutes;
+    this.distanceKm = s.distanceKm;
+    this.rideStatus = s.status;
 
-    L.circleMarker([destination.lat, destination.lng], {
-      radius: 8,
-      color: '#9b59b6',
-      fillColor: '#9b59b6',
-      fillOpacity: 0.9,
-      weight: 2,
-    }).addTo(this.map);
+    if (!this.initializedFromState) {
+      this.initializedFromState = true;
 
-    this.carMarker = L.circleMarker([car.lat, car.lng], {
-      radius: 8,
-      color: '#2ecc71',
-      fillColor: '#2ecc71',
-      fillOpacity: 0.9,
-      weight: 2,
-    }).addTo(this.map);
+      this.pickupMarker = L.circleMarker([s.pickup.lat, s.pickup.lng], {
+        radius: 8,
+        color: '#3498db',
+        fillColor: '#3498db',
+        fillOpacity: 0.9,
+        weight: 2,
+      }).addTo(this.map);
 
-    L.polyline(
-      [
-        [car.lat, car.lng],
-        [pickup.lat, pickup.lng],
-        [destination.lat, destination.lng],
-      ],
-      { weight: 3 }
-    ).addTo(this.map);
+      this.destinationMarker = L.circleMarker([s.destination.lat, s.destination.lng], {
+        radius: 8,
+        color: '#9b59b6',
+        fillColor: '#9b59b6',
+        fillOpacity: 0.9,
+        weight: 2,
+      }).addTo(this.map);
 
-    const bounds = L.latLngBounds([
-      [car.lat, car.lng],
-      [pickup.lat, pickup.lng],
-      [destination.lat, destination.lng],
-    ]);
-    this.map.fitBounds(bounds, { padding: [30, 30] });
+      this.carMarker = L.circleMarker([s.car.lat, s.car.lng], {
+        radius: 8,
+        color: '#2ecc71',
+        fillColor: '#2ecc71',
+        fillOpacity: 0.9,
+        weight: 2,
+      }).addTo(this.map);
+
+      this.routeLine = L.polyline(
+        [
+          [s.car.lat, s.car.lng],
+          [s.pickup.lat, s.pickup.lng],
+          [s.destination.lat, s.destination.lng],
+        ],
+        { weight: 3 }
+      ).addTo(this.map);
+
+      const bounds = L.latLngBounds([
+        [s.car.lat, s.car.lng],
+        [s.pickup.lat, s.pickup.lng],
+        [s.destination.lat, s.destination.lng],
+      ]);
+      this.map.fitBounds(bounds, { padding: [30, 30] });
+
+      return;
+    }
+
+    this.carMarker?.setLatLng([s.car.lat, s.car.lng]);
+
+    if (this.routeLine) {
+      this.routeLine.setLatLngs([
+        [s.car.lat, s.car.lng],
+        [s.pickup.lat, s.pickup.lng],
+        [s.destination.lat, s.destination.lng],
+      ]);
+    }
   }
 }

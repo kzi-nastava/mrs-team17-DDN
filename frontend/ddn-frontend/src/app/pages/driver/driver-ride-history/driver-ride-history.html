@@ -1,4 +1,4 @@
-
+<!-- src/app/pages/driver/driver-ride-history/driver-ride-history.html -->
 <div class="page">
   <h1>Driver – Ride History</h1>
 
@@ -6,15 +6,15 @@
     <div class="filter">
       <div class="field">
         <span>From:</span>
-        <input type="date" />
+        <input type="date" [value]="from ?? ''" (change)="onFromChange($event)" />
       </div>
 
       <div class="field">
         <span>To:</span>
-        <input type="date" />
+        <input type="date" [value]="to ?? ''" (change)="onToChange($event)" />
       </div>
 
-      <button>Filter</button>
+      <button (click)="applyFilter()">Filter</button>
     </div>
 
     <div class="table header">
@@ -24,15 +24,36 @@
       <span>Status</span>
     </div>
 
-<div
-  class="table row clickable"
-  (click)="openRideDetails(1)"
->
-  <span>13.12.2025</span>
-  <span>FTN → Železnička</span>
-  <span>820 RSD</span>
-  <span class="completed">Completed</span>
-</div>
+    <!-- LOADING -->
+    <div *ngIf="loading" style="padding: 14px;">Loading...</div>
 
+    <!-- ERROR -->
+    <div *ngIf="!loading && error" style="padding: 14px;">
+      {{ error }}
+    </div>
+
+    <!-- DATA -->
+    <ng-container *ngIf="!loading && !error">
+      <div
+        class="table row clickable"
+        *ngFor="let ride of rides"
+        (click)="openRideDetails(ride.rideId)"
+      >
+        <span>{{ formatDateOnly(ride.startedAt) }}</span>
+        <span>{{ ride.startAddress }} → {{ ride.endAddress }}</span>
+        <span>{{ ride.price }} RSD</span>
+
+        <span
+          [class.completed]="isCompleted(ride.status, ride.canceled)"
+          [class.canceled]="isCanceled(ride.status, ride.canceled)"
+        >
+          {{ formatStatus(ride.status, ride.canceled) }}
+        </span>
+      </div>
+
+      <div *ngIf="rides.length === 0" style="padding: 14px;">
+        No rides.
+      </div>
+    </ng-container>
   </div>
 </div>

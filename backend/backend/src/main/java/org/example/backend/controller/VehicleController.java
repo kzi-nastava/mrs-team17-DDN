@@ -1,6 +1,7 @@
 package org.example.backend.controller;
 
 import org.example.backend.dto.response.ActiveVehicleResponseDto;
+import org.example.backend.service.VehicleService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +11,12 @@ import java.util.List;
 @RequestMapping("/api/vehicles")
 public class VehicleController {
 
+    private final VehicleService vehicleService;
+
+    public VehicleController(VehicleService vehicleService) {
+        this.vehicleService = vehicleService;
+    }
+
     @GetMapping("/active")
     public ResponseEntity<List<ActiveVehicleResponseDto>> getActiveVehicles(
             @RequestParam(required = false) Double minLat,
@@ -17,13 +24,6 @@ public class VehicleController {
             @RequestParam(required = false) Double minLng,
             @RequestParam(required = false) Double maxLng
     ) {
-        boolean any = minLat != null || maxLat != null || minLng != null || maxLng != null;
-        boolean all = minLat != null && maxLat != null && minLng != null && maxLng != null;
-
-        if (any && !all) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        return ResponseEntity.ok(List.of());
+        return ResponseEntity.ok(vehicleService.getActiveVehicles(minLat, maxLat, minLng, maxLng));
     }
 }

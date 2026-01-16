@@ -1,43 +1,47 @@
-
 <div class="page">
   <h1>Driver – Ride Details</h1>
 
-  <div class="cards-row">
+  <div *ngIf="loading" style="padding: 14px;">Loading...</div>
+  <div *ngIf="!loading && error" style="padding: 14px;">{{ error }}</div>
 
+  <div class="cards-row" *ngIf="!loading && ride">
     <div class="card">
-
       <div class="section">
         <h2>Ride information</h2>
 
         <div class="ride-grid">
           <div class="item">
             <span class="label">Date start</span>
-            <span class="value">13.12.2025 14:30</span>
+            <span class="value">{{ formatDateTime(ride.startedAt) }}</span>
           </div>
 
           <div class="item">
             <span class="label">Date end</span>
-            <span class="value">13.12.2025 15:05</span>
+            <span class="value">{{ formatDateTime(ride.endedAt) }}</span>
           </div>
 
           <div class="item">
             <span class="label">Route</span>
-            <span class="value">FTN → Železnička</span>
+            <span class="value">{{ ride.startAddress }} → {{ ride.destinationAddress }}</span>
           </div>
 
           <div class="item">
             <span class="label">Price</span>
-            <span class="value highlight">820 RSD</span>
+            <span class="value highlight">{{ ride.price }} RSD</span>
           </div>
 
           <div class="item">
             <span class="label">Status</span>
-            <span class="value badge success">Completed</span>
+            <span class="value badge" [class.success]="!ride.canceled" [class.neutral]="ride.canceled">
+              {{ statusText() }}
+            </span>
           </div>
 
           <div class="item">
             <span class="label">Panic</span>
-            <span class="value badge neutral">No</span>
+            <span class="value badge" [class.neutral]="!ride.panicTriggered" [class.danger]="ride.panicTriggered">
+              {{ panicText() }}
+            </span>
           </div>
         </div>
       </div>
@@ -50,9 +54,13 @@
           <span>Email</span>
         </div>
 
-        <div class="table row">
-          <span>Petar Petrović</span>
-          <span>petar@email.com</span>
+        <div class="table row" *ngFor="let p of ride.passengers">
+          <span>{{ p.name }}</span>
+          <span>{{ p.email }}</span>
+        </div>
+
+        <div *ngIf="ride.passengers?.length === 0" style="padding: 10px 0;">
+          No passengers.
         </div>
       </div>
 
@@ -66,6 +74,5 @@
     <div class="card map-card">
       <span>Map will be displayed here</span>
     </div>
-
   </div>
 </div>

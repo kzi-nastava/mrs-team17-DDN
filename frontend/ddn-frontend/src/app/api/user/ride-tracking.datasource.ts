@@ -1,6 +1,6 @@
 import { InjectionToken } from '@angular/core';
 import { Observable } from 'rxjs';
-import { InconsistencyReport, TrackingState } from './ride-tracking.models';
+import { InconsistencyReport, TrackingState } from './models/ride-tracking.models';
 
 export interface RideTrackingDataSource {
   watchTracking(rideId: number): Observable<TrackingState>;
