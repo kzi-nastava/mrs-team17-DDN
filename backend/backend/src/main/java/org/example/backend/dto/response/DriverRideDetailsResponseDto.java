@@ -1,3 +1,5 @@
+// backend/src/main/java/org/example/backend/dto/response/DriverRideDetailsResponseDto.java
+// (your file is OK; keep it as-is)
 package org.example.backend.dto.response;
 
 import java.time.OffsetDateTime;
@@ -15,7 +17,7 @@ public class DriverRideDetailsResponseDto {
     private List<String> stops;
 
     private boolean canceled;
-    private String canceledBy; // e.g. "DRIVER", "PASSENGER", "SYSTEM"
+    private String canceledBy;
 
     private double price;
     private boolean panicTriggered;
