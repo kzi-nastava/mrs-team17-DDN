@@ -6,7 +6,11 @@
       </div>
 
       <div class="avatar">
-        <img class="avatar-img" [src]="form.profileImageUrl || profile?.driver?.profileImageUrl || 'avatar.svg'" alt="Driver avatar" />
+        <img
+          class="avatar-img"
+          [src]="form.profileImageUrl || profile?.profileImageUrl || 'avatar.svg'"
+          alt="Admin avatar"
+        />
       </div>
 
       <div class="upload-div">
@@ -26,15 +30,6 @@
     </div>
 
     <div class="right-col">
-      <div class="active-time">
-        <div class="active-bar">
-          <div class="active-fill" [style.width.%]="activeFillPct">
-            <span class="active-label">{{ activeLabel }}</span>
-          </div>
-        </div>
-        <div class="active-max">8h</div>
-      </div>
-
       <div class="field">
         <img class="field-icon-img" src="person.svg" alt="" />
         <input type="text" [(ngModel)]="form.firstName" />
@@ -61,7 +56,7 @@
         UPDATE PROFILE
       </button>
 
-      <button type="button" class="secondary-action-driver" routerLink="/driver/password-change">
+      <button type="button" class="secondary-action-driver" routerLink="/admin/password-change">
         CHANGE PASSWORD
       </button>
     </div>

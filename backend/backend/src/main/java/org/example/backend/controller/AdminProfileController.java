@@ -1,8 +1,8 @@
 package org.example.backend.controller;
 
-import org.example.backend.dto.request.UpdateUserProfileRequestDto;
+import org.example.backend.dto.request.UpdateAdminProfileRequestDto;
+import org.example.backend.dto.response.AdminProfileResponseDto;
 import org.example.backend.dto.response.ProfileImageUploadResponseDto;
-import org.example.backend.dto.response.UserProfileResponseDto;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,34 +15,34 @@ import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 
 @RestController
-@RequestMapping("/api/users")
-public class UserProfileController {
+@RequestMapping("/api/admins")
+public class AdminProfileController {
 
     private static String storedFirstName = "Test";
-    private static String storedLastName = "User";
-    private static String storedAddress = "User Ulica 2";
-    private static String storedPhone = "+38161111111";
+    private static String storedLastName = "Admin";
+    private static String storedAddress = "Admin Ulica 1";
+    private static String storedPhone = "+38160000000";
     private static String storedProfileImageUrl = null;
 
-    @GetMapping("/{userId}/profile")
-    public ResponseEntity<UserProfileResponseDto> getUserProfile(@PathVariable Long userId) {
-        UserProfileResponseDto dto = new UserProfileResponseDto();
-        dto.setId(userId);
-        dto.setEmail("user@example.com");
+    @GetMapping("/{adminId}/profile")
+    public ResponseEntity<AdminProfileResponseDto> getAdminProfile(@PathVariable Long adminId) {
+        AdminProfileResponseDto dto = new AdminProfileResponseDto();
+        dto.setId(adminId);
+        dto.setEmail("admin@example.com");
         dto.setFirstName(storedFirstName);
         dto.setLastName(storedLastName);
         dto.setAddress(storedAddress);
         dto.setPhoneNumber(storedPhone);
-        dto.setProfileImageUrl(null);
-        dto.setRole("USER");
+        dto.setProfileImageUrl(storedProfileImageUrl);
+        dto.setRole("ADMIN");
 
         return ResponseEntity.ok(dto);
     }
 
-    @PutMapping("/{userId}/profile")
-    public ResponseEntity<Void> updateUserProfile(
-            @PathVariable Long userId,
-            @RequestBody UpdateUserProfileRequestDto request
+    @PutMapping("/{adminId}/profile")
+    public ResponseEntity<Void> updateAdminProfile(
+            @PathVariable Long adminId,
+            @RequestBody UpdateAdminProfileRequestDto request
     ) {
 //        if (request.getFirstName() != null) storedFirstName = request.getFirstName();
 //        if (request.getLastName() != null) storedLastName = request.getLastName();
@@ -55,9 +55,12 @@ public class UserProfileController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/{userId}/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ProfileImageUploadResponseDto> uploadUserProfileImage(
-            @PathVariable Long userId,
+    @PostMapping(
+            value = "/{adminId}/profile-image",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<ProfileImageUploadResponseDto> uploadAdminProfileImage(
+            @PathVariable Long adminId,
             @RequestPart("file") MultipartFile file
     ) throws IOException {
 
@@ -77,12 +80,13 @@ public class UserProfileController {
         String ext = getExtension(original);
         if (ext.isEmpty()) ext = "png";
 
-        String filename = "user-" + userId + "-" + System.currentTimeMillis() + "." + ext;
+        String filename = "admin-" + adminId + "-" + System.currentTimeMillis() + "." + ext;
         File target = new File(baseDir, filename);
 
         Files.copy(file.getInputStream(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
         String url = "/public/profile-images/" + filename;
+
         return ResponseEntity.ok(new ProfileImageUploadResponseDto(url));
     }
 

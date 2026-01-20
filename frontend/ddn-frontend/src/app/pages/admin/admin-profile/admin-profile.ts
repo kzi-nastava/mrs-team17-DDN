@@ -4,28 +4,28 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import {
-  UserProfileHttpDataSource,
-  UserProfileResponseDto,
-  UpdateUserProfileRequestDto,
-} from '../../../api/user/user-profile.http-data-source';
+  AdminProfileHttpDataSource,
+  AdminProfileResponseDto,
+  UpdateAdminProfileRequestDto,
+} from '../../../api/admin/admin-profile.http-data-source';
 
 @Component({
-  selector: 'app-user-profile',
+  selector: 'app-admin-profile',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './user-profile.html',
-  styleUrl: './user-profile.css',
+  templateUrl: './admin-profile.html',
+  styleUrl: './admin-profile.css',
 })
-export class UserProfile implements OnInit {
-  userId = 1;
+export class AdminProfile implements OnInit {
+  adminId = 1;
 
-  profile: UserProfileResponseDto | null = null;
+  profile: AdminProfileResponseDto | null = null;
 
   loading = false;
   errorMsg: string | null = null;
   successMsg: string | null = null;
 
-  form: UpdateUserProfileRequestDto = {
+  form: UpdateAdminProfileRequestDto = {
     firstName: '',
     lastName: '',
     address: '',
@@ -33,7 +33,7 @@ export class UserProfile implements OnInit {
     profileImageUrl: '',
   };
 
-  constructor(private api: UserProfileHttpDataSource) {}
+  constructor(private api: AdminProfileHttpDataSource) {}
 
   ngOnInit(): void {
     this.loadProfile();
@@ -44,7 +44,7 @@ export class UserProfile implements OnInit {
     this.errorMsg = null;
     this.successMsg = null;
 
-    this.api.getProfile(this.userId).subscribe({
+    this.api.getProfile(this.adminId).subscribe({
       next: (res) => {
         this.profile = res;
 
@@ -68,7 +68,7 @@ export class UserProfile implements OnInit {
     this.errorMsg = null;
     this.successMsg = null;
 
-    const payload: UpdateUserProfileRequestDto = {
+    const payload: UpdateAdminProfileRequestDto = {
       firstName: this.form.firstName?.trim(),
       lastName: this.form.lastName?.trim(),
       address: this.form.address?.trim(),
@@ -76,7 +76,7 @@ export class UserProfile implements OnInit {
       profileImageUrl: (this.form.profileImageUrl || '').replace('http://localhost:8080', '').trim(),
     };
 
-    this.api.updateProfile(this.userId, payload).subscribe({
+    this.api.updateProfile(this.adminId, payload).subscribe({
       next: () => {
         this.loading = false;
         this.successMsg = 'Profile updated.';
@@ -99,7 +99,7 @@ export class UserProfile implements OnInit {
     this.errorMsg = null;
     this.successMsg = null;
 
-    this.api.uploadProfileImage(this.userId, file).subscribe({
+    this.api.uploadProfileImage(this.adminId, file).subscribe({
       next: (res) => {
         this.form.profileImageUrl = `http://localhost:8080${res.profileImageUrl}`;
         this.loading = false;
