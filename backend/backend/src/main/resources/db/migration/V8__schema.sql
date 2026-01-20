@@ -1,4 +1,4 @@
--- V11__schema.sql
+-- V8__schema.sql
 -- USERS + linking DRIVERS -> USERS
 
 -- USERS (passenger / driver / admin)

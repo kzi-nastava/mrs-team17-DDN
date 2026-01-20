@@ -1,4 +1,4 @@
--- V12__seed.sql
+-- V9__seed.sql
 -- Seed users (admins, drivers, passengers) + connect existing driver(id=1) to a driver-user.
 
 -- ========== ADMINS ==========
