@@ -1,14 +1,13 @@
 package org.example.backend.dto.request;
 
-public class UpdateDriverProfileRequestDto {
-
+public class UpdateAdminProfileRequestDto {
     private String firstName;
     private String lastName;
     private String address;
     private String phoneNumber;
     private String profileImageUrl;
 
-    public UpdateDriverProfileRequestDto() {}
+    public UpdateAdminProfileRequestDto() {}
 
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }

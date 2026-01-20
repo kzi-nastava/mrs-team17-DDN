@@ -17,11 +17,15 @@ import { AdminLayout } from './pages/admin/admin-layout/admin-layout';
 import { AdminHome } from './pages/admin/admin-home/admin-home';
 import { AdminUpdateRequests } from './pages/admin/admin-update-requests/admin-update-requests';
 import { AdminCreateDriver } from './pages/admin/admin-create-driver/admin-create-driver';
+import { AdminProfile } from './pages/admin/admin-profile/admin-profile';
+import { AdminPasswordChange } from './pages/admin/admin-password-change/admin-password-change';
 
 import { UserLayout } from './pages/user/user-layout/user-layout';
 import { UserOrderRide } from './pages/user/user-order-ride/user-order-ride';
 import { UserFavouriteRides } from './pages/user/user-favourite-rides/user-favourite-rides';
 import { UserFavouriteRideDetails } from './pages/user/user-favourite-ride-details/user-favourite-ride-details';
+import { UserProfile } from './pages/user/user-profile/user-profile';
+import { UserPasswordChangeComponent } from './pages/user/user-password-change/user-password-change';
 
 import { RIDE_TRACKING_DS } from './api/user/ride-tracking.datasource';
 import { RideTrackingHttpDataSource } from './api/user/ride-tracking.http.datasource';
@@ -103,6 +107,7 @@ export const routes: Routes = [
       { path: 'favourite-rides', component: UserFavouriteRides },
       { path: 'favourite-rides/:id', component: UserFavouriteRideDetails },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
+      {path : 'password-change', component: UserPasswordChangeComponent}
     ],
   },
 
@@ -134,6 +139,8 @@ export const routes: Routes = [
       { path: 'update-requests', component: AdminUpdateRequests },
       { path: 'create-driver', component: AdminCreateDriver },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
+      {path: 'profile', loadComponent: () =>import('./pages/admin/admin-profile/admin-profile').then(m => m.AdminProfile),},
+      {path: 'password-change', loadComponent: () =>import('./pages/admin/admin-password-change/admin-password-change').then(m => m.AdminPasswordChange),},
     ],
   },
 
