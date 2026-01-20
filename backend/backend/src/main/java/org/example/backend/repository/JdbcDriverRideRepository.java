@@ -3,6 +3,7 @@ package org.example.backend.repository;
 import org.example.backend.dto.response.DriverRideDetailsResponseDto;
 import org.example.backend.dto.response.DriverRideHistoryResponseDto;
 import org.example.backend.dto.response.PassengerInfoResponseDto;
+import org.example.backend.dto.response.RideReportResponseDto;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -20,11 +21,14 @@ public class JdbcDriverRideRepository implements DriverRideRepository {
     }
 
     @Override
-    public List<DriverRideHistoryResponseDto> findDriverRides(Long driverId, LocalDate from, LocalDate to) {
-
+    public List<DriverRideHistoryResponseDto> findDriverRides(
+            Long driverId,
+            LocalDate from,
+            LocalDate to
+    ) {
         String sql = """
             select
-                r.id            as ride_id,
+                r.id                    as ride_id,
                 r.started_at,
                 r.start_address,
                 r.destination_address,
@@ -57,8 +61,10 @@ public class JdbcDriverRideRepository implements DriverRideRepository {
     }
 
     @Override
-    public Optional<DriverRideDetailsResponseDto> findDriverRideDetails(Long driverId, Long rideId) {
-
+    public Optional<DriverRideDetailsResponseDto> findDriverRideDetails(
+            Long driverId,
+            Long rideId
+    ) {
         String rideSql = """
             select *
             from rides
@@ -78,24 +84,30 @@ public class JdbcDriverRideRepository implements DriverRideRepository {
                     dto.setEndedAt(rs.getObject("ended_at", java.time.OffsetDateTime.class));
                     dto.setStartAddress(rs.getString("start_address"));
                     dto.setDestinationAddress(rs.getString("destination_address"));
+                    dto.setStops(null); // popunjavamo ispod
                     dto.setCanceled(rs.getBoolean("canceled"));
                     dto.setCanceledBy(rs.getString("canceled_by"));
+                    dto.setStatus(rs.getString("status"));
                     dto.setPrice(rs.getDouble("price"));
                     dto.setPanicTriggered(rs.getBoolean("panic_triggered"));
+                    dto.setPassengers(null); // popunjavamo ispod
+                    dto.setReports(null); // popunjavamo ispod
                     return Optional.of(dto);
                 });
 
         ride.ifPresent(dto -> {
             dto.setStops(findStops(rideId));
             dto.setPassengers(findPassengers(rideId));
+            dto.setReports(findReports(rideId));
         });
 
         return ride;
     }
 
     @Override
-    public Optional<DriverRideDetailsResponseDto> findActiveRideDetails(Long driverId) {
-
+    public Optional<DriverRideDetailsResponseDto> findActiveRideDetails(
+            Long driverId
+    ) {
         String sql = """
             select *
             from rides
@@ -119,11 +131,14 @@ public class JdbcDriverRideRepository implements DriverRideRepository {
                     dto.setStartAddress(rs.getString("start_address"));
                     dto.setDestinationAddress(rs.getString("destination_address"));
                     dto.setCanceled(false);
+                    dto.setCanceledBy(null);
+                    dto.setStatus(rs.getString("status"));
                     dto.setPrice(rs.getDouble("price"));
                     dto.setPanicTriggered(rs.getBoolean("panic_triggered"));
 
                     dto.setStops(findStops(rideId));
                     dto.setPassengers(findPassengers(rideId));
+                    dto.setReports(findReports(rideId));
 
                     return Optional.of(dto);
                 });
@@ -152,7 +167,27 @@ public class JdbcDriverRideRepository implements DriverRideRepository {
                         new PassengerInfoResponseDto(
                                 rs.getString("name"),
                                 rs.getString("email")
-                        ))
+                        )
+                )
+                .list();
+    }
+
+    private List<RideReportResponseDto> findReports(Long rideId) {
+        return jdbc.sql("""
+            select id, ride_id, description, created_at
+            from ride_reports
+            where ride_id = :rideId
+            order by created_at desc
+        """)
+                .param("rideId", rideId)
+                .query((rs, rowNum) -> {
+                    RideReportResponseDto r = new RideReportResponseDto();
+                    r.setId(rs.getLong("id"));
+                    r.setRideId(rs.getLong("ride_id"));
+                    r.setDescription(rs.getString("description"));
+                    r.setCreatedAt(rs.getObject("created_at", java.time.OffsetDateTime.class));
+                    return r;
+                })
                 .list();
     }
 }

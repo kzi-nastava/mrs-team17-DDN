@@ -1,5 +1,3 @@
-// backend/src/main/java/org/example/backend/dto/response/DriverRideDetailsResponseDto.java
-// (your file is OK; keep it as-is)
 package org.example.backend.dto.response;
 
 import java.time.OffsetDateTime;
@@ -19,10 +17,14 @@ public class DriverRideDetailsResponseDto {
     private boolean canceled;
     private String canceledBy;
 
+    private String status;
+
     private double price;
     private boolean panicTriggered;
 
     private List<PassengerInfoResponseDto> passengers;
+
+    private List<RideReportResponseDto> reports; // ✅ DODATO
 
     public DriverRideDetailsResponseDto() {}
 
@@ -50,6 +52,9 @@ public class DriverRideDetailsResponseDto {
     public String getCanceledBy() { return canceledBy; }
     public void setCanceledBy(String canceledBy) { this.canceledBy = canceledBy; }
 
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }
 
@@ -58,4 +63,7 @@ public class DriverRideDetailsResponseDto {
 
     public List<PassengerInfoResponseDto> getPassengers() { return passengers; }
     public void setPassengers(List<PassengerInfoResponseDto> passengers) { this.passengers = passengers; }
+
+    public List<RideReportResponseDto> getReports() { return reports; }
+    public void setReports(List<RideReportResponseDto> reports) { this.reports = reports; }
 }

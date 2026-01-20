@@ -20,7 +20,7 @@
 
 .card {
   width: 580px;
-  height: 600px;
+  height: 600px;                 /* ISTA VISINA KAO PRE */
   background: #555;
   border-radius: 12px;
   padding: 32px;
@@ -29,6 +29,21 @@
   flex-direction: column;
 }
 
+/* SCROLL DEO */
+.card-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.card-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+}
 
 .section {
   margin-bottom: 32px;
@@ -89,6 +104,11 @@
   color: #ddd;
 }
 
+.badge.danger {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+}
+
 .table {
   display: grid;
   grid-template-columns: 1fr 1.5fr;
@@ -104,10 +124,15 @@
 
 .table.row {
   font-size: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.table.row:last-child {
+  border-bottom: none;
 }
 
 .actions {
-  margin-top: auto;
+  margin-top: 16px;
 }
 
 .back-btn {
@@ -135,5 +160,3 @@
   font-size: 18px;
   border: 1px dashed rgba(255, 255, 255, 0.3);
 }
-.canceled { color: red; }
-
