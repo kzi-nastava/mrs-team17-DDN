@@ -18,10 +18,7 @@ import { TrackingState } from '../../../api/user/models/ride-tracking.models';
 export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   private ds = inject(RIDE_TRACKING_DS);
   private route = inject(ActivatedRoute);
-  pickupLabel = 'Pickup (TBD)';
-  destinationLabel = 'Destination (TBD)';
-  vehicleLabel = 'Vehicle (TBD)';
-  driverLabel = 'Driver (TBD)';
+
 
 
   private map!: L.Map;
