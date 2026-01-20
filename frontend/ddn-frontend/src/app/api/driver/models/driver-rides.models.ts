@@ -15,10 +15,17 @@ export interface PassengerInfo {
   email: string;
 }
 
+export interface RideReport {
+  id: number;
+  rideId: number;
+  description: string;
+  createdAt: string; // ISO string
+}
+
 export interface DriverRideDetails {
   rideId: number;
   startedAt: string;
-  endedAt: string;
+  endedAt: string | null;
 
   startAddress: string;
   destinationAddress: string;
@@ -27,8 +34,12 @@ export interface DriverRideDetails {
   canceled: boolean;
   canceledBy: string | null;
 
+  status: RideStatus; // ✅ DODATO — OVO FIXUJE TS2339
+
   price: number;
   panicTriggered: boolean;
 
   passengers: PassengerInfo[];
+
+  reports: RideReport[];
 }

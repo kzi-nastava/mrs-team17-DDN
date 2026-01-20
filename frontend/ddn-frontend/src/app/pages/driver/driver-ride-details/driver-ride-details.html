@@ -5,65 +5,102 @@
   <div *ngIf="!loading && error" style="padding: 14px;">{{ error }}</div>
 
   <div class="cards-row" *ngIf="!loading && ride">
+    <!-- LEFT CARD -->
     <div class="card">
-      <div class="section">
-        <h2>Ride information</h2>
+      <div class="card-body">
+        <!-- RIDE INFO -->
+        <div class="section">
+          <h2>Ride information</h2>
 
-        <div class="ride-grid">
-          <div class="item">
-            <span class="label">Date start</span>
-            <span class="value">{{ formatDateTime(ride.startedAt) }}</span>
+          <div class="ride-grid">
+            <div class="item">
+              <span class="label">Date start</span>
+              <span class="value">{{ formatDateTime(ride.startedAt) }}</span>
+            </div>
+
+            <div class="item">
+              <span class="label">Date end</span>
+              <span class="value">
+                {{ ride.endedAt ? formatDateTime(ride.endedAt) : '-' }}
+              </span>
+            </div>
+
+            <div class="item">
+              <span class="label">Route</span>
+              <span class="value">
+                {{ ride.startAddress }} → {{ ride.destinationAddress }}
+              </span>
+            </div>
+
+            <div class="item">
+              <span class="label">Price</span>
+              <span class="value highlight">{{ ride.price }} RSD</span>
+            </div>
+
+            <div class="item">
+              <span class="label">Status</span>
+              <span
+                class="badge"
+                [class.success]="!ride.canceled"
+                [class.neutral]="ride.canceled"
+              >
+                {{ statusText() }}
+              </span>
+            </div>
+
+            <div class="item">
+              <span class="label">Panic</span>
+              <span
+                class="badge"
+                [class.neutral]="!ride.panicTriggered"
+                [class.danger]="ride.panicTriggered"
+              >
+                {{ panicText() }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASSENGERS -->
+        <div class="section">
+          <h2>Passengers</h2>
+
+          <div class="table header">
+            <span>Name</span>
+            <span>Email</span>
           </div>
 
-          <div class="item">
-            <span class="label">Date end</span>
-            <span class="value">{{ formatDateTime(ride.endedAt) }}</span>
+          <div class="table row" *ngFor="let p of ride.passengers">
+            <span>{{ p.name }}</span>
+            <span>{{ p.email }}</span>
           </div>
 
-          <div class="item">
-            <span class="label">Route</span>
-            <span class="value">{{ ride.startAddress }} → {{ ride.destinationAddress }}</span>
+          <div *ngIf="ride.passengers?.length === 0" style="padding: 10px 0;">
+            No passengers.
+          </div>
+        </div>
+
+        <!-- REPORTS -->
+        <div class="section">
+          <h2>Reports</h2>
+
+          <div class="table header">
+            <span>Description</span>
+            <span>Created</span>
           </div>
 
-          <div class="item">
-            <span class="label">Price</span>
-            <span class="value highlight">{{ ride.price }} RSD</span>
+          <div class="table row" *ngFor="let r of ride.reports">
+            <span>{{ r.description }}</span>
+            <span>{{ formatDateTime(r.createdAt) }}</span>
           </div>
 
-          <div class="item">
-            <span class="label">Status</span>
-            <span class="value badge" [class.success]="!ride.canceled" [class.neutral]="ride.canceled">
-              {{ statusText() }}
-            </span>
-          </div>
-
-          <div class="item">
-            <span class="label">Panic</span>
-            <span class="value badge" [class.neutral]="!ride.panicTriggered" [class.danger]="ride.panicTriggered">
-              {{ panicText() }}
-            </span>
+          <div *ngIf="!ride.reports || ride.reports.length === 0" style="padding: 10px 0;">
+            No reports.
           </div>
         </div>
       </div>
 
-      <div class="section">
-        <h2>Passengers</h2>
-
-        <div class="table header">
-          <span>Name</span>
-          <span>Email</span>
-        </div>
-
-        <div class="table row" *ngFor="let p of ride.passengers">
-          <span>{{ p.name }}</span>
-          <span>{{ p.email }}</span>
-        </div>
-
-        <div *ngIf="ride.passengers?.length === 0" style="padding: 10px 0;">
-          No passengers.
-        </div>
-      </div>
-
+      <!-- ACTIONS -->
       <div class="actions">
         <button class="back-btn" routerLink="/driver/ride-history">
           ← Back to Ride History
@@ -71,6 +108,7 @@
       </div>
     </div>
 
+    <!-- RIGHT CARD (MAP PLACEHOLDER) -->
     <div class="card map-card">
       <span>Map will be displayed here</span>
     </div>

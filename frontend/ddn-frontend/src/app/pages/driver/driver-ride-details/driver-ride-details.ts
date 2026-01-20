@@ -61,13 +61,15 @@ export class DriverRideDetailsComponent implements OnInit {
       });
   }
 
-  formatDateTime(iso: string): string {
+  formatDateTime(iso: string | null | undefined): string {
     if (!iso) return '';
+
     const y = iso.slice(0, 4);
     const m = iso.slice(5, 7);
     const d = iso.slice(8, 10);
     const hh = iso.slice(11, 13);
     const mins = iso.slice(14, 16);
+
     if (
       y.length === 4 &&
       m.length === 2 &&
@@ -77,25 +79,32 @@ export class DriverRideDetailsComponent implements OnInit {
     ) {
       return `${d}.${m}.${y} ${hh}:${mins}`;
     }
+
     const dt = new Date(iso);
     const dd = String(dt.getDate()).padStart(2, '0');
     const mm = String(dt.getMonth() + 1).padStart(2, '0');
     const yyyy = dt.getFullYear();
     const h = String(dt.getHours()).padStart(2, '0');
     const mi = String(dt.getMinutes()).padStart(2, '0');
+
     return `${dd}.${mm}.${yyyy} ${h}:${mi}`;
   }
 
   statusText(): string {
     if (!this.ride) return '';
+
     if (this.ride.canceled) return 'Canceled';
 
-    const status = String((this.ride as any).status ?? '').toUpperCase();
-    if (status === 'ACTIVE') return 'Active';
-    if (status === 'FINISHED') return 'Finished';
-    if (status === 'COMPLETED') return 'Finished';
-
-    return 'Finished';
+    switch (this.ride.status) {
+      case 'ACTIVE':
+        return 'Active';
+      case 'COMPLETED':
+        return 'Finished';
+      case 'CANCELED':
+        return 'Canceled';
+      default:
+        return 'Finished';
+    }
   }
 
   panicText(): string {
