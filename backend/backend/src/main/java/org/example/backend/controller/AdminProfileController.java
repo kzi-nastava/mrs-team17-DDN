@@ -3,6 +3,7 @@ package org.example.backend.controller;
 import org.example.backend.dto.request.UpdateAdminProfileRequestDto;
 import org.example.backend.dto.response.AdminProfileResponseDto;
 import org.example.backend.dto.response.ProfileImageUploadResponseDto;
+import org.example.backend.service.AdminProfileService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,25 +19,17 @@ import java.util.Locale;
 @RequestMapping("/api/admins")
 public class AdminProfileController {
 
-    private static String storedFirstName = "Test";
-    private static String storedLastName = "Admin";
-    private static String storedAddress = "Admin Ulica 1";
-    private static String storedPhone = "+38160000000";
-    private static String storedProfileImageUrl = null;
+    private final AdminProfileService service;
+
+    public AdminProfileController(AdminProfileService service) {
+        this.service = service;
+    }
 
     @GetMapping("/{adminId}/profile")
     public ResponseEntity<AdminProfileResponseDto> getAdminProfile(@PathVariable Long adminId) {
-        AdminProfileResponseDto dto = new AdminProfileResponseDto();
-        dto.setId(adminId);
-        dto.setEmail("admin@example.com");
-        dto.setFirstName(storedFirstName);
-        dto.setLastName(storedLastName);
-        dto.setAddress(storedAddress);
-        dto.setPhoneNumber(storedPhone);
-        dto.setProfileImageUrl(storedProfileImageUrl);
-        dto.setRole("ADMIN");
-
-        return ResponseEntity.ok(dto);
+        return service.getProfile(adminId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{adminId}/profile")
@@ -44,21 +37,11 @@ public class AdminProfileController {
             @PathVariable Long adminId,
             @RequestBody UpdateAdminProfileRequestDto request
     ) {
-//        if (request.getFirstName() != null) storedFirstName = request.getFirstName();
-//        if (request.getLastName() != null) storedLastName = request.getLastName();
-//        if (request.getAddress() != null) storedAddress = request.getAddress();
-//        if (request.getPhoneNumber() != null) storedPhone = request.getPhoneNumber();
-//        if (request.getProfileImageUrl() != null && !request.getProfileImageUrl().trim().isEmpty()) {
-//            storedProfileImageUrl = request.getProfileImageUrl().trim();
-//        }
-
-        return ResponseEntity.ok().build();
+        boolean ok = service.updateProfile(adminId, request);
+        return ok ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
-    @PostMapping(
-            value = "/{adminId}/profile-image",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
+    @PostMapping(value = "/{adminId}/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProfileImageUploadResponseDto> uploadAdminProfileImage(
             @PathVariable Long adminId,
             @RequestPart("file") MultipartFile file
@@ -86,6 +69,8 @@ public class AdminProfileController {
         Files.copy(file.getInputStream(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
         String url = "/public/profile-images/" + filename;
+
+        service.updateProfileImage(adminId, url);
 
         return ResponseEntity.ok(new ProfileImageUploadResponseDto(url));
     }

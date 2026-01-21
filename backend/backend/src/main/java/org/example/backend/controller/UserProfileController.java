@@ -3,6 +3,7 @@ package org.example.backend.controller;
 import org.example.backend.dto.request.UpdateUserProfileRequestDto;
 import org.example.backend.dto.response.ProfileImageUploadResponseDto;
 import org.example.backend.dto.response.UserProfileResponseDto;
+import org.example.backend.service.UserProfileService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,25 +19,17 @@ import java.util.Locale;
 @RequestMapping("/api/users")
 public class UserProfileController {
 
-    private static String storedFirstName = "Test";
-    private static String storedLastName = "User";
-    private static String storedAddress = "User Ulica 2";
-    private static String storedPhone = "+38161111111";
-    private static String storedProfileImageUrl = null;
+    private final UserProfileService service;
+
+    public UserProfileController(UserProfileService service) {
+        this.service = service;
+    }
 
     @GetMapping("/{userId}/profile")
     public ResponseEntity<UserProfileResponseDto> getUserProfile(@PathVariable Long userId) {
-        UserProfileResponseDto dto = new UserProfileResponseDto();
-        dto.setId(userId);
-        dto.setEmail("user@example.com");
-        dto.setFirstName(storedFirstName);
-        dto.setLastName(storedLastName);
-        dto.setAddress(storedAddress);
-        dto.setPhoneNumber(storedPhone);
-        dto.setProfileImageUrl(null);
-        dto.setRole("USER");
-
-        return ResponseEntity.ok(dto);
+        return service.getProfile(userId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{userId}/profile")
@@ -44,15 +37,8 @@ public class UserProfileController {
             @PathVariable Long userId,
             @RequestBody UpdateUserProfileRequestDto request
     ) {
-//        if (request.getFirstName() != null) storedFirstName = request.getFirstName();
-//        if (request.getLastName() != null) storedLastName = request.getLastName();
-//        if (request.getAddress() != null) storedAddress = request.getAddress();
-//        if (request.getPhoneNumber() != null) storedPhone = request.getPhoneNumber();
-//        if (request.getProfileImageUrl() != null && !request.getProfileImageUrl().trim().isEmpty()) {
-//            storedProfileImageUrl = request.getProfileImageUrl().trim();
-//        }
-
-        return ResponseEntity.ok().build();
+        boolean ok = service.updateProfile(userId, request);
+        return ok ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
     @PostMapping(value = "/{userId}/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -83,6 +69,9 @@ public class UserProfileController {
         Files.copy(file.getInputStream(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
         String url = "/public/profile-images/" + filename;
+
+        service.updateProfileImage(userId, url);
+
         return ResponseEntity.ok(new ProfileImageUploadResponseDto(url));
     }
 

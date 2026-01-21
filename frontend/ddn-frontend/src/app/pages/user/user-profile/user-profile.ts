@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+import { API_BASE_URL } from '../../../app.config';
+import { UserProfileHttpDataSource } from '../../../api/user/user-profile.http-data-source';
 import {
-  UserProfileHttpDataSource,
   UserProfileResponseDto,
   UpdateUserProfileRequestDto,
 } from '../../../api/user/user-profile.http-data-source';
@@ -17,7 +18,10 @@ import {
   styleUrl: './user-profile.css',
 })
 export class UserProfile implements OnInit {
-  userId = 1;
+  private readonly apiBaseUrl = inject(API_BASE_URL); // npr. http://localhost:8080/api
+  private readonly backendOrigin = this.apiBaseUrl.replace(/\/api\/?$/, ''); // -> http://localhost:8080
+
+  userId = 3001;
 
   profile: UserProfileResponseDto | null = null;
 
@@ -39,6 +43,20 @@ export class UserProfile implements OnInit {
     this.loadProfile();
   }
 
+  get avatarUrl(): string {
+    const candidate =
+      this.form.profileImageUrl ||
+      this.profile?.profileImageUrl ||
+      '';
+
+    return this.resolveImageUrl(candidate);
+  }
+
+  onAvatarError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'avatar.svg';
+  }
+
   loadProfile(): void {
     this.loading = true;
     this.errorMsg = null;
@@ -52,7 +70,8 @@ export class UserProfile implements OnInit {
         this.form.lastName = res.lastName ?? '';
         this.form.address = res.address ?? '';
         this.form.phoneNumber = res.phoneNumber ?? '';
-        this.form.profileImageUrl = res.profileImageUrl ?? '';
+
+        this.form.profileImageUrl = this.resolveImageUrl(res.profileImageUrl ?? '');
 
         this.loading = false;
       },
@@ -68,19 +87,24 @@ export class UserProfile implements OnInit {
     this.errorMsg = null;
     this.successMsg = null;
 
+    const backendProfileImageUrl = this.toBackendUrl(this.form.profileImageUrl ?? '');
+
     const payload: UpdateUserProfileRequestDto = {
       firstName: this.form.firstName?.trim(),
       lastName: this.form.lastName?.trim(),
       address: this.form.address?.trim(),
       phoneNumber: this.form.phoneNumber?.trim(),
-      profileImageUrl: (this.form.profileImageUrl || '').replace('http://localhost:8080', '').trim(),
+      profileImageUrl:
+        backendProfileImageUrl && backendProfileImageUrl !== 'avatar.svg'
+          ? backendProfileImageUrl
+          : undefined,
     };
 
     this.api.updateProfile(this.userId, payload).subscribe({
       next: () => {
         this.loading = false;
         this.successMsg = 'Profile updated.';
-        // this.loadProfile();
+        this.loadProfile();
       },
       error: () => {
         this.loading = false;
@@ -101,7 +125,7 @@ export class UserProfile implements OnInit {
 
     this.api.uploadProfileImage(this.userId, file).subscribe({
       next: (res) => {
-        this.form.profileImageUrl = `http://localhost:8080${res.profileImageUrl}`;
+        this.form.profileImageUrl = this.resolveImageUrl(res.profileImageUrl);
         this.loading = false;
         this.successMsg = 'Image uploaded.';
       },
@@ -112,5 +136,22 @@ export class UserProfile implements OnInit {
     });
 
     input.value = '';
+  }
+
+  private resolveImageUrl(url: string): string {
+    const u = (url || '').trim();
+    if (!u) return 'avatar.svg';
+
+    if (/^https?:\/\//i.test(u)) return u;
+
+    if (u.startsWith('/')) return `${this.backendOrigin}${u}`;
+
+    return u;
+  }
+
+  private toBackendUrl(url: string): string {
+    const u = (url || '').trim();
+    if (!u) return '';
+    return u.startsWith(this.backendOrigin) ? u.replace(this.backendOrigin, '') : u;
   }
 }
