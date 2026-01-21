@@ -80,6 +80,11 @@
   border-color: #3a3a3a;
 }
 
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .side {
   display: flex;
   flex-direction: column;

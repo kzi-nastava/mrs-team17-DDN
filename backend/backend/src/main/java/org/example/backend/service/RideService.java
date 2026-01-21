@@ -1,4 +1,3 @@
-// backend/src/main/java/org/example/backend/service/RideService.java
 package org.example.backend.service;
 
 import org.example.backend.dto.request.RideReportRequestDto;
@@ -26,7 +25,11 @@ public class RideService {
     }
 
     public RideReportResponseDto reportRideIssue(Long rideId, RideReportRequestDto request) {
-        return repository.createReport(rideId, request, OffsetDateTime.now());
+        try {
+            return repository.createReport(rideId, request, OffsetDateTime.now());
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     public void finishRide(Long rideId) {

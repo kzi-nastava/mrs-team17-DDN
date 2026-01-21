@@ -19,8 +19,6 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   private ds = inject(RIDE_TRACKING_DS);
   private route = inject(ActivatedRoute);
 
-
-
   private map!: L.Map;
   private sub: Subscription | null = null;
 
@@ -67,6 +65,8 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   }
 
   openReport(): void {
+    // ✅ only during ACTIVE ride
+    if (this.rideStatus !== 'ACTIVE') return;
     this.reportOpen = true;
   }
 
@@ -76,6 +76,9 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   }
 
   submitReport(): void {
+    // ✅ client-side guard + validation
+    if (this.rideStatus !== 'ACTIVE') return;
+
     const text = this.reportText.trim();
     if (text.length < 5) return;
 
@@ -83,6 +86,10 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
       next: () => {
         this.reportOpen = false;
         this.reportText = '';
+      },
+      error: () => {
+        // minimal UX: close modal (or keep it open if you prefer)
+        this.reportOpen = false;
       },
     });
   }

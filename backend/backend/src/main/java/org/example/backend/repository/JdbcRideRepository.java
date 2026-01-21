@@ -59,7 +59,6 @@ public class JdbcRideRepository implements RideRepository {
                     dto.setDestination(destination);
                     dto.setCar(car);
 
-                    // privremena logika (bez OSRM-a)
                     double distanceKm = haversineKm(
                             car.getLat(), car.getLng(),
                             destination.getLat(), destination.getLng()
@@ -67,7 +66,6 @@ public class JdbcRideRepository implements RideRepository {
 
                     dto.setDistanceKm(round2(distanceKm));
 
-                    // 30 km/h gradska brzina
                     int etaMinutes = (int) Math.max(
                             1,
                             Math.round((distanceKm / 30.0) * 60.0)
@@ -82,16 +80,20 @@ public class JdbcRideRepository implements RideRepository {
     @Override
     public RideReportResponseDto createReport(Long rideId, RideReportRequestDto request, OffsetDateTime now) {
 
+        if (!isRideActive(rideId)) {
+            throw new IllegalStateException("Ride is not active");
+        }
+
         String desc = request.getDescription() == null ? "" : request.getDescription().trim();
         if (desc.length() < 5) {
             throw new IllegalArgumentException("Description too short");
         }
 
         Long reportId = jdbc.sql("""
-        insert into ride_reports (ride_id, description, created_at)
-        values (:rideId, :description, :createdAt)
-        returning id
-    """)
+            insert into ride_reports (ride_id, description, created_at)
+            values (:rideId, :description, :createdAt)
+            returning id
+        """)
                 .param("rideId", rideId)
                 .param("description", desc)
                 .param("createdAt", now)
@@ -106,7 +108,6 @@ public class JdbcRideRepository implements RideRepository {
 
         return dto;
     }
-
 
     @Override
     public boolean finishRide(Long rideId) {
@@ -125,6 +126,22 @@ public class JdbcRideRepository implements RideRepository {
     }
 
     // ================= helpers =================
+
+    private boolean isRideActive(Long rideId) {
+        Integer c = jdbc.sql("""
+            select count(1)
+            from rides
+            where id = :rideId
+              and canceled = false
+              and ended_at is null
+              and status = 'ACTIVE'
+        """)
+                .param("rideId", rideId)
+                .query(Integer.class)
+                .single();
+
+        return c != null && c > 0;
+    }
 
     private static double haversineKm(
             double lat1, double lon1,
