@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+import { API_BASE_URL } from '../../../app.config';
+import { AdminProfileHttpDataSource } from '../../../api/admin/admin-profile.http-data-source';
 import {
-  AdminProfileHttpDataSource,
   AdminProfileResponseDto,
   UpdateAdminProfileRequestDto,
 } from '../../../api/admin/admin-profile.http-data-source';
@@ -17,7 +18,10 @@ import {
   styleUrl: './admin-profile.css',
 })
 export class AdminProfile implements OnInit {
-  adminId = 1;
+  private readonly apiBaseUrl = inject(API_BASE_URL); 
+  private readonly backendOrigin = this.apiBaseUrl.replace(/\/api\/?$/, ''); 
+
+  adminId = 1001;
 
   profile: AdminProfileResponseDto | null = null;
 
@@ -39,6 +43,11 @@ export class AdminProfile implements OnInit {
     this.loadProfile();
   }
 
+  get avatarUrl(): string {
+    const candidate = this.form.profileImageUrl || this.profile?.profileImageUrl || '';
+    return this.resolveImageUrl(candidate);
+  }
+
   loadProfile(): void {
     this.loading = true;
     this.errorMsg = null;
@@ -52,7 +61,8 @@ export class AdminProfile implements OnInit {
         this.form.lastName = res.lastName ?? '';
         this.form.address = res.address ?? '';
         this.form.phoneNumber = res.phoneNumber ?? '';
-        this.form.profileImageUrl = res.profileImageUrl ?? '';
+
+        this.form.profileImageUrl = this.resolveImageUrl(res.profileImageUrl ?? '');
 
         this.loading = false;
       },
@@ -73,14 +83,15 @@ export class AdminProfile implements OnInit {
       lastName: this.form.lastName?.trim(),
       address: this.form.address?.trim(),
       phoneNumber: this.form.phoneNumber?.trim(),
-      profileImageUrl: (this.form.profileImageUrl || '').replace('http://localhost:8080', '').trim(),
+
+      profileImageUrl: this.stripBackendOrigin(this.form.profileImageUrl),
     };
 
     this.api.updateProfile(this.adminId, payload).subscribe({
       next: () => {
         this.loading = false;
         this.successMsg = 'Profile updated.';
-        // this.loadProfile();
+        this.loadProfile();
       },
       error: () => {
         this.loading = false;
@@ -101,7 +112,7 @@ export class AdminProfile implements OnInit {
 
     this.api.uploadProfileImage(this.adminId, file).subscribe({
       next: (res) => {
-        this.form.profileImageUrl = `http://localhost:8080${res.profileImageUrl}`;
+        this.form.profileImageUrl = this.resolveImageUrl(res.profileImageUrl);
         this.loading = false;
         this.successMsg = 'Image uploaded.';
       },
@@ -112,5 +123,28 @@ export class AdminProfile implements OnInit {
     });
 
     input.value = '';
+  }
+
+  onAvatarError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'avatar.svg';
+  }
+
+  private resolveImageUrl(url: string | null | undefined): string {
+    const u = (url ?? '').trim();
+    if (!u) return 'avatar.svg';
+
+    if (/^https?:\/\//i.test(u)) return u;
+
+    if (u.startsWith('/')) return `${this.backendOrigin}${u}`;
+
+    return u;
+  }
+
+  private stripBackendOrigin(url: string | null | undefined): string {
+    const u = (url ?? '').trim();
+    if (!u) return '';
+    if (u.startsWith(this.backendOrigin)) return u.slice(this.backendOrigin.length);
+    return u;
   }
 }
