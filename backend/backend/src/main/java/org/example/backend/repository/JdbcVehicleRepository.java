@@ -56,4 +56,49 @@ public class JdbcVehicleRepository implements VehicleRepository {
                 })
                 .list();
     }
+
+    @Override
+    public boolean existsByLicensePlate(String licensePlate) {
+        Integer x = jdbc.sql("select 1 from vehicles where license_plate = :plate")
+                .param("plate", licensePlate)
+                .query(Integer.class)
+                .optional()
+                .orElse(null);
+        return x != null;
+    }
+
+    @Override
+    public Long insertVehicleReturningId(
+            Long driverId,
+            double latitude,
+            double longitude,
+            String model,
+            String type,
+            String licensePlate,
+            int seats,
+            boolean babyTransport,
+            boolean petTransport
+    ) {
+        String sql = """
+            insert into vehicles
+                (driver_id, latitude, longitude, model, type, license_plate, seats, baby_transport, pet_transport)
+            values
+                (:driverId, :lat, :lng, :model, :type, :plate, :seats, :baby, :pet)
+            returning id
+        """;
+
+        return jdbc.sql(sql)
+                .param("driverId", driverId)
+                .param("lat", latitude)
+                .param("lng", longitude)
+                .param("model", model)
+                .param("type", type)
+                .param("plate", licensePlate)
+                .param("seats", seats)
+                .param("baby", babyTransport)
+                .param("pet", petTransport)
+                .query(Long.class)
+                .single();
+    }
+
 }
