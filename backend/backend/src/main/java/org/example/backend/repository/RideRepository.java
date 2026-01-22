@@ -14,4 +14,26 @@ public interface RideRepository {
     RideReportResponseDto createReport(Long rideId, RideReportRequestDto request, OffsetDateTime now);
 
     boolean finishRide(Long rideId);
+
+    Optional<RideMoveSnapshot> findMoveSnapshot(Long rideId);
+
+    boolean updateVehicleLocation(long driverId, double lat, double lng);
+
+    java.util.List<Long> findActiveRideIds();
+
+
+
+    public record RideMoveSnapshot(
+            String status,
+            java.time.OffsetDateTime endedAt,
+            boolean canceled,
+            long driverId,
+            double carLat,
+            double carLng,
+            double pickupLat,
+            double pickupLng,
+            double destLat,
+            double destLng
+    ) {}
+
 }

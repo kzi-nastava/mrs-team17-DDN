@@ -4,6 +4,7 @@ export type TrackingState = {
   car: LatLng;
   pickup: LatLng;
   destination: LatLng;
+  route: LatLng[]; // NEW
   etaMinutes: number;
   distanceKm: number;
   status: string;

@@ -8,6 +8,8 @@ import { UserNavbarComponent } from '../../../components/user-navbar/user-navbar
 import { RIDE_TRACKING_DS } from '../../../api/user/ride-tracking.datasource';
 import { TrackingState } from '../../../api/user/models/ride-tracking.models';
 
+type LatLng = { lat: number; lng: number };
+
 @Component({
   selector: 'app-ride-tracking',
   standalone: true,
@@ -26,6 +28,11 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   private destinationMarker: L.CircleMarker | null = null;
   private carMarker: L.CircleMarker | null = null;
   private routeLine: L.Polyline | null = null;
+
+  // animation
+  private lastCar: LatLng | null = null;
+  private carAnimFrame: number | null = null;
+  private lastRouteKey: string | null = null;
 
   etaMinutes = 0;
   distanceKm = 0;
@@ -61,11 +68,16 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
     this.sub = null;
+
+    if (this.carAnimFrame != null) {
+      cancelAnimationFrame(this.carAnimFrame);
+      this.carAnimFrame = null;
+    }
+
     if (this.map) this.map.remove();
   }
 
   openReport(): void {
-    // ✅ only during ACTIVE ride
     if (this.rideStatus !== 'ACTIVE') return;
     this.reportOpen = true;
   }
@@ -76,7 +88,6 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   }
 
   submitReport(): void {
-    // ✅ client-side guard + validation
     if (this.rideStatus !== 'ACTIVE') return;
 
     const text = this.reportText.trim();
@@ -88,7 +99,6 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
         this.reportText = '';
       },
       error: () => {
-        // minimal UX: close modal (or keep it open if you prefer)
         this.reportOpen = false;
       },
     });
@@ -110,6 +120,9 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
     this.etaMinutes = s.etaMinutes;
     this.distanceKm = s.distanceKm;
     this.rideStatus = s.status;
+
+    const routePoints = (s.route ?? []).map((p) => [p.lat, p.lng] as [number, number]);
+    const routeKey = routePoints.length ? `${routePoints[0][0]},${routePoints[0][1]}|${routePoints[routePoints.length - 1][0]},${routePoints[routePoints.length - 1][1]}|${routePoints.length}` : 'empty';
 
     if (!this.initializedFromState) {
       this.initializedFromState = true;
@@ -138,33 +151,75 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
         weight: 2,
       }).addTo(this.map);
 
-      this.routeLine = L.polyline(
-        [
+      this.lastCar = { ...s.car };
+
+      // route polyline from backend (pickup -> destination)
+      if (routePoints.length >= 2) {
+        this.routeLine = L.polyline(routePoints, { weight: 4 }).addTo(this.map);
+        this.lastRouteKey = routeKey;
+
+        const bounds = L.latLngBounds(routePoints);
+        this.map.fitBounds(bounds, { padding: [30, 30] });
+      } else {
+        // fallback if route missing
+        this.routeLine = L.polyline(
+          [
+            [s.pickup.lat, s.pickup.lng],
+            [s.destination.lat, s.destination.lng],
+          ],
+          { weight: 4 }
+        ).addTo(this.map);
+
+        const bounds = L.latLngBounds([
           [s.car.lat, s.car.lng],
           [s.pickup.lat, s.pickup.lng],
           [s.destination.lat, s.destination.lng],
-        ],
-        { weight: 3 }
-      ).addTo(this.map);
-
-      const bounds = L.latLngBounds([
-        [s.car.lat, s.car.lng],
-        [s.pickup.lat, s.pickup.lng],
-        [s.destination.lat, s.destination.lng],
-      ]);
-      this.map.fitBounds(bounds, { padding: [30, 30] });
+        ]);
+        this.map.fitBounds(bounds, { padding: [30, 30] });
+      }
 
       return;
     }
 
-    this.carMarker?.setLatLng([s.car.lat, s.car.lng]);
-
-    if (this.routeLine) {
-      this.routeLine.setLatLngs([
-        [s.car.lat, s.car.lng],
-        [s.pickup.lat, s.pickup.lng],
-        [s.destination.lat, s.destination.lng],
-      ]);
+    // update route if backend route changed (rare, but safe)
+    if (this.routeLine && routePoints.length >= 2 && routeKey !== this.lastRouteKey) {
+      this.routeLine.setLatLngs(routePoints);
+      this.lastRouteKey = routeKey;
     }
+
+    // smooth move car marker
+    this.animateCarTo({ lat: s.car.lat, lng: s.car.lng }, 900);
+  }
+
+  private animateCarTo(target: LatLng, durationMs: number): void {
+    if (!this.carMarker) return;
+
+    const from = this.lastCar ?? target;
+
+    // cancel previous animation if still running
+    if (this.carAnimFrame != null) {
+      cancelAnimationFrame(this.carAnimFrame);
+      this.carAnimFrame = null;
+    }
+
+    const start = performance.now();
+
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / durationMs);
+
+      const lat = from.lat + (target.lat - from.lat) * t;
+      const lng = from.lng + (target.lng - from.lng) * t;
+
+      this.carMarker!.setLatLng([lat, lng]);
+
+      if (t < 1) {
+        this.carAnimFrame = requestAnimationFrame(step);
+      } else {
+        this.carAnimFrame = null;
+        this.lastCar = { ...target };
+      }
+    };
+
+    this.carAnimFrame = requestAnimationFrame(step);
   }
 }

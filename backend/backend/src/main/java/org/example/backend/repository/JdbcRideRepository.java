@@ -4,6 +4,7 @@ import org.example.backend.dto.request.RideReportRequestDto;
 import org.example.backend.dto.response.LatLngDto;
 import org.example.backend.dto.response.RideReportResponseDto;
 import org.example.backend.dto.response.RideTrackingResponseDto;
+import org.example.backend.osrm.OsrmClient;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -14,10 +15,25 @@ import java.util.Optional;
 public class JdbcRideRepository implements RideRepository {
 
     private final JdbcClient jdbc;
+    private final OsrmClient osrm;
 
-    public JdbcRideRepository(JdbcClient jdbc) {
+    public JdbcRideRepository(JdbcClient jdbc, OsrmClient osrm) {
         this.jdbc = jdbc;
+        this.osrm = osrm;
     }
+    @Override
+    public java.util.List<Long> findActiveRideIds() {
+        return jdbc.sql("""
+        select r.id
+        from rides r
+        where r.status = 'ACTIVE'
+          and r.canceled = false
+          and r.ended_at is null
+    """)
+                .query(Long.class)
+                .list();
+    }
+
 
     @Override
     public Optional<RideTrackingResponseDto> findTrackingByRideId(Long rideId) {
@@ -27,8 +43,11 @@ public class JdbcRideRepository implements RideRepository {
                 r.status,
                 r.start_lat, r.start_lng,
                 r.dest_lat,  r.dest_lng,
-                r.car_lat,   r.car_lng
+                v.latitude   as car_lat,
+                v.longitude  as car_lng
             from rides r
+            join vehicles v
+              on v.driver_id = r.driver_id
             where r.id = :rideId
         """;
 
@@ -59,17 +78,66 @@ public class JdbcRideRepository implements RideRepository {
                     dto.setDestination(destination);
                     dto.setCar(car);
 
-                    double distanceKm = haversineKm(
-                            car.getLat(), car.getLng(),
-                            destination.getLat(), destination.getLng()
-                    );
+                    try {
+                        var route = osrm.routeDrivingWithGeometry(
+                                java.util.List.of(
+                                        new OsrmClient.Point(pickup.getLat(), pickup.getLng()),
+                                        new OsrmClient.Point(destination.getLat(), destination.getLng())
+                                )
+                        );
+
+                        var routePoints = route.geometry().stream()
+                                .map(p -> new LatLngDto(p.lat(), p.lon()))
+                                .toList();
+
+                        dto.setRoute(routePoints);
+
+                    } catch (Exception e) {
+                        dto.setRoute(java.util.List.of());
+                    }
+
+                    double distanceKm;
+                    int etaMinutes;
+
+                    try {
+                        var res = osrm.routeDriving(
+                                java.util.List.of(
+                                        new OsrmClient.Point(car.getLat(), car.getLng()),
+                                        new OsrmClient.Point(destination.getLat(), destination.getLng())
+                                )
+                        );
+
+                        System.out.println(
+                                "OSRM OK: meters=" + res.distanceMeters()
+                                        + ", seconds=" + res.durationSeconds()
+                        );
+
+                        distanceKm = res.distanceMeters() / 1000.0;
+                        etaMinutes = (int) Math.max(
+                                1,
+                                Math.round(res.durationSeconds() / 60.0)
+                        );
+
+                    } catch (Exception e) {
+                        System.err.println(
+                                "OSRM FAILED → fallback: "
+                                        + e.getClass().getSimpleName()
+                                        + " - " + e.getMessage()
+                        );
+
+                        double fallbackKm = haversineKm(
+                                car.getLat(), car.getLng(),
+                                destination.getLat(), destination.getLng()
+                        );
+
+                        distanceKm = fallbackKm;
+                        etaMinutes = (int) Math.max(
+                                1,
+                                Math.round((fallbackKm / 30.0) * 60.0)
+                        );
+                    }
 
                     dto.setDistanceKm(round2(distanceKm));
-
-                    int etaMinutes = (int) Math.max(
-                            1,
-                            Math.round((distanceKm / 30.0) * 60.0)
-                    );
                     dto.setEtaMinutes(etaMinutes);
 
                     return dto;
@@ -77,14 +145,81 @@ public class JdbcRideRepository implements RideRepository {
                 .optional();
     }
 
+    /**
+     * Reads minimal data needed for moving a vehicle (simulation).
+     * Returns empty if ride/vehicle not found.
+     */
     @Override
-    public RideReportResponseDto createReport(Long rideId, RideReportRequestDto request, OffsetDateTime now) {
+    public Optional<RideMoveSnapshot> findMoveSnapshot(Long rideId) {
+
+        String sql = """
+        select
+            r.status,
+            r.ended_at,
+            r.canceled,
+            r.driver_id,
+            r.start_lat as pickup_lat,
+            r.start_lng as pickup_lng,
+            r.dest_lat  as dest_lat,
+            r.dest_lng  as dest_lng,
+            v.latitude  as car_lat,
+            v.longitude as car_lng
+        from rides r
+        join vehicles v
+          on v.driver_id = r.driver_id
+        where r.id = :rideId
+    """;
+
+        return jdbc.sql(sql)
+                .param("rideId", rideId)
+                .query((rs, rowNum) -> new RideMoveSnapshot(
+                        rs.getString("status"),
+                        rs.getObject("ended_at", java.time.OffsetDateTime.class),
+                        rs.getBoolean("canceled"),
+                        rs.getLong("driver_id"),
+                        rs.getDouble("car_lat"),
+                        rs.getDouble("car_lng"),
+                        rs.getDouble("pickup_lat"),
+                        rs.getDouble("pickup_lng"),
+                        rs.getDouble("dest_lat"),
+                        rs.getDouble("dest_lng")
+                ))
+                .optional();
+    }
+
+
+    @Override
+    public boolean updateVehicleLocation(long driverId, double lat, double lng) {
+        int updated = jdbc.sql("""
+            update vehicles
+            set latitude = :lat,
+                longitude = :lng,
+                updated_at = now()
+            where driver_id = :driverId
+        """)
+                .param("lat", lat)
+                .param("lng", lng)
+                .param("driverId", driverId)
+                .update();
+
+        return updated > 0;
+    }
+
+    @Override
+    public RideReportResponseDto createReport(
+            Long rideId,
+            RideReportRequestDto request,
+            OffsetDateTime now
+    ) {
 
         if (!isRideActive(rideId)) {
             throw new IllegalStateException("Ride is not active");
         }
 
-        String desc = request.getDescription() == null ? "" : request.getDescription().trim();
+        String desc = request.getDescription() == null
+                ? ""
+                : request.getDescription().trim();
+
         if (desc.length() < 5) {
             throw new IllegalArgumentException("Description too short");
         }
@@ -125,7 +260,6 @@ public class JdbcRideRepository implements RideRepository {
         return updated > 0;
     }
 
-    // ================= helpers =================
 
     private boolean isRideActive(Long rideId) {
         Integer c = jdbc.sql("""
@@ -156,8 +290,7 @@ public class JdbcRideRepository implements RideRepository {
                 Math.sin(dLat / 2) * Math.sin(dLat / 2)
                         + Math.cos(Math.toRadians(lat1))
                         * Math.cos(Math.toRadians(lat2))
-                        * Math.sin(dLon / 2)
-                        * Math.sin(dLon / 2);
+                        * Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;

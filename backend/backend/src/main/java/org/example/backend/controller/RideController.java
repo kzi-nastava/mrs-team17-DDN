@@ -29,12 +29,19 @@ public class RideController {
             @PathVariable Long rideId,
             @RequestBody RideReportRequestDto request
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(rideService.reportRideIssue(rideId, request));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(rideService.reportRideIssue(rideId, request));
     }
 
     @PutMapping("/{rideId}/finish")
     public ResponseEntity<Void> finishRide(@PathVariable Long rideId) {
         rideService.finishRide(rideId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{rideId}/simulate-step")
+    public ResponseEntity<Void> simulateStep(@PathVariable Long rideId) {
+        rideService.simulateVehicleStep(rideId);
         return ResponseEntity.ok().build();
     }
 }

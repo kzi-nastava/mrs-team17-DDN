@@ -19,6 +19,12 @@ target/
 *.iml
 *.ipr
 
+# OSRM data (DO NOT COMMIT)
+infra/osrm/data/
+**/*.osm.pbf
+**/*.osrm*
+
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
