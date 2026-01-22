@@ -22,10 +22,16 @@
           <span class="value">{{ rideStatus }}</span>
         </div>
 
-        <button class="btn" (click)="openReport()">Report inconsistency</button>
+        <button
+          class="btn"
+          (click)="openReport()"
+          [disabled]="rideStatus !== 'ACTIVE'"
+          title="Reports are available only during ACTIVE rides"
+        >
+          Report inconsistency
+        </button>
       </div>
     </div>
-
   </div>
 </div>
 

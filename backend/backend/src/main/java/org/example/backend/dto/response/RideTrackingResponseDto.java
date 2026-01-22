@@ -1,10 +1,15 @@
 package org.example.backend.dto.response;
 
+import java.util.List;
+
 public class RideTrackingResponseDto {
 
     private LatLngDto car;
     private LatLngDto pickup;
     private LatLngDto destination;
+
+    // NEW: route polyline (ordered points)
+    private List<LatLngDto> route;
 
     private int etaMinutes;
     private double distanceKm;
@@ -20,6 +25,9 @@ public class RideTrackingResponseDto {
 
     public LatLngDto getDestination() { return destination; }
     public void setDestination(LatLngDto destination) { this.destination = destination; }
+
+    public List<LatLngDto> getRoute() { return route; }
+    public void setRoute(List<LatLngDto> route) { this.route = route; }
 
     public int getEtaMinutes() { return etaMinutes; }
     public void setEtaMinutes(int etaMinutes) { this.etaMinutes = etaMinutes; }
