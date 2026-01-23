@@ -65,4 +65,11 @@ public class RideController {
         RideRatingResponseDto res = rideRatingService.submitRating(rideId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
+
+    @PutMapping("/{rideId}/start")
+    public ResponseEntity<Void> startRide(@PathVariable Long rideId) {
+        rideService.startRide(rideId);
+        return ResponseEntity.ok().build();
+    }
+
 }

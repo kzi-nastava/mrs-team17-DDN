@@ -16,4 +16,6 @@ public interface RideOrderRepository {
             double destLat, double destLng,
             double carLat, double carLng
     );
+
+    boolean userHasActiveRide(String email);
 }

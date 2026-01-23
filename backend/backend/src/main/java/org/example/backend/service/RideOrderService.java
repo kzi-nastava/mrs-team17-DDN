@@ -4,6 +4,7 @@ import org.example.backend.dto.request.CreateRideRequestDto;
 import org.example.backend.dto.request.RidePointRequestDto;
 import org.example.backend.dto.response.CreateRideResponseDto;
 import org.example.backend.exception.NoAvailableDriverException;
+import org.example.backend.exception.ActiveRideConflictException;
 import org.example.backend.osrm.OsrmClient;
 import org.example.backend.repository.*;
 
@@ -116,6 +117,10 @@ public class RideOrderService {
         UserLookupRepository.UserBasic requester = userLookupRepo.findById(req.getRequesterUserId())
                 .orElseThrow(() -> new IllegalArgumentException("Requester user not found"));
 
+        if (rideOrderRepo.userHasActiveRide(requester.email())) {
+            throw new ActiveRideConflictException("User already has an active ride.");
+        }
+
         if (!requester.active()) {
             throw new IllegalArgumentException("Requester account is not active");
         }
@@ -145,6 +150,16 @@ public class RideOrderService {
                 }
 
                 UserLookupRepository.UserBasic u = opt.get();
+
+                if (rideOrderRepo.userHasActiveRide(u.email())) {
+                    throw new ActiveRideConflictException("One of the linked users already has an active ride.");
+                }
+
+                passengers.add(new RidePassengerRepository.PassengerRow(
+                        u.firstName() + " " + u.lastName(),
+                        u.email()
+                ));
+
                 passengers.add(new RidePassengerRepository.PassengerRow(
                         u.firstName() + " " + u.lastName(),
                         u.email()

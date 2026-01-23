@@ -165,4 +165,12 @@ public class RideService {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
     }
+
+    public void startRide(Long rideId) {
+        boolean ok = repository.startRide(rideId);
+        if (!ok) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found or cannot be started");
+        }
+    }
+
 }
