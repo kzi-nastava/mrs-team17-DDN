@@ -112,7 +112,8 @@ public class OsrmClient {
             return new RouteWithGeometry(distanceMeters, durationSeconds, geometry);
 
         } catch (Exception e) {
-            throw new IllegalStateException("OSRM request failed: " + e.getMessage(), e);
+            String msg = (e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
+            throw new IllegalStateException("OSRM request failed: " + msg, e);
         }
     }
 }
