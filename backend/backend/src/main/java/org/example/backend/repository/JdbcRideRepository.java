@@ -299,4 +299,27 @@ public class JdbcRideRepository implements RideRepository {
     private static double round2(double v) {
         return Math.round(v * 100.0) / 100.0;
     }
+
+    @Override
+    public boolean startRide(Long rideId) {
+
+        int updated = jdbc.sql("""
+        update rides
+        set
+            status = 'ACTIVE',
+            started_at = case
+                when status = 'ACCEPTED' then now()
+                else started_at
+            end
+        where id = :rideId
+          and ended_at is null
+          and canceled = false
+          and status in ('ACCEPTED', 'ACTIVE')
+    """)
+                .param("rideId", rideId)
+                .update();
+
+        return updated > 0;
+    }
+
 }

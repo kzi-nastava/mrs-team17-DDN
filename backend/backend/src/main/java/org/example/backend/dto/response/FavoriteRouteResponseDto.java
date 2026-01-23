@@ -5,21 +5,27 @@ import java.util.List;
 public class FavoriteRouteResponseDto {
 
     private Long id;
-    private String startAddress;
-    private String destinationAddress;
-    private List<String> stops;
+    private String name;
+
+    private FavoriteRoutePointResponseDto start;
+    private FavoriteRoutePointResponseDto destination;
+
+    private List<FavoriteRoutePointResponseDto> stops;
 
     public FavoriteRouteResponseDto() {}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getStartAddress() { return startAddress; }
-    public void setStartAddress(String startAddress) { this.startAddress = startAddress; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getDestinationAddress() { return destinationAddress; }
-    public void setDestinationAddress(String destinationAddress) { this.destinationAddress = destinationAddress; }
+    public FavoriteRoutePointResponseDto getStart() { return start; }
+    public void setStart(FavoriteRoutePointResponseDto start) { this.start = start; }
 
-    public List<String> getStops() { return stops; }
-    public void setStops(List<String> stops) { this.stops = stops; }
+    public FavoriteRoutePointResponseDto getDestination() { return destination; }
+    public void setDestination(FavoriteRoutePointResponseDto destination) { this.destination = destination; }
+
+    public List<FavoriteRoutePointResponseDto> getStops() { return stops; }
+    public void setStops(List<FavoriteRoutePointResponseDto> stops) { this.stops = stops; }
 }

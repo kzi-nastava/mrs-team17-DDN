@@ -36,4 +36,5 @@ public interface RideRepository {
             double destLng
     ) {}
 
+    boolean startRide(Long rideId);
 }

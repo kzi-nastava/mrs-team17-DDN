@@ -67,4 +67,27 @@ public class JdbcRideOrderRepository implements RideOrderRepository {
                 .query(Long.class)
                 .single();
     }
+
+    @Override
+    public boolean userHasActiveRide(String email) {
+        if (email == null || email.trim().isEmpty()) return false;
+
+        Boolean exists = jdbc.sql("""
+        select exists (
+          select 1
+          from rides r
+          join ride_passengers rp on rp.ride_id = r.id
+          where r.status = 'ACTIVE'
+            and r.ended_at is null
+            and r.canceled = false
+            and lower(rp.email) = lower(:email)
+        )
+    """)
+                .param("email", email.trim())
+                .query(Boolean.class)
+                .single();
+
+        return Boolean.TRUE.equals(exists);
+    }
+
 }
