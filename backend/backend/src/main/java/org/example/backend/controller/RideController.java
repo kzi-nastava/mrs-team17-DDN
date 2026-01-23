@@ -2,8 +2,11 @@
 package org.example.backend.controller;
 
 import org.example.backend.dto.request.RideReportRequestDto;
+import org.example.backend.dto.request.RideRatingRequestDto;
 import org.example.backend.dto.response.RideReportResponseDto;
+import org.example.backend.dto.response.RideRatingResponseDto;
 import org.example.backend.dto.response.RideTrackingResponseDto;
+import org.example.backend.service.RideRatingService;
 import org.example.backend.service.RideService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +17,11 @@ import org.springframework.web.bind.annotation.*;
 public class RideController {
 
     private final RideService rideService;
+    private final RideRatingService rideRatingService;
 
-    public RideController(RideService rideService) {
+    public RideController(RideService rideService, RideRatingService rideRatingService) {
         this.rideService = rideService;
+        this.rideRatingService = rideRatingService;
     }
 
     @GetMapping("/{rideId}/tracking")
@@ -43,5 +48,21 @@ public class RideController {
     public ResponseEntity<Void> simulateStep(@PathVariable Long rideId) {
         rideService.simulateVehicleStep(rideId);
         return ResponseEntity.ok().build();
+    }
+
+    // --- RATING (2.8) ---
+
+    @GetMapping("/{rideId}/rating")
+    public ResponseEntity<RideRatingResponseDto> getRating(@PathVariable Long rideId) {
+        return ResponseEntity.ok(rideRatingService.getRating(rideId));
+    }
+
+    @PostMapping("/{rideId}/rating")
+    public ResponseEntity<RideRatingResponseDto> submitRating(
+            @PathVariable Long rideId,
+            @RequestBody RideRatingRequestDto request
+    ) {
+        RideRatingResponseDto res = rideRatingService.submitRating(rideId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
 }
