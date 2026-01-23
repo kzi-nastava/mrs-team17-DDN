@@ -12,6 +12,7 @@ import { DriverActiveRideComponent } from './pages/driver/driver-active-ride/dri
 
 import { LoginComponent } from './pages/user/login/login.component';
 import { RideTrackingComponent } from './pages/user/ride-tracking/ride-tracking';
+import { RideRateComponent } from './pages/user/ride-rate/ride-rate';
 
 import { AdminLayout } from './pages/admin/admin-layout/admin-layout';
 import { AdminHome } from './pages/admin/admin-home/admin-home';
@@ -30,6 +31,9 @@ import { UserPasswordChangeComponent } from './pages/user/user-password-change/u
 import { RIDE_TRACKING_DS } from './api/user/ride-tracking.datasource';
 import { RideTrackingHttpDataSource } from './api/user/ride-tracking.http.datasource';
 
+import { RIDE_RATING_DS } from './api/user/ride-rating.datasource';
+import { RideRatingHttpDataSource } from './api/user/ride-rating.http.datasource';
+
 import { RIDE_LIFECYCLE_DS } from './api/driver/ride-lifecycle.datasource';
 import { RideLifecycleHttpDataSource } from './api/driver/ride-lifecycle.http.datasource';
 
@@ -37,6 +41,7 @@ export const routes: Routes = [
   { path: '', component: LandingComponent },
 
   { path: 'login', component: LoginComponent },
+
   {
     path: 'reset-password',
     loadComponent: () =>
@@ -103,11 +108,18 @@ export const routes: Routes = [
           { provide: RIDE_TRACKING_DS, useClass: RideTrackingHttpDataSource },
         ],
       },
+      {
+        path: 'rides/:rideId/rate',
+        component: RideRateComponent,
+        providers: [
+          { provide: RIDE_RATING_DS, useClass: RideRatingHttpDataSource },
+        ],
+      },
       { path: 'order-ride', component: UserOrderRide },
       { path: 'favourite-rides', component: UserFavouriteRides },
       { path: 'favourite-rides/:id', component: UserFavouriteRideDetails },
+      { path: 'password-change', component: UserPasswordChangeComponent },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
-      {path : 'password-change', component: UserPasswordChangeComponent}
     ],
   },
 
@@ -138,9 +150,19 @@ export const routes: Routes = [
       { path: 'home', component: AdminHome },
       { path: 'update-requests', component: AdminUpdateRequests },
       { path: 'create-driver', component: AdminCreateDriver },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./pages/admin/admin-profile/admin-profile')
+            .then(m => m.AdminProfile),
+      },
+      {
+        path: 'password-change',
+        loadComponent: () =>
+          import('./pages/admin/admin-password-change/admin-password-change')
+            .then(m => m.AdminPasswordChange),
+      },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
-      {path: 'profile', loadComponent: () =>import('./pages/admin/admin-profile/admin-profile').then(m => m.AdminProfile),},
-      {path: 'password-change', loadComponent: () =>import('./pages/admin/admin-password-change/admin-password-change').then(m => m.AdminPasswordChange),},
     ],
   },
 
