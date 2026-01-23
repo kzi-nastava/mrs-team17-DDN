@@ -166,11 +166,18 @@ public class RideOrderService {
         );
 
         if (req.getCheckpoints() != null && !req.getCheckpoints().isEmpty()) {
-            List<String> stopAddresses = new ArrayList<>();
+            List<RideStopRepository.StopRow> stops = new ArrayList<>();
+            int ord = 1;
             for (RidePointRequestDto cp : req.getCheckpoints()) {
-                stopAddresses.add(cp.getAddress());
+                stops.add(new RideStopRepository.StopRow(
+                        ord++,
+                        cp.getAddress(),
+                        cp.getLat(),
+                        cp.getLng()
+                ));
             }
-            rideStopRepo.insertStops(rideId, stopAddresses);
+            rideStopRepo.insertStops(rideId, stops);
+
         }
 
         passengerRepo.insertPassengers(rideId, passengers);

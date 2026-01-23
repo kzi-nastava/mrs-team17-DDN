@@ -15,21 +15,22 @@ public class JdbcRideStopRepository implements RideStopRepository {
     }
 
     @Override
-    public void insertStops(Long rideId, List<String> stopAddressesOrdered) {
-        if (stopAddressesOrdered == null || stopAddressesOrdered.isEmpty()) return;
+    public void insertStops(Long rideId, List<StopRow> stopsOrdered) {
+        if (stopsOrdered == null || stopsOrdered.isEmpty()) return;
 
-        int order = 1;
-        for (String addr : stopAddressesOrdered) {
-            String a = addr == null ? "" : addr.trim();
-            if (a.isEmpty()) continue;
+        for (StopRow s : stopsOrdered) {
+            String addr = s.address() == null ? "" : s.address().trim();
+            if (addr.isEmpty()) continue;
 
             jdbc.sql("""
-                insert into ride_stops (ride_id, stop_order, address)
-                values (:rideId, :stopOrder, :address)
+                insert into ride_stops (ride_id, stop_order, address, lat, lng)
+                values (:rideId, :stopOrder, :address, :lat, :lng)
             """)
                     .param("rideId", rideId)
-                    .param("stopOrder", order++)
-                    .param("address", a)
+                    .param("stopOrder", s.stopOrder())
+                    .param("address", addr)
+                    .param("lat", s.lat())
+                    .param("lng", s.lng())
                     .update();
         }
     }

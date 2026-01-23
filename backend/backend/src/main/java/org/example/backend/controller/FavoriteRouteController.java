@@ -1,8 +1,8 @@
 package org.example.backend.controller;
 
-import jakarta.validation.Valid;
-import org.example.backend.dto.request.AddFavoriteRouteRequestDto;
+import org.example.backend.dto.response.AddFavoriteFromRideResponseDto;
 import org.example.backend.dto.response.FavoriteRouteResponseDto;
+import org.example.backend.service.FavoriteRouteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,33 +12,32 @@ import java.util.List;
 @RequestMapping("/api/users/{userId}/favorite-routes")
 public class FavoriteRouteController {
 
-    @GetMapping
-    public ResponseEntity<List<FavoriteRouteResponseDto>> listFavorites(@PathVariable Long userId) {
+    private final FavoriteRouteService favoriteRouteService;
 
-        FavoriteRouteResponseDto r1 = new FavoriteRouteResponseDto();
-        r1.setId(1L);
-        r1.setStartAddress("Bulevar Oslobodjenja 1, Novi Sad");
-        r1.setDestinationAddress("Trg Slobode 1, Novi Sad");
-        r1.setStops(List.of("Zmaj Jovina 10, Novi Sad", "Dunavska 5, Novi Sad"));
-
-        return ResponseEntity.ok(List.of(r1));
+    public FavoriteRouteController(FavoriteRouteService favoriteRouteService) {
+        this.favoriteRouteService = favoriteRouteService;
     }
 
-    @PostMapping
-    public ResponseEntity<FavoriteRouteResponseDto> addFavoriteFromRide(@PathVariable Long userId, @Valid @RequestBody AddFavoriteRouteRequestDto request) {
+    @GetMapping
+    public ResponseEntity<List<FavoriteRouteResponseDto>> list(@PathVariable Long userId) {
+        return ResponseEntity.ok(favoriteRouteService.listFavorites(userId));
+    }
 
-        FavoriteRouteResponseDto created = new FavoriteRouteResponseDto();
-        created.setId(1L);
-        created.setStartAddress("Stub start (from rideId=" + request.getRideId() + ")");
-        created.setDestinationAddress("Stub destination");
-        created.setStops(List.of());
-
-        return ResponseEntity.status(201).body(created);
+    @PostMapping("/from-ride/{rideId}")
+    public ResponseEntity<AddFavoriteFromRideResponseDto> addFromRide(
+            @PathVariable Long userId,
+            @PathVariable Long rideId
+    ) {
+        AddFavoriteFromRideResponseDto resp = favoriteRouteService.addFromRide(userId, rideId);
+        return ResponseEntity.status(201).body(resp);
     }
 
     @DeleteMapping("/{favoriteRouteId}")
-    public ResponseEntity<Void> removeFavorite(@PathVariable Long userId, @PathVariable Long favoriteRouteId) {
-
+    public ResponseEntity<Void> delete(
+            @PathVariable Long userId,
+            @PathVariable Long favoriteRouteId
+    ) {
+        favoriteRouteService.deleteFavorite(userId, favoriteRouteId);
         return ResponseEntity.noContent().build();
     }
 }
