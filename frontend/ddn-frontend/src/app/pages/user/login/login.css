@@ -61,6 +61,16 @@
   transition: color 0.3s ease, text-decoration 0.3s ease;
   cursor: pointer;
 }
+.error-banner {
+  background: rgba(255, 107, 107, 0.18);
+  border: 1px solid rgba(255, 107, 107, 0.45);
+  color: #ffb3b3;
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin: 10px 0 18px 0;
+  font-size: 13px;
+  text-align: left;
+}
 
 .login-wrapper a:hover {
   color: #66ccff;

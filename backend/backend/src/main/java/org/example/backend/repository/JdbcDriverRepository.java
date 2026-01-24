@@ -3,6 +3,8 @@ package org.example.backend.repository;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public class JdbcDriverRepository implements DriverRepository {
 
@@ -24,5 +26,28 @@ public class JdbcDriverRepository implements DriverRepository {
                 .param("userId", userId)
                 .query(Long.class)
                 .single();
+    }
+    @Override
+    public Optional<Long> findDriverIdByUserId(long userId) {
+        return jdbc.sql("""
+                select d.id
+                from drivers d
+                where d.user_id = :userId
+                """)
+                .param("userId", userId)
+                .query(Long.class)
+                .optional();
+    }
+
+    @Override
+    public void setAvailable(long driverId, boolean available) {
+        jdbc.sql("""
+                update drivers
+                set available = :available
+                where id = :driverId
+                """)
+                .param("available", available)
+                .param("driverId", driverId)
+                .update();
     }
 }
