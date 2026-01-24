@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-export type AppRole = 'DRIVER' | 'USER' | 'ADMIN' | string;
+export type AppRole = 'DRIVER' | 'PASSENGER' | 'ADMIN' | string;
 
 @Injectable({ providedIn: 'root' })
 export class AuthStore {

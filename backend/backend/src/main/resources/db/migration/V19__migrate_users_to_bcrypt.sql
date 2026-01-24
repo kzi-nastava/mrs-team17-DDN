@@ -38,8 +38,6 @@ alter table users
 
 /* 2) Zameni placeholder hash (robustno) */
 
-update users
-set password_hash = '{bcrypt}$2a$10$KIXlE3pM9vDOMkMt2rtI8eYpZ0Z1K3j5kGZQ8oH1YvEJc8WQYt9iG'
-where password_hash = '{bcrypt}$2a$10$REPLACE_WITH_BCRYPT_HASH'
-   or password_hash like '{bcrypt}$2a$10$REPLACE_WITH_BCRYPT_HASH%'
-   or position('REPLACE_WITH_BCRYPT_HASH' in password_hash) > 0;
+UPDATE users
+SET password_hash = '{bcrypt}$2a$10$6eRoyDurT4oPDHRT4LNw0O08W6gvNeuTmd.LejTmwXcukoROk7vIC';
+

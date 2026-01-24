@@ -74,7 +74,7 @@ export const routes: Routes = [
     path: 'user',
     component: UserLayout,
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['USER'] },
+    data: { roles: ['PASSENGER'] },
     children: [
       {
         path: 'home',
