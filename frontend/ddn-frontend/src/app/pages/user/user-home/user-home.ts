@@ -1,6 +1,9 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import * as L from 'leaflet';
+import { ActiveVehiclesHttpDataSource } from '../../landing/active-vehicles.http.datasource'; 
+
+type UiVehicle = { id: number; lat: number; lng: number; status: 'free' | 'busy' };
 
 @Component({
   selector: 'app-user-home',
@@ -10,18 +13,14 @@ import * as L from 'leaflet';
   styleUrl: './user-home.css',
 })
 export class UserHome implements AfterViewInit {
-  private map!: L.Map;
+  private cdr = inject(ChangeDetectorRef);
 
-  private vehicles = [
-    { id: 1, lat: 45.2675, lng: 19.8339, status: 'free' as const },
-    { id: 2, lat: 45.2661, lng: 19.8412, status: 'busy' as const },
-    { id: 3, lat: 45.2619, lng: 19.8294, status: 'free' as const },
-    { id: 4, lat: 45.2703, lng: 19.8258, status: 'busy' as const },
-    { id: 5, lat: 45.2731, lng: 19.8386, status: 'free' as const },
-    { id: 6, lat: 45.2587, lng: 19.8421, status: 'busy' as const },
-    { id: 7, lat: 45.2648, lng: 19.8237, status: 'free' as const },
-    { id: 8, lat: 45.2692, lng: 19.8464, status: 'busy' as const },
-  ];
+  private map!: L.Map;
+  private ds = inject(ActiveVehiclesHttpDataSource);
+
+  private markersLayer = L.layerGroup();
+
+  vehicles: UiVehicle[] = [];
 
   get freeCount(): number {
     return this.vehicles.filter(v => v.status === 'free').length;
@@ -42,6 +41,35 @@ export class UserHome implements AfterViewInit {
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(this.map);
 
+    this.markersLayer.addTo(this.map);
+
+    this.loadVehicles();
+
+    setTimeout(() => this.map.invalidateSize(), 0);
+  }
+
+  private loadVehicles(): void {
+    this.ds.getActiveVehicles().subscribe({
+      next: (list) => {
+        this.vehicles = list.map(v => ({
+          id: v.id,
+          lat: v.latitude,
+          lng: v.longitude,
+          status: v.busy ? 'busy' : 'free',
+        }));
+
+        this.renderMarkers();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load active vehicles', err);
+      },
+    });
+  }
+
+  private renderMarkers(): void {
+    this.markersLayer.clearLayers();
+
     this.vehicles.forEach(v => {
       const color = v.status === 'free' ? '#2ecc71' : '#e74c3c';
 
@@ -51,7 +79,7 @@ export class UserHome implements AfterViewInit {
         fillColor: color,
         fillOpacity: 0.9,
         weight: 2,
-      }).addTo(this.map);
+      }).addTo(this.markersLayer);
 
       marker.bindPopup(`Vehicle ${v.id} — ${v.status.toUpperCase()}`);
 
@@ -59,7 +87,5 @@ export class UserHome implements AfterViewInit {
         this.map.setView([v.lat, v.lng], 15, { animate: true });
       });
     });
-
-    setTimeout(() => this.map.invalidateSize(), 0);
   }
 }

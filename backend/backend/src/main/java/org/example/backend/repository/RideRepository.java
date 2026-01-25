@@ -21,12 +21,14 @@ public interface RideRepository {
 
     java.util.List<Long> findActiveRideIds();
 
-
+    // NEW: one-way switch when car reaches pickup (prevents ping-pong)
+    boolean markPickedUp(Long rideId);
 
     public record RideMoveSnapshot(
             String status,
             java.time.OffsetDateTime endedAt,
             boolean canceled,
+            boolean pickedUp,      // NEW
             long driverId,
             double carLat,
             double carLng,

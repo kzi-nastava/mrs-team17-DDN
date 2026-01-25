@@ -29,10 +29,8 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   private carMarker: L.CircleMarker | null = null;
   private routeLine: L.Polyline | null = null;
 
-  // animation
   private lastCar: LatLng | null = null;
   private carAnimFrame: number | null = null;
-  private lastRouteKey: string | null = null;
 
   etaMinutes = 0;
   distanceKm = 0;
@@ -57,9 +55,7 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
 
     this.sub = this.ds.watchTracking(this.rideId).subscribe({
       next: (s) => this.applyState(s),
-      error: () => {
-        this.rideStatus = 'Tracking not available';
-      },
+      error: () => (this.rideStatus = 'Tracking not available'),
     });
 
     setTimeout(() => this.map.invalidateSize(), 0);
@@ -122,7 +118,6 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
     this.rideStatus = s.status;
 
     const routePoints = (s.route ?? []).map((p) => [p.lat, p.lng] as [number, number]);
-    const routeKey = routePoints.length ? `${routePoints[0][0]},${routePoints[0][1]}|${routePoints[routePoints.length - 1][0]},${routePoints[routePoints.length - 1][1]}|${routePoints.length}` : 'empty';
 
     if (!this.initializedFromState) {
       this.initializedFromState = true;
@@ -153,15 +148,10 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
 
       this.lastCar = { ...s.car };
 
-      // route polyline from backend (pickup -> destination)
+      // RUTA SE CRTА JEDNOM: pickup -> destination (nikad se više ne menja)
       if (routePoints.length >= 2) {
         this.routeLine = L.polyline(routePoints, { weight: 4 }).addTo(this.map);
-        this.lastRouteKey = routeKey;
-
-        const bounds = L.latLngBounds(routePoints);
-        this.map.fitBounds(bounds, { padding: [30, 30] });
       } else {
-        // fallback if route missing
         this.routeLine = L.polyline(
           [
             [s.pickup.lat, s.pickup.lng],
@@ -169,25 +159,20 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
           ],
           { weight: 4 }
         ).addTo(this.map);
-
-        const bounds = L.latLngBounds([
-          [s.car.lat, s.car.lng],
-          [s.pickup.lat, s.pickup.lng],
-          [s.destination.lat, s.destination.lng],
-        ]);
-        this.map.fitBounds(bounds, { padding: [30, 30] });
       }
+
+      // fit bounds (uključi i auto da se sve vidi)
+      const bounds = L.latLngBounds([
+        [s.car.lat, s.car.lng],
+        [s.pickup.lat, s.pickup.lng],
+        [s.destination.lat, s.destination.lng],
+      ]);
+      this.map.fitBounds(bounds, { padding: [30, 30] });
 
       return;
     }
 
-    // update route if backend route changed (rare, but safe)
-    if (this.routeLine && routePoints.length >= 2 && routeKey !== this.lastRouteKey) {
-      this.routeLine.setLatLngs(routePoints);
-      this.lastRouteKey = routeKey;
-    }
-
-    // smooth move car marker
+    // posle init-a: NE DIRAMO routeLine uopšte
     this.animateCarTo({ lat: s.car.lat, lng: s.car.lng }, 900);
   }
 
@@ -196,7 +181,6 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
 
     const from = this.lastCar ?? target;
 
-    // cancel previous animation if still running
     if (this.carAnimFrame != null) {
       cancelAnimationFrame(this.carAnimFrame);
       this.carAnimFrame = null;

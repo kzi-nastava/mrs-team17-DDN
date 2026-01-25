@@ -24,8 +24,6 @@ public class RideService {
     }
 
     public RideTrackingResponseDto getRideTracking(Long rideId) {
-        System.out.println("RideRepository impl = " + repository.getClass().getName());
-
         return repository.findTrackingByRideId(rideId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride tracking not found"));
     }
@@ -45,31 +43,70 @@ public class RideService {
         }
     }
 
-
+    /**
+     * Simulation tick:
+     * - While pickedUp=false -> move towards pickup
+     * - Once within PICKUP_THRESHOLD_M -> mark picked_up=true (one-way switch)
+     * - When pickedUp=true -> move towards destination
+     *
+     * IMPORTANT: Never auto-finish. Completing ride is driver's job (finish endpoint).
+     *
+     * Requires:
+     * - rides.picked_up boolean not null default false
+     * - snapshot includes pickedUp
+     * - repository.markPickedUp(rideId)
+     */
     public void simulateVehicleStep(Long rideId) {
         var snap = repository.findMoveSnapshot(rideId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride/vehicle not found"));
 
-        if (!"ACTIVE".equals(snap.status()) || snap.endedAt() != null || snap.canceled()) {
+        if (snap.endedAt() != null || snap.canceled()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ride already ended/canceled");
+        }
+
+        // keep it strict: only ACTIVE moves
+        if (!"ACTIVE".equals(snap.status())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ride is not ACTIVE");
         }
 
-        double distToPickup = haversineMeters(
-                snap.carLat(), snap.carLng(),
-                snap.pickupLat(), snap.pickupLng()
-        );
+        final double PICKUP_THRESHOLD_M = 80.0;
+        final double DEST_THRESHOLD_M = 30.0; // used only to "snap" to destination, not to finish
+        final double STEP_METERS = 25.0;
 
-        double targetLat;
-        double targetLng;
+        boolean pickedUp = snap.pickedUp();
 
-        // 30m threshold (tune if you want)
-        if (distToPickup > 30.0) {
-            targetLat = snap.pickupLat();
-            targetLng = snap.pickupLng();
+        // 1) If not picked up yet, check pickup threshold and switch once
+        if (!pickedUp) {
+            double distToPickup = haversineMeters(
+                    snap.carLat(), snap.carLng(),
+                    snap.pickupLat(), snap.pickupLng()
+            );
+
+            if (distToPickup <= PICKUP_THRESHOLD_M) {
+                repository.markPickedUp(rideId);
+                pickedUp = true;
+
+                // optional: snap car exactly to pickup to avoid oscillation
+                repository.updateVehicleLocation(snap.driverId(), snap.pickupLat(), snap.pickupLng());
+                return;
+            }
         } else {
-            targetLat = snap.destLat();
-            targetLng = snap.destLng();
+            // 2) If already picked up, stop moving when close enough to destination (do NOT finish)
+            double distToDest = haversineMeters(
+                    snap.carLat(), snap.carLng(),
+                    snap.destLat(), snap.destLng()
+            );
+
+            if (distToDest <= DEST_THRESHOLD_M) {
+                // snap to destination and stop
+                repository.updateVehicleLocation(snap.driverId(), snap.destLat(), snap.destLng());
+                return;
+            }
         }
+
+        // 3) Compute target based on phase
+        double targetLat = pickedUp ? snap.destLat() : snap.pickupLat();
+        double targetLng = pickedUp ? snap.destLng() : snap.pickupLng();
 
         OsrmClient.RouteWithGeometry route;
         try {
@@ -87,12 +124,10 @@ public class RideService {
             return;
         }
 
-        double stepMeters = 25.0;
-
         var next = advanceAlongPolylineMeters(
                 snap.carLat(), snap.carLng(),
                 route.geometry(),
-                stepMeters
+                STEP_METERS
         );
 
         boolean updated = repository.updateVehicleLocation(snap.driverId(), next.lat(), next.lng());
@@ -101,13 +136,8 @@ public class RideService {
         }
     }
 
-
     private record LatLng(double lat, double lng) {}
 
-    /**
-     * Moves from (startLat,startLng) forward by stepMeters along the OSRM geometry polyline.
-     * geometry points are ordered, each point is OsrmClient.Point(lat, lon).
-     */
     private static LatLng advanceAlongPolylineMeters(
             double startLat,
             double startLng,
@@ -172,5 +202,4 @@ public class RideService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found or cannot be started");
         }
     }
-
 }

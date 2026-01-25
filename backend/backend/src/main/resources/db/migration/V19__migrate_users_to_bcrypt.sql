@@ -41,3 +41,7 @@ alter table users
 UPDATE users
 SET password_hash = '{bcrypt}$2a$10$6eRoyDurT4oPDHRT4LNw0O08W6gvNeuTmd.LejTmwXcukoROk7vIC';
 
+alter table rides
+    add column if not exists picked_up boolean not null default false;
+
+
