@@ -1,3 +1,4 @@
+// backend/src/main/java/org/example/backend/service/RideService.java
 package org.example.backend.service;
 
 import org.example.backend.dto.request.RideReportRequestDto;
@@ -17,10 +18,12 @@ public class RideService {
 
     private final RideRepository repository;
     private final OsrmClient osrm;
+    private final MailService mailService;
 
-    public RideService(RideRepository repository, OsrmClient osrm) {
+    public RideService(RideRepository repository, OsrmClient osrm, MailService mailService) {
         this.repository = repository;
         this.osrm = osrm;
+        this.mailService = mailService;
     }
 
     public RideTrackingResponseDto getRideTracking(Long rideId) {
@@ -40,6 +43,20 @@ public class RideService {
         boolean ok = repository.finishRide(rideId);
         if (!ok) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found");
+        }
+
+        var emails = repository.findPassengerEmails(rideId);
+
+        var addresses = repository.findRideAddresses(rideId)
+                .orElse(new RideRepository.RideAddresses("", ""));
+
+        for (String email : emails) {
+            mailService.sendRideFinishedEmail(
+                    email,
+                    rideId,
+                    addresses.startAddress(),
+                    addresses.destinationAddress()
+            );
         }
     }
 

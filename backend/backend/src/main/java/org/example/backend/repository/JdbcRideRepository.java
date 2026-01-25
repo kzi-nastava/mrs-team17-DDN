@@ -133,6 +133,32 @@ public class JdbcRideRepository implements RideRepository {
                 .optional();
     }
 
+    @Override
+    public java.util.List<String> findPassengerEmails(Long rideId) {
+        return jdbc.sql("""
+            select email
+            from ride_passengers
+            where ride_id = :rideId
+        """)
+                .param("rideId", rideId)
+                .query(String.class)
+                .list();
+    }
+
+    @Override
+    public java.util.Optional<RideAddresses> findRideAddresses(Long rideId) {
+        return jdbc.sql("""
+            select start_address, destination_address
+            from rides
+            where id = :rideId
+        """)
+                .param("rideId", rideId)
+                .query((rs, rowNum) -> new RideAddresses(
+                        rs.getString("start_address"),
+                        rs.getString("destination_address")
+                ))
+                .optional();
+    }
 
     @Override
     public Optional<RideMoveSnapshot> findMoveSnapshot(Long rideId) {

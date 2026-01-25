@@ -30,4 +30,25 @@ public class MailService {
 
         mailSender.send(msg);
     }
+
+    public void sendRideFinishedEmail(
+            String to,
+            Long rideId,
+            String startAddress,
+            String destinationAddress
+    ) {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(from);
+        msg.setTo(to);
+        msg.setSubject("Ride finished");
+        msg.setText(
+                "Your ride has been completed.\n\n" +
+                        "Ride ID: " + rideId + "\n" +
+                        "From: " + startAddress + "\n" +
+                        "To: " + destinationAddress + "\n\n" +
+                        "You can rate the ride within 3 days."
+        );
+
+        mailSender.send(msg);
+    }
 }

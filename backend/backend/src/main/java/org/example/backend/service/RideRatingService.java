@@ -1,3 +1,4 @@
+// backend/src/main/java/org/example/backend/service/RideRatingService.java
 package org.example.backend.service;
 
 import org.example.backend.dto.request.RideRatingRequestDto;
@@ -28,6 +29,17 @@ public class RideRatingService {
 
         if (!repo.isRideCompletedAndNotCanceled(rideId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ride is not completed");
+        }
+
+        var endedAt = repo.findRideEndedAt(rideId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ride not found"));
+
+        if (endedAt == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ride is not completed");
+        }
+
+        if (OffsetDateTime.now().isAfter(endedAt.plusDays(3))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rating window expired");
         }
 
         if (repo.existsForRide(rideId)) {

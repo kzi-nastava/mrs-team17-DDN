@@ -1,3 +1,4 @@
+// backend/src/main/java/org/example/backend/repository/JdbcRideRatingRepository.java
 package org.example.backend.repository;
 
 import org.example.backend.dto.request.RideRatingRequestDto;
@@ -76,6 +77,18 @@ public class JdbcRideRatingRepository implements RideRatingRepository {
                 .single();
 
         return c != null && c > 0;
+    }
+
+    @Override
+    public Optional<OffsetDateTime> findRideEndedAt(Long rideId) {
+        return jdbc.sql("""
+            select ended_at
+            from rides
+            where id = :rideId
+        """)
+                .param("rideId", rideId)
+                .query((rs, rowNum) -> rs.getObject("ended_at", OffsetDateTime.class))
+                .optional();
     }
 
     @Override
