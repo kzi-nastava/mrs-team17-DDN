@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { UserRegistrationApi } from '../../../api/user/user-registration';
 
 @Component({
   selector: 'app-sign-up',
@@ -11,8 +13,7 @@ import { RouterModule, Router } from '@angular/router';
   styleUrls: ['./sign-up.css']
 })
 export class SignUp {
-  // Reactive forma za registraciju
-  
+
   signUpForm: FormGroup = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required, Validators.minLength(6)]),
@@ -20,31 +21,45 @@ export class SignUp {
     name: new FormControl('', Validators.required),
     surname: new FormControl('', Validators.required),
     address: new FormControl('', Validators.required),
-    number: new FormControl('', Validators.required)
+    number: new FormControl('', Validators.required) // telefon
   });
 
-  //  Router za navigaciju posle uspešne registracije
-  constructor(private router: Router) {}
+  errorMessage: string | null = null;
 
-  //  Submit handler
+  constructor(
+    private router: Router,
+    private userRegistrationApi: UserRegistrationApi
+  ) { }
+
   onSubmit(): void {
-    //  Provera da li je forma validna
-    if (this.signUpForm.valid) {
-      const { password, confirmPassword } = this.signUpForm.value;
+    if (!this.signUpForm.valid) return;
 
-      //  Provera da li se lozinke poklapaju
-      if (password === confirmPassword) {
-        console.log('Sign-up data:', this.signUpForm.value);
+    const { password, confirmPassword } = this.signUpForm.value;
 
-        //  Ovde ide poziv ka backend servisu za registraciju
-
-        
-        //  Navigacija na sign-up-confirmed stranicu
-        this.router.navigate(['/sign-up-confirmed']);
-      } else {
-        //  Ako lozinke nisu iste
-        console.error('Passwords do not match');
-      }
+    if (password !== confirmPassword) {
+      this.errorMessage = 'Passwords do not match';
+      return;
     }
+
+    const payload = {
+      email: this.signUpForm.value.email!,
+      password: this.signUpForm.value.password!,
+      confirmPassword: this.signUpForm.value.confirmPassword!,
+      firstName: this.signUpForm.value.name!,
+      lastName: this.signUpForm.value.surname!,
+      address: this.signUpForm.value.address!,
+      phone: this.signUpForm.value.number!
+    };
+
+    this.userRegistrationApi.register(payload).subscribe({
+      next: (res) => {
+        console.log('REGISTER OK', res);
+        this.router.navigate(['/sign-up-confirmed']);
+      },
+      error: (err) => {
+        console.error('REGISTER FAIL', err);
+        this.errorMessage = err?.error?.message || 'Registration failed';
+      }
+    });
   }
 }
