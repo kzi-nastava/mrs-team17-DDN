@@ -51,7 +51,7 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-
+        <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -69,7 +69,6 @@
             <version>0.12.6</version>
             <scope>runtime</scope>
         </dependency>
-
 
         <!-- JPA (ostavi samo ako ti zaista treba) -->
         <dependency>
@@ -96,13 +95,7 @@
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
-        <!-- Tests -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
+        <!-- Mail -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
@@ -113,6 +106,13 @@
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
+        
+        <!-- Tests -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

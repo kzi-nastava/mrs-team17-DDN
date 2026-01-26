@@ -1,13 +1,15 @@
 package org.example.backend.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.example.backend.exception.NoAvailableDriverException;
-import org.springframework.http.HttpStatus;
 import java.util.Map;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.dao.DataIntegrityViolationException;
+
 import org.example.backend.exception.ActiveRideConflictException;
+import org.example.backend.exception.NoAvailableDriverException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -27,18 +29,19 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DuplicateKeyException.class)
-    public ResponseEntity<Map<String, Object>> handleDuplicateKey(DuplicateKeyException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
-                "message", "Favorite route already exists for this user."
-        ));
-    }
+public ResponseEntity<Map<String, Object>> handleDuplicateKey(DuplicateKeyException ex) {
+return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+"message", ex.getMostSpecificCause().getMessage()
+));
+}
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
-                "message", "Favorite route already exists for this user."
-        ));
-    }
+
+@ExceptionHandler(DataIntegrityViolationException.class)
+public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException ex) {
+return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+"message", ex.getMostSpecificCause().getMessage()
+));
+}
 
     @ExceptionHandler(ActiveRideConflictException.class)
     public ResponseEntity<Map<String, Object>> handleActiveRideConflict(ActiveRideConflictException ex) {
