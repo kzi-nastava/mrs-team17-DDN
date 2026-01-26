@@ -66,6 +66,7 @@ export class DriverActiveRideComponent implements OnInit {
         take(1),
         finalize(() => {
           this.finishing = false;
+          this.loadActiveRide();
         })
       )
       .subscribe({

@@ -21,7 +21,7 @@ export class UserProfile implements OnInit {
   private readonly apiBaseUrl = inject(API_BASE_URL); // npr. http://localhost:8080/api
   private readonly backendOrigin = this.apiBaseUrl.replace(/\/api\/?$/, ''); // -> http://localhost:8080
 
-  userId = 3001;
+  userId = 3002;
 
   profile: UserProfileResponseDto | null = null;
 
