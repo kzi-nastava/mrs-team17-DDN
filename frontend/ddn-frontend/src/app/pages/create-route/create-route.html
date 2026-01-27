@@ -1,0 +1,142 @@
+<app-public-navbar></app-public-navbar>
+
+
+<div class="page" [class.map-mode]="showMap">
+
+
+<!-- OVERLAY + FORMA (samo kad showMap=false) -->
+<div class="overlay" *ngIf="!showMap">
+<div class="glass-card">
+
+
+<!-- X dugme -->
+<button class="close-btn" (click)="back()" title="Back">✕</button>
+
+
+<div class="logo">
+<img src="/logo.png" class="logo-img" alt="Taxi logo" />
+</div>
+
+
+<!-- START INPUT -->
+<div class="field">
+<span class="icon">📍</span>
+<input
+type="text"
+placeholder="Starting point"
+[ngModel]="start"
+(ngModelChange)="onStartInput($event)"
+/>
+</div>
+
+
+<ul class="suggestions" *ngIf="startSuggestions.length">
+<li *ngFor="let s of startSuggestions" (click)="pickStart(s)">
+{{ s.label }}
+</li>
+</ul>
+
+
+<!-- DEST INPUT -->
+<div class="field">
+<span class="icon">📍</span>
+<input
+type="text"
+placeholder="Destination"
+[ngModel]="destination"
+(ngModelChange)="onDestInput($event)"
+/>
+</div>
+
+
+<ul class="suggestions" *ngIf="destSuggestions.length">
+<li *ngFor="let s of destSuggestions" (click)="pickDest(s)">
+{{ s.label }}
+</li>
+</ul>
+
+
+<!-- ERROR -->
+<div class="error" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+
+<!-- SUBMIT -->
+<button
+class="go-btn"
+(click)="submit()"
+[disabled]="isLoading || !start.trim() || !destination.trim()"
+>
+<ng-container *ngIf="!isLoading; else loadingTpl">
+<img src="/right-arrow.png" class="arrow-img" alt="Go" />
+</ng-container>
+
+
+<ng-template #loadingTpl>
+<span class="loading">...</span>
+</ng-template>
+</button>
+
+
+</div>
+</div>
+
+
+<!-- MAP VIEW (samo kad showMap=true) -->
+<ng-container *ngIf="showMap">
+<div class="layout">
+<!-- MAP LEFT -->
+<div class="map-area">
+<div #mapEl id="createRouteMap" class="map full"></div>
+</div>
+
+
+<!-- SIDEBAR RIGHT -->
+<aside class="side">
+<div class="side-card">
+<div class="map-header">
+<div class="route-title">Route preview</div>
+<div class="route-subtitle">{{ start }} → {{ destination }}</div>
+</div>
+
+
+<!-- PRICE BOX -->
+<div class="price-box" *ngIf="distanceKm && durationMin; else priceLoading">
+<div class="price-main">{{ ridePrice | number:'1.0-0' }} RSD</div>
+<div class="price-sub">
+{{ distanceKm | number:'1.1-1' }} km • {{ durationMin | number:'1.0-0' }} min
+</div>
+</div>
+
+
+<ng-template #priceLoading>
+<div class="price-box">
+<div class="price-main">Calculating…</div>
+<div class="price-sub">Waiting for route</div>
+</div>
+</ng-template>
+
+
+<div class="map-actions">
+<button class="secondary" (click)="editRide()">Edit</button>
+<button class="request-btn" (click)="requestRide()" [disabled]="!distanceKm || !durationMin">
+Request ride
+</button>
+</div>
+</div>
+
+
+<!-- ROUTE INSTRUCTIONS GO HERE -->
+<div class="instructions">
+  <div class="instructions-title">Directions</div>
+  <div class="instructions-body" #instructionsEl></div>
+</div>
+</aside>
+</div>
+
+
+<!-- X u map modu -->
+<button class="close-btn map-close" (click)="back()" title="Back">✕</button>
+</ng-container>
+
+
+</div>

@@ -3,13 +3,14 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "./out-tsc/spec",
-    "types": [
-      "vitest/globals"
-    ]
+    "rootDir": "./src",
+    "outDir": "./out-tsc/app",
+    "types": []
   },
   "include": [
-    "src/**/*.d.ts",
+    "src/**/*.ts"
+, "src/app/pages/user/success-password/success-password.spec.ts"  ],
+  "exclude": [
     "src/**/*.spec.ts"
-, "src/app/pages/user/login/login.component.ts", "src/app/pages/user/success-password/success-password.ts"  ]
+  ]
 }

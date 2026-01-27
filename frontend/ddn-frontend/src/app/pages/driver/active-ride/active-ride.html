@@ -1,0 +1,90 @@
+<div class="page">
+  <h1 class="title">Driver – Active Ride</h1>
+
+  <div class="empty" *ngIf="!hasActiveRide">
+    No active ride.
+    <button class="btn ghost" (click)="showNewRideModal = true">Show notification (UI)</button>
+  </div>
+
+  <div class="ride-wrap" *ngIf="hasActiveRide">
+    <div class="map-wrap">
+      <div id="driverRideMap" class="map"></div>
+
+      <div class="status-pill">
+        Status: <b>{{ status }}</b>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" (click)="openStop()" [disabled]="status !== 'ACTIVE'">Stop</button>
+      <button class="btn" (click)="openCancel()" [disabled]="status !== 'ACTIVE'">Cancel</button>
+      <button class="btn danger" (click)="openPanic()" [disabled]="status !== 'ACTIVE'">Panic</button>
+    </div>
+  </div>
+
+  <!-- ===== NEW RIDE NOTIFICATION MODAL ===== -->
+  <div class="modal-backdrop" *ngIf="showNewRideModal">
+    <div class="modal">
+      <div class="icon">💬</div>
+      <h2>NOTIFICATION</h2>
+      <div class="subtitle">NEW RIDE</div>
+
+      <div class="modal-actions two">
+        <button class="btn primary" (click)="acceptRide()">Accept</button>
+        <button class="btn secondary" (click)="declineRide()">Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CANCEL MODAL ===== -->
+  <div class="modal-backdrop" *ngIf="showCancelModal">
+    <div class="modal">
+      <div class="icon">💬</div>
+      <h2>NOTIFICATION</h2>
+
+      <select class="select" [(ngModel)]="cancelReason">
+        <option value="" disabled>Select reason</option>
+        <option>Passenger did not show up</option>
+        <option>Vehicle issue</option>
+        <option>Health problem</option>
+        <option>Other</option>
+      </select>
+
+      <div class="modal-actions">
+        <button class="btn secondary" (click)="closeCancel()">Cancel</button>
+        <button class="btn primary" (click)="confirmCancel()" [disabled]="!cancelReason.trim()">
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STOP MODAL ===== -->
+  <div class="modal-backdrop" *ngIf="showStopModal">
+    <div class="modal">
+      <div class="icon">⏸</div>
+      <h2>STOP RIDE</h2>
+
+      <input class="input" [(ngModel)]="stopNote" placeholder="Optional note..." />
+
+      <div class="modal-actions">
+        <button class="btn secondary" (click)="closeStop()">Cancel</button>
+        <button class="btn primary" (click)="confirmStop()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PANIC MODAL ===== -->
+  <div class="modal-backdrop" *ngIf="showPanicModal">
+    <div class="modal">
+      <div class="icon">⚠️</div>
+      <h2>PANIC</h2>
+      <div class="subtitle">Do you want to trigger panic?</div>
+
+      <div class="modal-actions">
+        <button class="btn secondary" (click)="closePanic()">Cancel</button>
+        <button class="btn danger" (click)="confirmPanic()">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>

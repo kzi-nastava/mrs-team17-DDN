@@ -1,6 +1,7 @@
 <app-public-navbar></app-public-navbar>
 
 <div class="content">
+  <!-- MAPA -->
   <div class="map-wrap">
     <div id="map" class="map"></div>
 
@@ -17,5 +18,42 @@
         <span>Busy: {{ busyCount }}</span>
       </div>
     </div>
+  </div>
+
+  <!-- DUGME ISPOD MAPE -->
+  <div class="estimate-cta">
+    <button class="estimate-btn" (click)="openEstimateModal()">
+      New route
+    </button>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-backdrop" *ngIf="showEstimateModal">
+    <div class="modal">
+      <h2>Estimate ride</h2>
+
+      <label>Pickup location</label>
+      <input
+        type="text"
+        [(ngModel)]="pickup"
+        placeholder="Enter pickup address"
+      />
+
+      <label>Destination</label>
+      <input
+        type="text"
+        [(ngModel)]="destination"
+        placeholder="Enter destination address"
+      />
+
+      <div class="modal-actions">
+        <button type="button" (click)="closeEstimateModal()">Cancel</button>
+        <button type="button" (click)="submitEstimate()">Show route</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="estimate-result" *ngIf="estimatedTime">
+    <strong>Estimated time:</strong> {{ estimatedTime }}
   </div>
 </div>

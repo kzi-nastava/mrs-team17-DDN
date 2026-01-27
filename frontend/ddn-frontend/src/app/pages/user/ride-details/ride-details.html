@@ -1,0 +1,103 @@
+<div class="page">
+<div class="card">
+<div class="header">
+<div class="title">Ride details</div>
+
+
+<div class="badges">
+<span class="badge active" *ngIf="status === 'ACTIVE'">ACTIVE</span>
+<span class="badge cancelled" *ngIf="status === 'CANCELLED'">CANCELLED</span>
+<span class="badge panic" *ngIf="status === 'PANIC'">PANIC</span>
+</div>
+</div>
+
+
+<div class="map-wrap">
+<div id="rideMap" class="map"></div>
+
+
+<!-- pill kao na dizajnu -->
+<div class="eta-pill" *ngIf="status === 'ACTIVE'">
+Time left {{ ride.eta }}
+</div>
+</div>
+
+
+<div class="info">
+<div class="row">
+<span class="label">From</span>
+<span class="value">{{ ride.from }}</span>
+</div>
+
+
+<div class="row">
+<span class="label">To</span>
+<span class="value">{{ ride.to }}</span>
+</div>
+
+
+<div class="row">
+<span class="label">Driver</span>
+<span class="value">{{ ride.driver }}</span>
+</div>
+
+
+<div class="row">
+<span class="label">Vehicle</span>
+<span class="value">{{ ride.vehicle }}</span>
+</div>
+</div>
+
+
+<div class="actions">
+<button class="btn cancel" (click)="openCancel()" [disabled]="status !== 'ACTIVE'">
+Cancel ride
+</button>
+
+
+<button class="btn panic" (click)="openPanic()" [disabled]="status !== 'ACTIVE'">
+PANIC
+</button>
+</div>
+
+
+<div class="status-note" *ngIf="status === 'CANCELLED'">
+Ride cancelled (UI demo).
+</div>
+
+
+<div class="status-note" *ngIf="status === 'PANIC'">
+PANIC activated (UI demo).
+</div>
+</div>
+</div>
+
+
+<!-- CANCEL MODAL -->
+<div class="modal-backdrop" *ngIf="showCancelModal">
+<div class="modal">
+<h2>Cancel ride</h2>
+<p>You can cancel up to 10 minutes before the start.</p>
+
+
+<div class="modal-actions">
+<button type="button" (click)="closeCancel()">Back</button>
+<button type="button" class="danger" (click)="confirmCancel()">Confirm</button>
+</div>
+</div>
+</div>
+
+
+<!-- PANIC MODAL -->
+<div class="modal-backdrop" *ngIf="showPanicModal">
+<div class="modal">
+<h2>Activate PANIC</h2>
+<p>Emergency alert will be sent to administrators.</p>
+
+
+<div class="modal-actions">
+<button type="button" (click)="closePanic()">Cancel</button>
+<button type="button" class="danger" (click)="confirmPanic()">Confirm</button>
+</div>
+</div>
+</div>

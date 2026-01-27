@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { LandingComponent } from './pages/landing/landing';
+import { CreateRouteComponent } from './pages/create-route/create-route';
 
 import { DriverLayoutComponent } from './pages/driver/driver-layout/driver-layout';
 import { DriverHomeComponent } from './pages/driver/driver-home/driver-home';
@@ -13,6 +14,9 @@ import { DriverActiveRideComponent } from './pages/driver/driver-active-ride/dri
 import { LoginComponent } from './pages/user/login/login.component';
 import { RideTrackingComponent } from './pages/user/ride-tracking/ride-tracking';
 import { RideRateComponent } from './pages/user/ride-rate/ride-rate';
+
+// ✅ DODATO: Passenger Ride Details (Cancel + Panic)
+import { RideDetailsComponent } from './pages/user/ride-details/ride-details';
 
 import { AdminLayout } from './pages/admin/admin-layout/admin-layout';
 import { AdminHome } from './pages/admin/admin-home/admin-home';
@@ -40,6 +44,9 @@ import { roleGuard } from './api/auth/role.guard';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
+
+  // ✅ PUBLIC (guest) create route page
+  { path: 'create-route', component: CreateRouteComponent },
 
   { path: 'login', component: LoginComponent },
 
@@ -101,6 +108,12 @@ export const routes: Routes = [
         component: RideTrackingComponent,
         providers: [{ provide: RIDE_TRACKING_DS, useClass: RideTrackingHttpDataSource }],
       },
+
+      {
+        path: 'ride-details/:rideId',
+        component: RideDetailsComponent,
+      },
+
       {
         path: 'rides/:rideId/rate',
         component: RideRateComponent,
