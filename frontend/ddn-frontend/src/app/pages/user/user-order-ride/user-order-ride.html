@@ -7,123 +7,146 @@
 
     <div class="order-card">
 
-      <div class="order-row">
-        <div class="lbl">Order:</div>
+      <form #f="ngForm" (ngSubmit)="placeOrder(f)">
+        <div class="order-row">
+          <div class="lbl">Order:</div>
 
-        <label class="radio">
-          <input type="radio" name="orderType" [(ngModel)]="orderType" value="now" />
-          <span>Now</span>
-        </label>
+          <label class="radio">
+            <input type="radio" name="orderType" [(ngModel)]="orderType" value="now" />
+            <span>Now</span>
+          </label>
 
-        <label class="radio">
-          <input type="radio" name="orderType" [(ngModel)]="orderType" value="schedule" />
-          <span>Schedule</span>
-        </label>
+          <label class="radio">
+            <input type="radio" name="orderType" [(ngModel)]="orderType" value="schedule" />
+            <span>Schedule</span>
+          </label>
 
-        <div class="pill pill-datetime">
-          <input type="datetime-local" [disabled]="orderType !== 'schedule'" />
-          <img class="icon" src="/clock.svg" alt="" />
-        </div>
-      </div>
-
-      <div class="form-grid"> 
-        <div class="field-block">
-          <div class="lbl">From:</div>
-          <div class="field">
-            <input type="text" value="Futoška 10" />
-            <img class="field-icon-img" src="/location.svg" alt="" />
+          <div class="pill pill-datetime">
+            <input
+              type="datetime-local"
+              name="scheduledAtLocal"
+              [(ngModel)]="scheduledAtLocal"
+              [disabled]="orderType !== 'schedule'"
+            />
+            <img class="icon" src="/clock.svg" alt="" />
           </div>
         </div>
 
-        <div class="field-block">
-          <div class="lbl">To:</div>
-          <div class="field">
-            <input type="text" value="Futoška 55" />
-            <img class="field-icon-img" src="/location.svg" alt="" />
-          </div>
-        </div>
-
-        <div class="field-block span-2">
-          <div class="lbl">Checkpoints:</div>
-
-          <div class="adder">
-            <button class="plus-btn" type="button" (click)="addCheckpoint()">+</button>
-
+        <div class="form-grid">
+          <div class="field-block">
+            <div class="lbl">From:</div>
             <div class="field">
-              <input
-                type="text"
-                placeholder="Add checkpoint"
-                [(ngModel)]="checkpointInput"
-                (keydown.enter)="addCheckpoint()"
-              />
+              <input type="text" name="fromAddress" [(ngModel)]="start.address" placeholder="From address" required disabled/>
               <img class="field-icon-img" src="/location.svg" alt="" />
             </div>
           </div>
 
-          <div class="list" *ngIf="checkpoints.length > 0">
-            <div class="list-item" *ngFor="let c of checkpoints; let i = index">
-              {{ i + 1 }}. {{ c }}
-            </div>
-          </div>
-        </div>
-
-        <div class="field-block span-2">
-          <div class="lbl">Link users:</div>
-
-          <div class="adder">
-            <button class="plus-btn" type="button" (click)="addUser()">+</button>
-
+          <div class="field-block">
+            <div class="lbl">To:</div>
             <div class="field">
-              <input type="text" placeholder="Email (optional)" [(ngModel)]="userEmailInput" (keydown.enter)="addUser()"/>
-              <img class="field-icon-img" src="/mail.svg" alt="" />
+              <input type="text" name="toAddress" [(ngModel)]="destination.address" placeholder="To address" required disabled/>
+              <img class="field-icon-img" src="/location.svg" alt="" />
             </div>
           </div>
 
-          <div class="list" *ngIf="linkedUsers.length > 0">
-            <div class="list-item" *ngFor="let u of linkedUsers; let i = index">
-              {{ i + 1 }}. {{ u }}
+          <div class="field-block span-2">
+            <div class="lbl">Checkpoints:</div>
+
+            <div class="adder">
+              <button class="plus-btn" type="button" (click)="addCheckpoint()">+</button>
+
+              <div class="field">
+                <input
+                  type="text"
+                  name="checkpointInput"
+                  placeholder="Add checkpoint"
+                  [(ngModel)]="checkpointInput"
+                  (keydown.enter)="$event.preventDefault(); addCheckpoint()" disabled
+                />
+                <img class="field-icon-img" src="/location.svg" alt="" />
+              </div>
+            </div>
+
+            <div class="list" *ngIf="checkpoints.length > 0">
+              <div class="list-item" *ngFor="let c of checkpoints; let i = index">
+                {{ i + 1 }}. {{ c.address }}
+              </div>
+            </div>
+          </div>
+
+          <div class="field-block span-2">
+            <div class="lbl">Link users:</div>
+
+            <div class="adder">
+              <button class="plus-btn" type="button" (click)="addUser()">+</button>
+
+              <div class="field">
+                <input
+                  type="text"
+                  name="userEmailInput"
+                  placeholder="Email (optional)"
+                  [(ngModel)]="userEmailInput"
+                  (keydown.enter)="$event.preventDefault(); addUser()"
+                />
+                <img class="field-icon-img" src="/mail.svg" alt="" />
+              </div>
+            </div>
+
+            <div class="list" *ngIf="linkedUsersDisplay.length > 0">
+              <div class="list-item" *ngFor="let u of linkedUsersDisplay; let i = index">
+                {{ i + 1 }}. {{ u }}
+              </div>
+            </div>
+          </div>
+
+          <div class="field-block">
+            <div class="lbl">Options:</div>
+            <div class="options-box">
+              <label class="opt">
+                <span class="opt-left">
+                  <img class="opt-icon" src="/baby_seat.svg" alt="" />
+                  <span>Baby Seat</span>
+                </span>
+                <input type="checkbox" name="babyTransport" [(ngModel)]="babyTransport" />
+              </label>
+
+              <label class="opt">
+                <span class="opt-left">
+                  <img class="opt-icon" src="/pet_friendly.svg" alt="" />
+                  <span>Pet Friendly</span>
+                </span>
+                <input type="checkbox" name="petTransport" [(ngModel)]="petTransport" />
+              </label>
+            </div>
+          </div>
+
+          <div class="field-block">
+            <div class="lbl">Car type:</div>
+            <div class="field">
+              <img class="field-icon-img" src="/options.svg" alt="" />
+              <select name="vehicleType" [(ngModel)]="vehicleType" required>
+                <option [ngValue]="'standard'">Standard</option>
+                <option [ngValue]="'luxury'">Luxury</option>
+                <option [ngValue]="'van'">Van</option>
+              </select>
             </div>
           </div>
         </div>
 
-        <div class="field-block">
-          <div class="lbl">Options:</div>
-          <div class="options-box">
-            <label class="opt">
-              <span class="opt-left">
-                <img class="opt-icon" src="/baby_seat.svg" alt="" />
-                <span>Baby Seat</span>
-              </span>
-              <input type="checkbox" />
-            </label>
-
-            <label class="opt">
-              <span class="opt-left">
-                <img class="opt-icon" src="/pet_friendly.svg" alt="" />
-                <span>Pet Friendly</span>
-              </span>
-              <input type="checkbox" />
-            </label>
-          </div>
+        <div *ngIf="errorMsg" style="margin-top:12px; color:#c0392b; font-weight:600;">
+          {{ errorMsg }}
         </div>
 
-        <div class="field-block">
-          <div class="lbl">Car type:</div>
-          <div class="field">
-            <img class="field-icon-img" src="/options.svg" alt="" />
-            <select required>
-              <option value="" selected disabled>Car Type</option>
-              <option>Standard</option>
-              <option>Luxury</option>
-              <option>Van</option>
-            </select>
-          </div>
+        <div *ngIf="successMsg" style="margin-top:12px; color:#2d7d46; font-weight:600;">
+          {{ successMsg }}
         </div>
-      </div>
 
-      <div class="actions">
-        <button type="button" class="primary-action-driver">PLACE ORDER</button>
-      </div>
+        <div class="actions">
+          <button type="submit" class="primary-action-driver" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'PLACING...' : 'PLACE ORDER' }}
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
