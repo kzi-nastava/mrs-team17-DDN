@@ -1,0 +1,38 @@
+<div class="page">
+  <h1>Driver – Active Ride</h1>
+
+  <div *ngIf="loading" style="padding: 14px;">Loading...</div>
+  <div *ngIf="!loading && error" style="padding: 14px;">{{ error }}</div>
+
+  <div class="wrap" *ngIf="!loading && ride">
+    <div class="card">
+      <div class="kv">
+        <div class="k">Pickup</div>
+        <div class="v">{{ ride.startAddress }}</div>
+      </div>
+
+      <div class="kv">
+        <div class="k">Destination</div>
+        <div class="v">{{ ride.destinationAddress }}</div>
+      </div>
+
+      <div class="kv">
+        <div class="k">Price</div>
+        <div class="v">{{ ride.price }} RSD</div>
+      </div>
+
+      <div class="status">
+        Status:
+        <span class="badge">{{ statusText() }}</span>
+      </div>
+
+      <button class="btn" (click)="finishRide()" [disabled]="finishing || finished">
+        Finish ride (paid)
+      </button>
+
+      <div class="success" *ngIf="finished">
+        Ride finished. Driver is now available.
+      </div>
+    </div>
+  </div>
+</div>

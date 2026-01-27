@@ -1,0 +1,65 @@
+<div class="profile-page">
+  <div class="profile-card">
+    <div class="left-col">
+      <div class="mini-logo">
+        <img class="mini-logo-img" src="logo.svg" alt="Taxi logo" />
+      </div>
+
+      <div class="avatar">
+        <img
+          class="avatar-img"
+          [src]="avatarUrl"
+          (error)="onAvatarError($event)"
+          alt="Admin avatar"
+        />
+      </div>
+
+      <div class="upload-div">
+        <input
+          #fileInput
+          type="file"
+          accept="image/*"
+          hidden
+          (change)="onImageSelected($event)"
+        />
+
+        <button type="button" class="upload-btn" (click)="fileInput.click()">
+          <span class="upload-text">Upload new picture</span>
+          <img class="field-icon-img" src="/upload_picture.svg" alt="" />
+        </button>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="field">
+        <img class="field-icon-img" src="person.svg" alt="" />
+        <input type="text" [(ngModel)]="form.firstName" />
+      </div>
+
+      <div class="field">
+        <img class="field-icon-img" src="person.svg" alt="" />
+        <input type="text" [(ngModel)]="form.lastName" />
+      </div>
+
+      <div class="field">
+        <img class="field-icon-img" src="house.svg" alt="" />
+        <input type="text" [(ngModel)]="form.address" />
+      </div>
+
+      <div class="field">
+        <img class="field-icon-img" src="phone.svg" alt="" />
+        <input type="text" [(ngModel)]="form.phoneNumber" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="primary-action-driver" (click)="onUpdateProfile()">
+        UPDATE PROFILE
+      </button>
+
+      <button type="button" class="secondary-action-driver" routerLink="/admin/password-change">
+        CHANGE PASSWORD
+      </button>
+    </div>
+  </div>
+</div>

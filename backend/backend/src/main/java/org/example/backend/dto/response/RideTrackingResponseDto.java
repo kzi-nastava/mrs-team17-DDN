@@ -1,21 +1,40 @@
 package org.example.backend.dto.response;
 
+import java.util.List;
+
 public class RideTrackingResponseDto {
 
-    private double latitude;
-    private double longitude;
-    private int remainingSeconds;
+    private LatLngDto car;
+    private LatLngDto pickup;
+    private LatLngDto destination;
+
+    // NEW: route polyline (ordered points)
+    private List<LatLngDto> route;
+
+    private int etaMinutes;
+    private double distanceKm;
+    private String status;
 
     public RideTrackingResponseDto() {}
 
-    public double getLatitude() { return latitude; }
-    public void setLatitude(double latitude) { this.latitude = latitude; }
+    public LatLngDto getCar() { return car; }
+    public void setCar(LatLngDto car) { this.car = car; }
 
-    public double getLongitude() { return longitude; }
-    public void setLongitude(double longitude) { this.longitude = longitude; }
+    public LatLngDto getPickup() { return pickup; }
+    public void setPickup(LatLngDto pickup) { this.pickup = pickup; }
 
-    public int getRemainingSeconds() { return remainingSeconds; }
-    public void setRemainingSeconds(int remainingSeconds) {
-        this.remainingSeconds = remainingSeconds;
-    }
+    public LatLngDto getDestination() { return destination; }
+    public void setDestination(LatLngDto destination) { this.destination = destination; }
+
+    public List<LatLngDto> getRoute() { return route; }
+    public void setRoute(List<LatLngDto> route) { this.route = route; }
+
+    public int getEtaMinutes() { return etaMinutes; }
+    public void setEtaMinutes(int etaMinutes) { this.etaMinutes = etaMinutes; }
+
+    public double getDistanceKm() { return distanceKm; }
+    public void setDistanceKm(double distanceKm) { this.distanceKm = distanceKm; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

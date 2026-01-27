@@ -1,0 +1,43 @@
+<nav class="navbar">
+  <div class="nav-left">
+    <a class="nav-link" routerLink="/user/home" routerLinkActive="active">
+      Home
+    </a>
+
+    <a class="nav-link" routerLink="/user/ride-history" routerLinkActive="active">
+      Ride History
+    </a>
+
+    <a class="nav-link" routerLink="/user/reports" routerLinkActive="active">
+      Reports
+    </a>
+
+<a
+  class="nav-link"
+  [routerLink]="['/user/ride-tracking', 1]"
+  routerLinkActive="active"
+>
+  Live Tracking
+</a>
+
+  </div>
+
+  <div class="nav-center">
+    <div class="panic-btn" routerLink="/support" routerLinkActive="active-panic">
+      <img src="panic.svg" alt="panic" />
+    </div>
+  </div>
+
+  <div class="nav-right">
+    <a class="nav-link" routerLink="/user/support" routerLinkActive="active">
+      Support
+    </a>
+    <a class = "nav-link" routerLink="/user/profile" routerLinkActive="active">
+      Profile
+    </a>
+      <button class="nav-link logout-btn" type="button" (click)="logout()">
+        Log Out
+      </button>
+  </div>
+</nav>
+

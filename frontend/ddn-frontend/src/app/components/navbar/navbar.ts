@@ -1,11 +1,25 @@
-import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { DriverStateService } from '../../state/driver-state.service';
+import { AuthStore } from '../../api/auth/auth.store';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, CommonModule],
   templateUrl: './navbar.html',
-  styleUrls: ['./navbar.css']
+  styleUrls: ['./navbar.css'],
 })
-export class NavbarComponent {}
+export class NavbarComponent {
+  private driverState = inject(DriverStateService);
+  private auth = inject(AuthStore);
+  private router = inject(Router);
+
+  driverAvailable$ = this.driverState.available$;
+
+  logout(): void {
+    this.auth.clear();
+    this.router.navigate(['/login']);
+  }
+}

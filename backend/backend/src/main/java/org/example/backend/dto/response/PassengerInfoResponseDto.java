@@ -2,17 +2,18 @@ package org.example.backend.dto.response;
 
 public class PassengerInfoResponseDto {
 
-    private Long passengerId;
-    private String fullName;
+    private String name;
     private String email;
 
     public PassengerInfoResponseDto() {}
 
-    public Long getPassengerId() { return passengerId; }
-    public void setPassengerId(Long passengerId) { this.passengerId = passengerId; }
+    public PassengerInfoResponseDto(String name, String email) {
+        this.name = name;
+        this.email = email;
+    }
 
-    public String getFullName() { return fullName; }
-    public void setFullName(String fullName) { this.fullName = fullName; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }

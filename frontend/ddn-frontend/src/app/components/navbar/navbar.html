@@ -1,60 +1,44 @@
 <nav class="navbar">
   <div class="nav-left">
-    <a
-      class="nav-link"
-      routerLink="/driver/home"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-    >
+    <a class="nav-link" routerLink="/driver/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
       Home
     </a>
 
-    <a
-      class="nav-link"
-      routerLink="/driver/ride-history"
-      routerLinkActive="active"
-    >
+    <a class="nav-link" routerLink="/driver/active-ride" routerLinkActive="active">
+      Active Ride
+    </a>
+
+    <a class="nav-link" routerLink="/driver/ride-history" routerLinkActive="active">
       Ride History
     </a>
 
-    <a
-      class="nav-link"
-      routerLink="/driver/reports"
-      routerLinkActive="active"
-    >
+    <a class="nav-link" routerLink="/driver/reports" routerLinkActive="active">
       Reports
     </a>
   </div>
 
   <div class="nav-center">
-    <div
-      class="panic-btn"
-      routerLink="/support"
-      routerLinkActive="active-panic"
-    >
+    <div class="panic-btn" routerLink="/support" routerLinkActive="active-panic">
       <img src="panic.svg" alt="panic" />
     </div>
   </div>
 
   <div class="nav-right">
-    <a
-      class="nav-link"
-      routerLink="/support"
-      routerLinkActive="active"
-    >
+    <div class="driver-status" [class.available]="(driverAvailable$ | async)">
+      {{ (driverAvailable$ | async) ? 'Available' : 'Busy' }}
+    </div>
+
+    <a class="nav-link" routerLink="/support" routerLinkActive="active">
       Support
     </a>
 
-    <a
-      class="nav-link"
-      routerLink="/driver/profile"
-      routerLinkActive="active"
-    >
+    <a class="nav-link" routerLink="/driver/profile" routerLinkActive="active">
       Profile
     </a>
 
-    <a class="nav-link logout-btn" routerLink="/">
-      Log Out
-    </a>
+<button class="nav-link logout-btn" type="button" (click)="logout()">
+  Log Out
+</button>
+
   </div>
 </nav>

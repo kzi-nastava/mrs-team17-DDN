@@ -1,0 +1,107 @@
+<div class="admin-page">
+  <div class="card">
+    <div class="mini-logo">
+      <img class="mini-logo-img" src="/logo.svg" alt="Taxi logo" />
+    </div>
+
+    <div class="title">CREATE DRIVERS ACCOUNT</div>
+
+    <form #f="ngForm" (ngSubmit)="submit(f)">
+      <div class="columns">
+        <div class="col left">
+
+          <div class="field">
+            <img class="icon" src="/person.svg" alt="" />
+            <input type="text" placeholder="First Name"
+                   name="firstName" [(ngModel)]="model.firstName" required />
+          </div>
+
+          <div class="field">
+            <img class="icon" src="/person.svg" alt="" />
+            <input type="text" placeholder="Last Name"
+                   name="lastName" [(ngModel)]="model.lastName" required />
+          </div>
+
+          <div class="field">
+            <img class="icon" src="/house.svg" alt="" />
+            <input type="text" placeholder="Address"
+                   name="address" [(ngModel)]="model.address" required />
+          </div>
+
+          <div class="field">
+            <img class="icon" src="/phone.svg" alt="" />
+            <input type="text" placeholder="Phone number"
+                   name="phoneNumber" [(ngModel)]="model.phoneNumber" required />
+          </div>
+
+          <div class="field">
+            <img class="icon" src="/mail.svg" alt="" />
+            <input type="email" placeholder="E-mail"
+                   name="email" [(ngModel)]="model.email" required />
+          </div>
+        </div>
+
+        <div class="divider" aria-hidden="true"></div>
+
+        <div class="col right">
+          <div class="field">
+            <img class="icon" src="/car.svg" alt="" />
+            <input type="text" placeholder="Car Model"
+                   name="vehicleModel" [(ngModel)]="model.vehicleModel" required />
+          </div>
+
+          <div class="field select">
+            <img class="icon" src="/options.svg" alt="" />
+            <select name="vehicleType" [(ngModel)]="model.vehicleType" required>
+              <option [ngValue]="'standard'">Standard</option>
+              <option [ngValue]="'luxury'">Luxury</option>
+              <option [ngValue]="'van'">Van</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <img class="icon" src="/plate.svg" alt="" />
+            <input type="text" placeholder="Registration Plate"
+                   name="licensePlate" [(ngModel)]="model.licensePlate" required />
+          </div>
+
+          <div class="field">
+            <img class="icon" src="/capacity.svg" alt="" />
+            <input type="number" placeholder="Capacity"
+                   name="seats" [(ngModel)]="model.seats"
+                   min="1" max="9" required />
+          </div>
+
+          <div class="options">
+            <label class="opt">
+              <span class="opt-left">
+                <img class="opt-icon" src="/baby_seat.svg" alt="" />
+                <span>Baby Seat</span>
+              </span>
+              <input type="checkbox" name="babyTransport" [(ngModel)]="model.babyTransport" />
+            </label>
+
+            <label class="opt">
+              <span class="opt-left">
+                <img class="opt-icon" src="/pet_friendly.svg" alt="" />
+                <span>Pet Friendly</span>
+              </span>
+              <input type="checkbox" name="petTransport" [(ngModel)]="model.petTransport" />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="errorMsg" style="margin-top:12px; color:#c0392b; font-weight:600;">
+        {{ errorMsg }}
+      </div>
+      <div *ngIf="successMsg" style="margin-top:12px; color:#2d7d46; font-weight:600;">
+        {{ successMsg }}
+      </div>
+
+      <button type="submit" class="cta" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'CREATING...' : 'CREATE ACCOUNT' }}
+      </button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,33 @@
+<div class="details-page">
+  <div class="details-grid">
+
+    <div class="left">
+      <div class="route-lines">
+        <div class="line">Route start: {{ vm.start }}</div>
+
+        <div class="line-checkpoint" *ngFor="let cp of vm.checkpoints; let i = index">Checkpoint {{ i + 1 }}: {{ cp }}</div>
+
+        <div class="line">Route end: {{ vm.end }}</div>
+      </div>
+
+      <button class="order-again-btn" type="button" (click)="orderAgain()">
+        ORDER AGAIN
+      </button>
+
+      <div *ngIf="isLoading" style="margin-top:10px; font-weight:600;">
+        Loading...
+      </div>
+
+      <div *ngIf="errorMsg" style="margin-top:10px; color:#c0392b; font-weight:600;">
+        {{ errorMsg }}
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="map-wrap">
+        <div id="favDetailsMap" class="map"></div>
+      </div>
+    </div>
+
+  </div>
+</div>

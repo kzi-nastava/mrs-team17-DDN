@@ -1,0 +1,53 @@
+
+<div class="content">
+  <div class="grid">
+    <div class="map-wrap">
+      <div id="tracking-map" class="map"></div>
+
+      <div class="overlay">
+        <div class="overlay-title">Ride tracking</div>
+
+        <div class="overlay-row">
+          <span class="label">ETA</span>
+          <span class="value">{{ etaMinutes }} min</span>
+        </div>
+
+        <div class="overlay-row">
+          <span class="label">Distance</span>
+          <span class="value">{{ distanceKm }} km</span>
+        </div>
+
+        <div class="overlay-row">
+          <span class="label">Status</span>
+          <span class="value">{{ rideStatus }}</span>
+        </div>
+
+        <button
+          class="btn"
+          (click)="openReport()"
+          [disabled]="rideStatus !== 'ACTIVE'"
+          title="Reports are available only during ACTIVE rides"
+        >
+          Report inconsistency
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="reportOpen" (click)="closeReport()"></div>
+
+<div class="modal" *ngIf="reportOpen">
+  <div class="modal-title">Report inconsistency</div>
+
+  <textarea
+    class="textarea"
+    [(ngModel)]="reportText"
+    placeholder="Describe the issue..."
+  ></textarea>
+
+  <div class="modal-actions">
+    <button class="btn secondary" (click)="closeReport()">Cancel</button>
+    <button class="btn primary" (click)="submitReport()">Submit</button>
+  </div>
+</div>

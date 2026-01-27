@@ -1,0 +1,248 @@
+.admin-page {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 28px 18px 46px;
+  box-sizing: border-box;
+
+  color: #ffffff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+}
+
+.card {
+  width: 900px;
+  max-width: 92vw;
+  background: #555;
+  border-radius: 12px;
+  padding: 32px;
+  position: relative;
+  display: block;
+  backdrop-filter: blur(2px);
+}
+
+.mini-logo {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: rgba(35, 35, 35, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+}
+
+.mini-logo-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  display: block;
+}
+
+.title {
+  position: absolute;
+  top: 34px;
+  left: 0;
+  right: 0;
+  text-align: center;
+
+  color: #ffffff;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  font-size: 18px;
+}
+
+.columns {
+  margin-top: 46px;
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  column-gap: 34px;
+  align-items: start;
+}
+
+.divider {
+  width: 1px;
+  height: 330px;
+  background: rgba(255, 255, 255, 0.25);
+  justify-self: center;
+  margin-top: 10px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  height: 34px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(165, 165, 165, 0.55),
+    rgba(135, 135, 135, 0.45)
+  );
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  opacity: 0.85;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+
+  color: #ffffff;
+  font-size: 12px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.field input::placeholder {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.field.select select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.field.select select option {
+  background: #6a6a6a;
+  color: #ffffff;
+}
+
+
+.field.select select:focus {
+  color: #ffffff;
+}
+
+.upload-btn {
+  width: 210px;
+  height: 34px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(185,185,185,0.70), rgba(155,155,155,0.60));
+  padding: 0 12px 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.upload-btn:hover {
+  background: linear-gradient(180deg, rgba(205,205,205,0.75), rgba(175,175,175,0.65));
+}
+
+.upload-text {
+  font-size: 12px;
+  color: #ffffff;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.upload-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  opacity: 0.85;
+}
+
+.options {
+  margin-top: 8px;
+  width: 280px;
+  max-width: 100%;
+  background: rgba(120, 120, 120, 0.55);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  color: #ffffff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.opt-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.opt-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  opacity: 0.9;
+}
+
+.opt input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: rgba(255, 255, 255, 0.95);
+}
+
+.cta {
+  display: block;
+  margin: 22px auto 0;
+  width: 260px;
+  height: 44px;
+  border: none;
+  border-radius: 999px;
+
+  background: linear-gradient(180deg, rgba(155,155,155,0.70), rgba(120,120,120,0.55));
+  color: #ffffff;
+
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+
+  cursor: pointer;
+  margin-top: 18px;
+}
+
+.cta:hover {
+  background: linear-gradient(180deg, rgba(175,175,175,0.75), rgba(140,140,140,0.60));
+}
+
+@media (max-width: 840px) {
+  .columns {
+    grid-template-columns: 1fr;
+    row-gap: 18px;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .title {
+    position: static;
+    margin: 14px 0 10px;
+  }
+
+  .card {
+    padding-top: 18px;
+  }
+}

@@ -1,0 +1,76 @@
+<div class="page">
+  <h1>Rate Ride</h1>
+
+  <div class="card-fixed">
+    <div class="info" *ngIf="info">{{ info }}</div>
+    <div class="error" *ngIf="error">{{ error }}</div>
+
+    <!-- already rated -->
+    <div *ngIf="existing" class="rated">
+      <div class="rated-row">
+        <span class="rated-label">Driver rating:</span>
+        <span class="rated-value">{{ existing.driverRating }}/5</span>
+      </div>
+
+      <div class="rated-row">
+        <span class="rated-label">Vehicle rating:</span>
+        <span class="rated-value">{{ existing.vehicleRating }}/5</span>
+      </div>
+
+      <div class="rated-row" *ngIf="existing.comment">
+        <span class="rated-label">Comment:</span>
+        <span class="rated-value">{{ existing.comment }}</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn secondary" type="button" (click)="goBack()">Back</button>
+      </div>
+    </div>
+
+    <!-- form -->
+    <form *ngIf="!existing" (ngSubmit)="submit()" novalidate>
+      <div class="filter">
+        <div class="field">
+          <span>Driver rating:</span>
+          <input
+            type="number"
+            min="1"
+            max="5"
+            [value]="driverRating"
+            (input)="driverRating = $any($event.target).value"
+            class="rating-input"
+          />
+        </div>
+
+        <div class="field">
+          <span>Vehicle rating:</span>
+          <input
+            type="number"
+            min="1"
+            max="5"
+            [value]="vehicleRating"
+            (input)="vehicleRating = $any($event.target).value"
+            class="rating-input"
+          />
+        </div>
+
+        <button type="submit" [disabled]="submitting">Submit</button>
+      </div>
+
+      <div class="comment-box">
+        <div class="comment-label">Comment (optional)</div>
+        <textarea
+          class="textarea"
+          rows="6"
+          [(ngModel)]="comment"
+          name="comment"
+          placeholder="Write a short comment..."
+        ></textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn secondary" type="button" (click)="goBack()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

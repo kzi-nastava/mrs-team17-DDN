@@ -1,5 +1,21 @@
 <app-public-navbar></app-public-navbar>
 
-<div class="landing">
-  <h1>Welcome!</h1>
+<div class="content">
+  <div class="map-wrap">
+    <div id="map" class="map"></div>
+
+    <div class="map-legend">
+      <div class="legend-title">Active vehicles</div>
+
+      <div class="legend-row">
+        <span class="dot free"></span>
+        <span>Free: {{ freeCount }}</span>
+      </div>
+
+      <div class="legend-row">
+        <span class="dot busy"></span>
+        <span>Busy: {{ busyCount }}</span>
+      </div>
+    </div>
+  </div>
 </div>

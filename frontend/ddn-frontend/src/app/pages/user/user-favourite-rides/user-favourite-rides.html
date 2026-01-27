@@ -1,0 +1,48 @@
+<div class="fav-page">
+  <div class="fav-card">
+
+    <h2 class="title">Favourite rides</h2>
+
+    <div class="table">
+      <div class="head">
+        <div class="col-route">Route</div>
+        <div class="col-actions"></div>
+      </div>
+
+      <div class="row" *ngFor="let r of favourites">
+        <div class="col-route">
+          <div class="route-one-line">
+            <span class="route-from">{{ r.from }}</span>
+            <span class="route-arrow" aria-hidden="true">⟶</span>
+            <span class="route-to">{{ r.to }}</span>
+          </div>
+        </div>
+
+        <div class="col-actions">
+          <button
+            class="details-btn"
+            type="button"
+            [routerLink]="['/user/favourite-rides', r.id]"
+          >
+            Details
+          </button>
+
+          <button
+            class="remove-btn"
+            type="button"
+            [disabled]="removingId === r.id"
+            (click)="remove(r.id)"
+            title="Remove from favourites"
+          >
+            {{ removingId === r.id ? 'Removing...' : 'Remove' }}
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="isLoading" class="state">Loading...</div>
+      <div *ngIf="!isLoading && favourites.length === 0" class="state">No favourite routes yet.</div>
+      <div *ngIf="errorMsg" class="state err">{{ errorMsg }}</div>
+    </div>
+
+  </div>
+</div>
