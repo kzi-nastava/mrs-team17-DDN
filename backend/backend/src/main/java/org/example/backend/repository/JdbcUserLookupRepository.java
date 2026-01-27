@@ -17,7 +17,7 @@ public class JdbcUserLookupRepository implements UserLookupRepository {
     @Override
     public Optional<UserBasic> findById(Long id) {
         return jdbc.sql("""
-            select id, email, first_name, last_name, is_active
+            select id, email, first_name, last_name, is_active, blocked, block_reason
             from users
             where id = :id
         """)
@@ -27,7 +27,9 @@ public class JdbcUserLookupRepository implements UserLookupRepository {
                         rs.getString("email"),
                         rs.getString("first_name"),
                         rs.getString("last_name"),
-                        rs.getBoolean("is_active")
+                        rs.getBoolean("is_active"),
+                        rs.getBoolean("blocked"),
+                        rs.getString("block_reason")
                 ))
                 .optional();
     }
@@ -35,7 +37,7 @@ public class JdbcUserLookupRepository implements UserLookupRepository {
     @Override
     public Optional<UserBasic> findByEmail(String email) {
         return jdbc.sql("""
-            select id, email, first_name, last_name, is_active
+            select id, email, first_name, last_name, is_active, blocked, block_reason
             from users
             where lower(email) = lower(:email)
         """)
@@ -45,7 +47,9 @@ public class JdbcUserLookupRepository implements UserLookupRepository {
                         rs.getString("email"),
                         rs.getString("first_name"),
                         rs.getString("last_name"),
-                        rs.getBoolean("is_active")
+                        rs.getBoolean("is_active"),
+                        rs.getBoolean("blocked"),
+                        rs.getString("block_reason")
                 ))
                 .optional();
     }
