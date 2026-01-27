@@ -12,9 +12,14 @@
       Reports
     </a>
 
-    <a class="nav-link" routerLink="/user/ride-tracking" routerLinkActive="active">
-      Live Tracking
-    </a>
+<a
+  class="nav-link"
+  [routerLink]="['/user/ride-tracking', 1]"
+  routerLinkActive="active"
+>
+  Live Tracking
+</a>
+
   </div>
 
   <div class="nav-center">
