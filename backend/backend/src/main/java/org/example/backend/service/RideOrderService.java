@@ -3,8 +3,8 @@ package org.example.backend.service;
 import org.example.backend.dto.request.CreateRideRequestDto;
 import org.example.backend.dto.request.RidePointRequestDto;
 import org.example.backend.dto.response.CreateRideResponseDto;
-import org.example.backend.exception.NoAvailableDriverException;
 import org.example.backend.exception.ActiveRideConflictException;
+import org.example.backend.exception.NoAvailableDriverException;
 import org.example.backend.osrm.OsrmClient;
 import org.example.backend.repository.*;
 
@@ -15,14 +15,17 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class RideOrderService {
 
     private static final BigDecimal PRICE_PER_KM = new BigDecimal("120");
-
     private static final double FALLBACK_AVG_SPEED_KMH = 35.0;
+
+    private static final int FINISHING_SOON_THRESHOLD_SECONDS = 10 * 60;
 
     private final OsrmClient osrmClient;
     private final DriverMatchingRepository driverRepo;
@@ -65,34 +68,24 @@ public class RideOrderService {
         boolean pet  = Boolean.TRUE.equals(req.getPetTransport());
 
         OffsetDateTime now = OffsetDateTime.now();
-        OffsetDateTime startedAt = null;
+        OffsetDateTime scheduledAt = null;
 
         if (orderType.equals("schedule")) {
             if (req.getScheduledAt() == null) {
                 throw new IllegalArgumentException("scheduledAt is required for schedule order");
             }
-            startedAt = req.getScheduledAt();
+            scheduledAt = req.getScheduledAt();
 
-            if (startedAt.isBefore(now)) {
+            if (scheduledAt.isBefore(now)) {
                 throw new IllegalArgumentException("scheduledAt must be in the future");
             }
-            if (startedAt.isAfter(now.plusHours(5))) {
+            if (scheduledAt.isAfter(now.plusHours(5))) {
                 throw new IllegalArgumentException("scheduledAt can be at most 5 hours ahead");
             }
         }
 
         RidePointRequestDto start = req.getStart();
         RidePointRequestDto dest  = req.getDestination();
-
-        List<DriverMatchingRepository.CandidateDriver> candidates =
-                driverRepo.findAvailableDrivers(vehicleType, baby, pet);
-
-        if (candidates.isEmpty()) {
-            throw new NoAvailableDriverException("No available drivers for selected criteria");
-        }
-
-        DriverMatchingRepository.CandidateDriver chosen =
-                chooseNearestToStart(candidates, start.getLat(), start.getLng());
 
         List<OsrmClient.Point> points = new ArrayList<>();
         points.add(new OsrmClient.Point(start.getLat(), start.getLng()));
@@ -117,12 +110,16 @@ public class RideOrderService {
         UserLookupRepository.UserBasic requester = userLookupRepo.findById(req.getRequesterUserId())
                 .orElseThrow(() -> new IllegalArgumentException("Requester user not found"));
 
-        if (rideOrderRepo.userHasActiveRide(requester.email())) {
-            throw new ActiveRideConflictException("User already has an active ride.");
-        }
-
         if (!requester.active()) {
             throw new IllegalArgumentException("Requester account is not active");
+        }
+        if (requester.blocked()) {
+            String reason = requester.blockReason() == null ? "" : (" Reason: " + requester.blockReason());
+            throw new IllegalArgumentException("Requester is blocked." + reason);
+        }
+
+        if (rideOrderRepo.userHasActiveRide(requester.email())) {
+            throw new ActiveRideConflictException("User already has an active ride.");
         }
 
         List<RidePassengerRepository.PassengerRow> passengers = new ArrayList<>();
@@ -131,25 +128,28 @@ public class RideOrderService {
                 requester.email()
         ));
 
-        int guestCounter = 1;
+        Set<String> addedEmails = new HashSet<>();
+        if (requester.email() != null) {
+            addedEmails.add(requester.email().trim().toLowerCase());
+        }
 
         if (req.getLinkedUsers() != null) {
             for (String raw : req.getLinkedUsers()) {
                 String e = safeTrim(raw);
+                if (e.isEmpty()) continue;
 
-                if (e.isEmpty()) {
-                    passengers.add(new RidePassengerRepository.PassengerRow("Guest " + guestCounter++, null));
-                    continue;
+                String lower = e.toLowerCase();
+                if (addedEmails.contains(lower)) continue;
+
+                UserLookupRepository.UserBasic u = userLookupRepo.findByEmail(e)
+                        .orElseThrow(() -> new IllegalArgumentException("Linked user not found: " + e));
+
+                if (!u.active()) {
+                    throw new IllegalArgumentException("Linked user is not active: " + e);
                 }
-
-                var opt = userLookupRepo.findByEmail(e);
-
-                if (opt.isEmpty()) {
-                    passengers.add(new RidePassengerRepository.PassengerRow("Guest " + guestCounter++, null));
-                    continue;
+                if (u.blocked()) {
+                    throw new IllegalArgumentException("Linked user is blocked: " + e);
                 }
-
-                UserLookupRepository.UserBasic u = opt.get();
 
                 if (rideOrderRepo.userHasActiveRide(u.email())) {
                     throw new ActiveRideConflictException("One of the linked users already has an active ride.");
@@ -159,25 +159,24 @@ public class RideOrderService {
                         u.firstName() + " " + u.lastName(),
                         u.email()
                 ));
-
-                passengers.add(new RidePassengerRepository.PassengerRow(
-                        u.firstName() + " " + u.lastName(),
-                        u.email()
-                ));
+                addedEmails.add(lower);
             }
         }
 
+        DriverPick pick = pickDriver(vehicleType, baby, pet, start.getLat(), start.getLng());
 
         Long rideId = rideOrderRepo.insertRideReturningId(
-                chosen.driverId(),
-                startedAt,
+                pick.driverId,
+                scheduledAt,
                 safeTrim(start.getAddress()),
                 safeTrim(dest.getAddress()),
                 price,
                 "ACCEPTED",
                 start.getLat(), start.getLng(),
                 dest.getLat(), dest.getLng(),
-                chosen.vehicleLat(), chosen.vehicleLng()
+                pick.carLat, pick.carLng,
+                metrics.distanceMeters,
+                metrics.durationSeconds
         );
 
         if (req.getCheckpoints() != null && !req.getCheckpoints().isEmpty()) {
@@ -192,19 +191,54 @@ public class RideOrderService {
                 ));
             }
             rideStopRepo.insertStops(rideId, stops);
-
         }
 
         passengerRepo.insertPassengers(rideId, passengers);
 
-        driverRepo.setDriverAvailable(chosen.driverId(), false);
+        driverRepo.setDriverAvailable(pick.driverId, false);
 
         CreateRideResponseDto resp = new CreateRideResponseDto();
         resp.setRideId(rideId);
-        resp.setDriverId(chosen.driverId());
+        resp.setDriverId(pick.driverId);
         resp.setStatus("ACCEPTED");
         resp.setPrice(price);
         return resp;
+    }
+
+    private static class DriverPick {
+        final Long driverId;
+        final double carLat;
+        final double carLng;
+
+        DriverPick(Long driverId, double carLat, double carLng) {
+            this.driverId = driverId;
+            this.carLat = carLat;
+            this.carLng = carLng;
+        }
+    }
+
+    private DriverPick pickDriver(String vehicleType, boolean baby, boolean pet, double startLat, double startLng) {
+        List<DriverMatchingRepository.CandidateDriver> candidates =
+                driverRepo.findAvailableDrivers(vehicleType, baby, pet);
+
+        if (!candidates.isEmpty()) {
+            DriverMatchingRepository.CandidateDriver chosen =
+                    chooseNearestToStart(candidates, startLat, startLng);
+
+            return new DriverPick(chosen.driverId(), chosen.vehicleLat(), chosen.vehicleLng());
+        }
+
+        List<DriverMatchingRepository.FinishingSoonDriver> finishingSoon =
+                driverRepo.findDriversFinishingSoon(vehicleType, baby, pet, FINISHING_SOON_THRESHOLD_SECONDS);
+
+        if (finishingSoon.isEmpty()) {
+            throw new NoAvailableDriverException("No available drivers for selected criteria");
+        }
+
+        DriverMatchingRepository.FinishingSoonDriver chosen =
+                chooseBestFinishingSoon(finishingSoon, startLat, startLng);
+
+        return new DriverPick(chosen.driverId(), chosen.vehicleLat(), chosen.vehicleLng());
     }
 
     private static class RouteMetrics {
@@ -276,6 +310,24 @@ public class RideOrderService {
             if (km < bestKm) {
                 bestKm = km;
                 best = c;
+            }
+        }
+        return best;
+    }
+
+    private static DriverMatchingRepository.FinishingSoonDriver chooseBestFinishingSoon(
+            List<DriverMatchingRepository.FinishingSoonDriver> drivers,
+            double startLat,
+            double startLng
+    ) {
+        DriverMatchingRepository.FinishingSoonDriver best = null;
+        double bestKm = Double.POSITIVE_INFINITY;
+
+        for (DriverMatchingRepository.FinishingSoonDriver d : drivers) {
+            double km = haversineKm(startLat, startLng, d.finishLat(), d.finishLng());
+            if (km < bestKm) {
+                bestKm = km;
+                best = d;
             }
         }
         return best;
