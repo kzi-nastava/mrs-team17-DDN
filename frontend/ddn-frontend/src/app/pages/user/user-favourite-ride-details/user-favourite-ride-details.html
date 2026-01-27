@@ -10,9 +10,17 @@
         <div class="line">Route end: {{ vm.end }}</div>
       </div>
 
-      <button class="order-again-btn" type="button" routerLink="/user/confirm-ride">
+      <button class="order-again-btn" type="button" (click)="orderAgain()">
         ORDER AGAIN
       </button>
+
+      <div *ngIf="isLoading" style="margin-top:10px; font-weight:600;">
+        Loading...
+      </div>
+
+      <div *ngIf="errorMsg" style="margin-top:10px; color:#c0392b; font-weight:600;">
+        {{ errorMsg }}
+      </div>
     </div>
 
     <div class="right">
