@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { finalize, filter, switchMap, take, map } from 'rxjs';
+import { finalize } from 'rxjs';
 import { DriverRidesHttpDataSource } from '../../../api/driver/driver-rides-http.datasource';
 import { DriverRideHistoryItem } from '../../../api/driver/models/driver-rides.models';
-import { DriverStateService } from '../../../state/driver-state.service';
 import { AuthStore } from '../../../api/auth/auth.store';
 
 @Component({
@@ -25,17 +24,18 @@ export class DriverRideHistoryComponent implements OnInit {
   constructor(
     private router: Router,
     private ridesApi: DriverRidesHttpDataSource,
-    private driverState: DriverStateService,
     private authStore: AuthStore
   ) {}
 
   ngOnInit(): void {
-    if (!this.driverState.getDriverIdSnapshot()) {
-      const driverId = this.authStore.getCurrentDriverId();
-      if (driverId) this.driverState.setDriverId(driverId);
+    const token = this.authStore.getToken();
+    if (!token) {
+      this.router.navigate(['/login']);
+      return;
     }
 
-    if (!this.driverState.getDriverIdSnapshot()) {
+    const role = this.authStore.getRoleFromToken(token);
+    if (role !== 'DRIVER') {
       this.router.navigate(['/login']);
       return;
     }
@@ -65,12 +65,9 @@ export class DriverRideHistoryComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.driverState.driverId$
+    this.ridesApi
+      .getDriverRides(this.from, this.to)
       .pipe(
-        take(1),
-        map((id) => Number(id)),
-        filter((id) => Number.isFinite(id) && id > 0),
-        switchMap(() => this.ridesApi.getDriverRides(this.from, this.to)),
         finalize(() => {
           this.loading = false;
         })

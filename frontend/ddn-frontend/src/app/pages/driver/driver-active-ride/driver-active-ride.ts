@@ -34,6 +34,7 @@ export class DriverActiveRideComponent implements OnInit {
     this.loading = true;
     this.error = null;
     this.ride = null;
+    this.finished = false;
 
     this.ridesApi
       .getActiveRide()
