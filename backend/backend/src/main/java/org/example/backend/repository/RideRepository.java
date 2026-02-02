@@ -25,6 +25,9 @@ public interface RideRepository {
 
     java.util.List<Long> findActiveRideIds();
 
+    // NEW: active ride for current passenger userId
+    Optional<Long> findActiveRideIdForPassenger(long userId);
+
     // NEW: one-way switch when car reaches pickup (prevents ping-pong)
     boolean markPickedUp(Long rideId);
 

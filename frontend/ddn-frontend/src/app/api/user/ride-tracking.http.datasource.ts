@@ -11,21 +11,21 @@ export class RideTrackingHttpDataSource implements RideTrackingDataSource {
   private http = inject(HttpClient);
   private readonly baseUrl = inject(API_BASE_URL);
 
-  watchTracking(rideId: number): Observable<TrackingState> {
+  watchMyActiveTracking(): Observable<TrackingState> {
     return timer(0, 2000).pipe(
       switchMap(() =>
-        this.http.get<TrackingState>(`${this.baseUrl}/rides/${rideId}/tracking`)
+        this.http.get<TrackingState>(`${this.baseUrl}/rides/active/tracking`)
       ),
       shareReplay({ bufferSize: 1, refCount: true })
     );
   }
 
-  submitInconsistency(rideId: number, text: string): Observable<void> {
+  submitInconsistencyForMyActiveRide(text: string): Observable<void> {
     const body = { description: text };
-    return this.http.post<void>(`${this.baseUrl}/rides/${rideId}/reports`, body);
+    return this.http.post<void>(`${this.baseUrl}/rides/active/reports`, body);
   }
 
-  listInconsistencies(_: number): Observable<InconsistencyReport[]> {
+  listInconsistenciesForMyActiveRide(): Observable<InconsistencyReport[]> {
     return of([]);
   }
 }

@@ -1,4 +1,3 @@
-// backend/src/main/java/org/example/backend/controller/RideController.java
 package org.example.backend.controller;
 
 import org.example.backend.dto.request.RideReportRequestDto;
@@ -10,7 +9,10 @@ import org.example.backend.service.RideRatingService;
 import org.example.backend.service.RideService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/rides")
@@ -23,6 +25,32 @@ public class RideController {
         this.rideService = rideService;
         this.rideRatingService = rideRatingService;
     }
+
+    // -------------------------
+    // NEW: "my active ride" APIs
+    // -------------------------
+
+    @GetMapping("/active/tracking")
+    public ResponseEntity<RideTrackingResponseDto> getMyActiveRideTracking() {
+        long userId = requirePassengerUserId();
+        Long rideId = rideService.getActiveRideIdForPassenger(userId);
+        return ResponseEntity.ok(rideService.getRideTracking(rideId));
+    }
+
+    @PostMapping("/active/reports")
+    public ResponseEntity<RideReportResponseDto> reportIssueForMyActiveRide(
+            @RequestBody RideReportRequestDto request
+    ) {
+        long userId = requirePassengerUserId();
+        Long rideId = rideService.getActiveRideIdForPassenger(userId);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(rideService.reportRideIssue(rideId, request));
+    }
+
+    // -------------------------
+    // Existing APIs (keep as-is)
+    // -------------------------
 
     @GetMapping("/{rideId}/tracking")
     public ResponseEntity<RideTrackingResponseDto> getRideTracking(@PathVariable Long rideId) {
@@ -72,4 +100,28 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
+    // -------------------------
+    // Helpers
+    // -------------------------
+
+    private long requirePassengerUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+
+        boolean isPassenger = auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_PASSENGER".equals(a.getAuthority()));
+
+        if (!isPassenger) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only passengers can access this endpoint");
+        }
+
+        try {
+            return Long.parseLong(auth.getPrincipal().toString());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid authentication principal");
+        }
+    }
 }
