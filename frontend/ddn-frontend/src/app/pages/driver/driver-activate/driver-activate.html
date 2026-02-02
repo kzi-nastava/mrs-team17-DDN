@@ -1,0 +1,55 @@
+<div class="activate-wrapper">
+  <div class="logo-container">
+    <img src="/logo.png" alt="App logo" />
+  </div>
+
+  <h2>DRIVER ACCOUNT ACTIVATION</h2>
+
+  <p class="subtitle">
+    Set a password to activate your account.
+  </p>
+
+  <div *ngIf="error" class="error-banner">
+    {{ error }}
+  </div>
+
+  <div *ngIf="success" class="success-banner">
+    {{ success }}
+  </div>
+
+  <form class="activate-form" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="input-group">
+      <img src="/locked-computer.png" alt="Password icon" />
+      <input
+        type="password"
+        placeholder="New password (min 8 characters)"
+        formControlName="password"
+        [disabled]="loading || !!success"
+      />
+    </div>
+    <div *ngIf="form.get('password')?.invalid && form.get('password')?.touched" class="error">
+      Password is required (min 8 characters).
+    </div>
+
+    <div class="input-group">
+      <img src="/locked-computer.png" alt="Confirm password icon" />
+      <input
+        type="password"
+        placeholder="Confirm password"
+        formControlName="confirmPassword"
+        [disabled]="loading || !!success"
+      />
+    </div>
+    <div *ngIf="form.get('confirmPassword')?.invalid && form.get('confirmPassword')?.touched" class="error">
+      Confirm password is required.
+    </div>
+
+    <button class="activate-btn" type="submit" [disabled]="loading || form.invalid || !token || !!success">
+      {{ loading ? 'ACTIVATING...' : 'ACTIVATE' }}
+    </button>
+
+    <div class="back-to-login" *ngIf="!loading && !success">
+      <a routerLink="/login">Back to login</a>
+    </div>
+  </form>
+</div>

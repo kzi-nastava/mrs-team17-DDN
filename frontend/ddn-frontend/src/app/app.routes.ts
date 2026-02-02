@@ -44,6 +44,12 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
 
   {
+    path: 'driver/activate',
+    loadComponent: () =>
+      import('./pages/driver/driver-activate/driver-activate').then(m => m.DriverActivate),
+  },
+
+  {
     path: 'reset-password',
     loadComponent: () =>
       import('./pages/user/reset-password/reset-password').then(m => m.ResetPassword),
