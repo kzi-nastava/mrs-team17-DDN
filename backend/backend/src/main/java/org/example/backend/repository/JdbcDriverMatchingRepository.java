@@ -17,7 +17,7 @@ public class JdbcDriverMatchingRepository implements DriverMatchingRepository {
     }
 
     @Override
-    public List<CandidateDriver> findAvailableDrivers(String vehicleTypeLower, boolean babyTransport, boolean petTransport) {
+    public List<CandidateDriver> findAvailableDrivers(String vehicleTypeLower, boolean babyTransport, boolean petTransport, int requiredSeats) {
         String sql = """
             select
                 d.id as driver_id,
@@ -28,6 +28,7 @@ public class JdbcDriverMatchingRepository implements DriverMatchingRepository {
             left join users u on u.id = d.user_id
             where d.available = true
               and v.type = :type
+              and v.seats >= :seats
               and (:baby = false or v.baby_transport = true)
               and (:pet  = false or v.pet_transport  = true)
               and (d.user_id is null or (u.is_active = true and u.blocked = false))
@@ -51,6 +52,7 @@ public class JdbcDriverMatchingRepository implements DriverMatchingRepository {
 
         return jdbc.sql(sql)
                 .param("type", vehicleTypeLower)
+                .param("seats", requiredSeats)
                 .param("baby", babyTransport)
                 .param("pet", petTransport)
                 .param("maxWorkSeconds", MAX_WORK_SECONDS_LAST_24H)
@@ -67,6 +69,7 @@ public class JdbcDriverMatchingRepository implements DriverMatchingRepository {
             String vehicleTypeLower,
             boolean babyTransport,
             boolean petTransport,
+            int requiredSeats,
             int remainingSecondsThreshold
     ) {
         String sql = """
@@ -88,6 +91,7 @@ public class JdbcDriverMatchingRepository implements DriverMatchingRepository {
               and r.est_duration_seconds is not null
               and (r.est_duration_seconds - extract(epoch from (now() - r.started_at))) between 0 and :thr
               and v.type = :type
+              and v.seats >= :seats
               and (:baby = false or v.baby_transport = true)
               and (:pet  = false or v.pet_transport  = true)
               and (d.user_id is null or (u.is_active = true and u.blocked = false))
@@ -111,6 +115,7 @@ public class JdbcDriverMatchingRepository implements DriverMatchingRepository {
 
         return jdbc.sql(sql)
                 .param("type", vehicleTypeLower)
+                .param("seats", requiredSeats)
                 .param("baby", babyTransport)
                 .param("pet", petTransport)
                 .param("thr", remainingSecondsThreshold)

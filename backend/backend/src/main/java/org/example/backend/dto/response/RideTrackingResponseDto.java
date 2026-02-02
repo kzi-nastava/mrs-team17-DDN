@@ -8,8 +8,9 @@ public class RideTrackingResponseDto {
     private LatLngDto pickup;
     private LatLngDto destination;
 
-    // NEW: route polyline (ordered points)
     private List<LatLngDto> route;
+
+    private List<RideCheckpointDto> checkpoints;
 
     private int etaMinutes;
     private double distanceKm;
@@ -28,6 +29,9 @@ public class RideTrackingResponseDto {
 
     public List<LatLngDto> getRoute() { return route; }
     public void setRoute(List<LatLngDto> route) { this.route = route; }
+
+    public List<RideCheckpointDto> getCheckpoints() { return checkpoints; }
+    public void setCheckpoints(List<RideCheckpointDto> checkpoints) { this.checkpoints = checkpoints; }
 
     public int getEtaMinutes() { return etaMinutes; }
     public void setEtaMinutes(int etaMinutes) { this.etaMinutes = etaMinutes; }

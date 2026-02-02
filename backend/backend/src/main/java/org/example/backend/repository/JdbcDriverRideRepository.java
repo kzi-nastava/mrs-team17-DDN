@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -109,13 +110,14 @@ public class JdbcDriverRideRepository implements DriverRideRepository {
             Long driverId
     ) {
         String sql = """
-            select *
-            from rides
-            where driver_id = :driverId
-              and ended_at is null
-              and canceled = false
-            limit 1
-        """;
+        select *
+        from rides
+        where driver_id = :driverId
+          and ended_at is null
+          and canceled = false
+          and status = 'ACTIVE'
+        limit 1
+    """;
 
         return jdbc.sql(sql)
                 .param("driverId", driverId)
@@ -142,6 +144,54 @@ public class JdbcDriverRideRepository implements DriverRideRepository {
 
                     return Optional.of(dto);
                 });
+    }
+
+
+    @Override
+    public List<DriverRideDetailsResponseDto> findAcceptedRides(Long driverId) {
+        String sql = """
+            select r.id
+            from rides r
+            where r.driver_id = :driverId
+              and r.status = 'ACCEPTED'
+              and r.ended_at is null
+              and r.canceled = false
+            order by coalesce(r.scheduled_at, r.created_at) asc
+        """;
+
+        List<Long> rideIds = jdbc.sql(sql)
+                .param("driverId", driverId)
+                .query(Long.class)
+                .list();
+
+        List<DriverRideDetailsResponseDto> out = new ArrayList<>();
+        for (Long rideId : rideIds) {
+            findDriverRideDetails(driverId, rideId).ifPresent(out::add);
+        }
+        return out;
+    }
+
+    @Override
+    public boolean startRide(Long driverId, Long rideId) {
+        int updated = jdbc.sql("""
+            update rides
+            set
+                status = 'ACTIVE',
+                started_at = case
+                    when started_at is null then now()
+                    else started_at
+                end
+            where id = :rideId
+              and driver_id = :driverId
+              and ended_at is null
+              and canceled = false
+              and status in ('ACCEPTED', 'ACTIVE')
+        """)
+                .param("rideId", rideId)
+                .param("driverId", driverId)
+                .update();
+
+        return updated > 0;
     }
 
     private List<String> findStops(Long rideId) {

@@ -94,6 +94,17 @@
   height: 100%;
 }
 
+.start-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: grayscale(0.2);
+}
+
+.drive-line.error {
+  color: #ffd4d4;
+  opacity: 0.95;
+}
+
 @media (max-width: 980px) {
   .start-ride-grid {
     grid-template-columns: 1fr;
