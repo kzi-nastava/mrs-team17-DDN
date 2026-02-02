@@ -72,6 +72,14 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/rate/pending")
+    public ResponseEntity<java.util.Map<String, Long>> getPendingRatingRide() {
+        long userId = requirePassengerUserId();
+        Long rideId = rideService.getRideIdToRateForPassenger(userId);
+        return ResponseEntity.ok(java.util.Map.of("rideId", rideId));
+    }
+
+
     @PutMapping("/{rideId}/simulate-step")
     public ResponseEntity<Void> simulateStep(@PathVariable Long rideId) {
         rideService.simulateVehicleStep(rideId);

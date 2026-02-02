@@ -19,6 +19,9 @@ public interface RideRepository {
 
     boolean updateVehicleLocation(long driverId, double lat, double lng);
 
+    Optional<Long> findRideIdToRateForPassenger(long email);
+
+
     java.util.List<String> findPassengerEmails(Long rideId);
 
     Optional<RideAddresses> findRideAddresses(Long rideId);

@@ -45,6 +45,11 @@ public class RideService {
         }
     }
 
+    public Long getRideIdToRateForPassenger(long userId) {
+        return repository.findRideIdToRateForPassenger(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No ride to rate"));
+    }
+
     public void finishRide(Long rideId) {
         boolean ok = repository.finishRide(rideId);
         if (!ok) {
