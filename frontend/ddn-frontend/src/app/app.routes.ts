@@ -162,6 +162,8 @@ export const routes: Routes = [
           import('./pages/admin/admin-password-change/admin-password-change').then(m => m.AdminPasswordChange),
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
+      { path: 'update-requests/:requestId', loadComponent: () => import('./pages/admin/admin-update-request-details/admin-update-request-details').then(m => m.AdminUpdateRequestDetails),},
+      { path: 'update-requests', component: AdminUpdateRequests },
     ],
   },
 

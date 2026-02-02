@@ -67,10 +67,10 @@ export class DriverProfile implements OnInit {
     return resolved;
   }
 
-  loadProfile(): void {
+  loadProfile(keepSuccessNotice = false): void {
     this.loading = true;
     this.errorMsg = null;
-    this.successMsg = null;
+    if (!keepSuccessNotice) this.successMsg = null;
 
     this.api.getProfile(this.driverId).subscribe({
       next: (res) => {
@@ -108,9 +108,10 @@ export class DriverProfile implements OnInit {
     };
 
     this.api.requestProfileChange(this.driverId, payload).subscribe({
-      next: (res) => {
+      next: () => {
         this.loading = false;
-        this.successMsg = `Request sent (status: ${res.status}).`;
+        this.successMsg = 'Your profile update request has been sent to admins for review.';
+        this.loadProfile(true);
       },
       error: () => {
         this.loading = false;

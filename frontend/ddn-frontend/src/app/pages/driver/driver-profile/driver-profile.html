@@ -57,6 +57,8 @@
     </div>
 
     <div class="actions">
+      <div *ngIf="successMsg" class="notice success">{{ successMsg }}</div>
+      <div *ngIf="errorMsg" class="notice error">{{ errorMsg }}</div>
       <button type="button" class="primary-action-driver" (click)="onUpdateProfile()">
         UPDATE PROFILE
       </button>

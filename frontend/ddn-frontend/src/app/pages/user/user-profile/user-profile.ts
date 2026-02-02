@@ -57,10 +57,10 @@ export class UserProfile implements OnInit {
     img.src = 'avatar.svg';
   }
 
-  loadProfile(): void {
+  loadProfile(keepSuccessNotice = false): void {
     this.loading = true;
     this.errorMsg = null;
-    this.successMsg = null;
+    if (!keepSuccessNotice) this.successMsg = null;
 
     this.api.getProfile(this.userId).subscribe({
       next: (res) => {
@@ -103,8 +103,8 @@ export class UserProfile implements OnInit {
     this.api.updateProfile(this.userId, payload).subscribe({
       next: () => {
         this.loading = false;
-        this.successMsg = 'Profile updated.';
-        this.loadProfile();
+        this.successMsg = 'Profile successfully updated.';
+        this.loadProfile(true);
       },
       error: () => {
         this.loading = false;

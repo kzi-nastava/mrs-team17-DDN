@@ -48,10 +48,10 @@ export class AdminProfile implements OnInit {
     return this.resolveImageUrl(candidate);
   }
 
-  loadProfile(): void {
+  loadProfile(keepSuccessNotice = false): void {
     this.loading = true;
     this.errorMsg = null;
-    this.successMsg = null;
+    if (!keepSuccessNotice) this.successMsg = null;
 
     this.api.getProfile(this.adminId).subscribe({
       next: (res) => {
@@ -90,8 +90,8 @@ export class AdminProfile implements OnInit {
     this.api.updateProfile(this.adminId, payload).subscribe({
       next: () => {
         this.loading = false;
-        this.successMsg = 'Profile updated.';
-        this.loadProfile();
+        this.successMsg = 'Profile successfully updated.';
+        this.loadProfile(true);
       },
       error: () => {
         this.loading = false;
