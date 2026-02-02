@@ -133,16 +133,28 @@ public class RideOrderService {
             addedEmails.add(requester.email().trim().toLowerCase());
         }
 
+        int requiredSeats = 1;
+
         if (req.getLinkedUsers() != null) {
             for (String raw : req.getLinkedUsers()) {
                 String e = safeTrim(raw);
-                if (e.isEmpty()) continue;
+
+                if (e.isEmpty()) {
+                    requiredSeats++;
+                    continue;
+                }
 
                 String lower = e.toLowerCase();
                 if (addedEmails.contains(lower)) continue;
 
-                UserLookupRepository.UserBasic u = userLookupRepo.findByEmail(e)
-                        .orElseThrow(() -> new IllegalArgumentException("Linked user not found: " + e));
+                var opt = userLookupRepo.findByEmail(e);
+
+                if (opt.isEmpty()) {
+                    requiredSeats++;
+                    continue;
+                }
+
+                UserLookupRepository.UserBasic u = opt.get();
 
                 if (!u.active()) {
                     throw new IllegalArgumentException("Linked user is not active: " + e);
@@ -160,10 +172,12 @@ public class RideOrderService {
                         u.email()
                 ));
                 addedEmails.add(lower);
+
+                requiredSeats++;
             }
         }
 
-        DriverPick pick = pickDriver(vehicleType, baby, pet, start.getLat(), start.getLng());
+        DriverPick pick = pickDriver(vehicleType, baby, pet, requiredSeats, start.getLat(), start.getLng());
 
         Long rideId = rideOrderRepo.insertRideReturningId(
                 pick.driverId,
@@ -217,9 +231,9 @@ public class RideOrderService {
         }
     }
 
-    private DriverPick pickDriver(String vehicleType, boolean baby, boolean pet, double startLat, double startLng) {
+    private DriverPick pickDriver(String vehicleType, boolean baby, boolean pet, int requiredSeats, double startLat, double startLng) {
         List<DriverMatchingRepository.CandidateDriver> candidates =
-                driverRepo.findAvailableDrivers(vehicleType, baby, pet);
+                driverRepo.findAvailableDrivers(vehicleType, baby, pet, requiredSeats);
 
         if (!candidates.isEmpty()) {
             DriverMatchingRepository.CandidateDriver chosen =
@@ -229,7 +243,7 @@ public class RideOrderService {
         }
 
         List<DriverMatchingRepository.FinishingSoonDriver> finishingSoon =
-                driverRepo.findDriversFinishingSoon(vehicleType, baby, pet, FINISHING_SOON_THRESHOLD_SECONDS);
+                driverRepo.findDriversFinishingSoon(vehicleType, baby, pet, requiredSeats, FINISHING_SOON_THRESHOLD_SECONDS);
 
         if (finishingSoon.isEmpty()) {
             throw new NoAvailableDriverException("No available drivers for selected criteria");

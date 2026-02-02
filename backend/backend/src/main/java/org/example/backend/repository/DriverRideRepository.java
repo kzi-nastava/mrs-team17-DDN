@@ -12,4 +12,6 @@ public interface DriverRideRepository {
     Optional<DriverRideDetailsResponseDto> findDriverRideDetails(Long driverId, Long rideId);
     Optional<DriverRideDetailsResponseDto> findActiveRideDetails(Long driverId);
 
+    List<DriverRideDetailsResponseDto> findAcceptedRides(Long driverId);
+    boolean startRide(Long driverId, Long rideId);
 }

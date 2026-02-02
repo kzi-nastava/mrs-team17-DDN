@@ -1,4 +1,4 @@
-export type RideStatus = 'COMPLETED' | 'CANCELED' | 'ACTIVE';
+export type RideStatus = 'ACCEPTED' | 'COMPLETED' | 'CANCELED' | 'ACTIVE';
 
 export interface DriverRideHistoryItem {
   rideId: number;
@@ -34,7 +34,7 @@ export interface DriverRideDetails {
   canceled: boolean;
   canceledBy: string | null;
 
-  status: RideStatus; // ✅ DODATO — OVO FIXUJE TS2339
+  status: RideStatus;
 
   price: number;
   panicTriggered: boolean;
