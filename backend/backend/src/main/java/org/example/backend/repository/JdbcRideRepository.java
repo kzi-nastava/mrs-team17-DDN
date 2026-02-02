@@ -40,6 +40,53 @@ public class JdbcRideRepository implements RideRepository {
     }
 
     @Override
+    public Optional<Long> findActiveRideIdForPassenger(long userId) {
+        return jdbc.sql("""
+            select r.id
+            from rides r
+            join ride_passengers rp
+              on rp.ride_id = r.id
+            join users u
+              on lower(u.email) = lower(rp.email)
+            where u.id = :userId
+              and r.status = 'ACTIVE'
+              and r.canceled = false
+              and r.ended_at is null
+            order by r.started_at desc nulls last, r.id desc
+            limit 1
+        """)
+                .param("userId", userId)
+                .query(Long.class)
+                .optional();
+    }
+
+    // NEW: last completed ride (<= 3 days) that is NOT rated yet, for this passenger (by email)
+    @Override
+    public Optional<Long> findRideIdToRateForPassenger(long userId) {
+        return jdbc.sql("""
+            select r.id
+            from rides r
+            join ride_passengers rp
+              on rp.ride_id = r.id
+            join users u
+              on lower(u.email) = lower(rp.email)
+            left join ride_ratings rr
+              on rr.ride_id = r.id
+            where u.id = :userId
+              and r.status = 'COMPLETED'
+              and r.canceled = false
+              and r.ended_at is not null
+              and r.ended_at >= now() - interval '3 days'
+              and rr.id is null
+            order by r.ended_at desc, r.id desc
+            limit 1
+        """)
+                .param("userId", userId)
+                .query(Long.class)
+                .optional();
+    }
+
+    @Override
     public Optional<RideTrackingResponseDto> findTrackingByRideId(Long rideId) {
 
         String sql = """

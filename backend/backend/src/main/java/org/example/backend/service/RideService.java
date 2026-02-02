@@ -1,4 +1,3 @@
-// backend/src/main/java/org/example/backend/service/RideService.java
 package org.example.backend.service;
 
 import org.example.backend.dto.request.RideReportRequestDto;
@@ -26,6 +25,13 @@ public class RideService {
         this.mailService = mailService;
     }
 
+    // NEW: passenger "my active ride"
+    public Long getActiveRideIdForPassenger(long userId) {
+        return repository.findActiveRideIdForPassenger(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No active ride"));
+    }
+
+
     public RideTrackingResponseDto getRideTracking(Long rideId) {
         return repository.findTrackingByRideId(rideId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride tracking not found"));
@@ -37,6 +43,11 @@ public class RideService {
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
+    }
+
+    public Long getRideIdToRateForPassenger(long userId) {
+        return repository.findRideIdToRateForPassenger(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No ride to rate"));
     }
 
     public void finishRide(Long rideId) {

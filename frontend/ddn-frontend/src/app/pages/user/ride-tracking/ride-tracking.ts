@@ -3,7 +3,6 @@ import * as L from 'leaflet';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
 import { UserNavbarComponent } from '../../../components/user-navbar/user-navbar';
 import { RIDE_TRACKING_DS } from '../../../api/user/ride-tracking.datasource';
 import { TrackingState } from '../../../api/user/models/ride-tracking.models';
@@ -19,7 +18,6 @@ type LatLng = { lat: number; lng: number };
 })
 export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   private ds = inject(RIDE_TRACKING_DS);
-  private route = inject(ActivatedRoute);
 
   private map!: L.Map;
   private sub: Subscription | null = null;
@@ -39,21 +37,12 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   reportOpen = false;
   reportText = '';
 
-  private rideId!: number;
   private initializedFromState = false;
 
   ngAfterViewInit(): void {
-    const raw = this.route.snapshot.paramMap.get('rideId');
-    this.rideId = Number(raw);
-
-    if (!Number.isFinite(this.rideId) || this.rideId <= 0) {
-      this.rideStatus = 'Invalid ride';
-      return;
-    }
-
     this.initMap();
 
-    this.sub = this.ds.watchTracking(this.rideId).subscribe({
+    this.sub = this.ds.watchMyActiveTracking().subscribe({
       next: (s) => this.applyState(s),
       error: () => (this.rideStatus = 'Tracking not available'),
     });
@@ -89,7 +78,7 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
     const text = this.reportText.trim();
     if (text.length < 5) return;
 
-    this.ds.submitInconsistency(this.rideId, text).subscribe({
+    this.ds.submitInconsistencyForMyActiveRide(text).subscribe({
       next: () => {
         this.reportOpen = false;
         this.reportText = '';

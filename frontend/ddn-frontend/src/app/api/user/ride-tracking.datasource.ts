@@ -3,9 +3,9 @@ import { Observable } from 'rxjs';
 import { InconsistencyReport, TrackingState } from './models/ride-tracking.models';
 
 export interface RideTrackingDataSource {
-  watchTracking(rideId: number): Observable<TrackingState>;
-  submitInconsistency(rideId: number, text: string): Observable<void>;
-  listInconsistencies(rideId: number): Observable<InconsistencyReport[]>;
+  watchMyActiveTracking(): Observable<TrackingState>;
+  submitInconsistencyForMyActiveRide(text: string): Observable<void>;
+  listInconsistenciesForMyActiveRide(): Observable<InconsistencyReport[]>;
 }
 
 export const RIDE_TRACKING_DS = new InjectionToken<RideTrackingDataSource>(

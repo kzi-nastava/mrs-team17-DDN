@@ -1,14 +1,20 @@
 import { AfterViewInit, ChangeDetectorRef, Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import * as L from 'leaflet';
-import { ActiveVehiclesHttpDataSource } from '../../landing/active-vehicles.http.datasource'; 
+import { HttpClient } from '@angular/common/http';
+import { catchError, of } from 'rxjs';
+
+import { ActiveVehiclesHttpDataSource } from '../../landing/active-vehicles.http.datasource';
+import { API_BASE_URL } from '../../../app.config';
 
 type UiVehicle = { id: number; lat: number; lng: number; status: 'free' | 'busy' };
+type PendingRideResponse = { rideId: number };
 
 @Component({
   selector: 'app-user-home',
   standalone: true,
-  imports: [RouterLink],
+  imports: [CommonModule, RouterLink], // <<< BITNO za *ngIf
   templateUrl: './user-home.html',
   styleUrl: './user-home.css',
 })
@@ -18,9 +24,14 @@ export class UserHome implements AfterViewInit {
   private map!: L.Map;
   private ds = inject(ActiveVehiclesHttpDataSource);
 
+  private http = inject(HttpClient);
+  private baseUrl = inject(API_BASE_URL);
+
   private markersLayer = L.layerGroup();
 
   vehicles: UiVehicle[] = [];
+
+  pendingRideId: number | null = null;
 
   get freeCount(): number {
     return this.vehicles.filter(v => v.status === 'free').length;
@@ -44,6 +55,7 @@ export class UserHome implements AfterViewInit {
     this.markersLayer.addTo(this.map);
 
     this.loadVehicles();
+    this.loadPendingRating();
 
     setTimeout(() => this.map.invalidateSize(), 0);
   }
@@ -61,10 +73,29 @@ export class UserHome implements AfterViewInit {
         this.renderMarkers();
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Failed to load active vehicles', err);
-      },
+      error: (err) => console.error('Failed to load active vehicles', err),
     });
+  }
+
+  private loadPendingRating(): void {
+    this.http
+      .get<PendingRideResponse>(`${this.baseUrl}/rides/rate/pending`)
+      .pipe(
+        catchError((err) => {
+          if (err?.status === 404) return of(null);
+          console.error('Failed to load pending rating', err);
+          return of(null);
+        })
+      )
+      .subscribe((res) => {
+        const id = Number(res?.rideId);
+        this.pendingRideId = Number.isFinite(id) && id > 0 ? id : null;
+
+        // debug (privremeno):
+        console.log('pendingRideId=', this.pendingRideId);
+
+        this.cdr.detectChanges();
+      });
   }
 
   private renderMarkers(): void {

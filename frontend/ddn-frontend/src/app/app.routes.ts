@@ -103,7 +103,7 @@ export const routes: Routes = [
           import('./pages/user/user-profile/user-profile').then(m => m.UserProfile),
       },
       {
-        path: 'ride-tracking/:rideId',
+        path: 'ride-tracking',
         component: RideTrackingComponent,
         providers: [{ provide: RIDE_TRACKING_DS, useClass: RideTrackingHttpDataSource }],
       },

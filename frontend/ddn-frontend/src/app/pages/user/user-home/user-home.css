@@ -12,6 +12,42 @@
   overflow: hidden;
   background: #111;
 }
+.rate-banner {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.78);
+  border: 1px solid #2a2a2a;
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  z-index: 2000;
+}
+
+.rate-text {
+  font-size: 13px;
+  color: #d0d0d0;
+}
+
+.rate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: #fff;
+  background: linear-gradient(90deg, #ff8c00, #ffa500);
+}
+
 
 .map {
   width: 100%;

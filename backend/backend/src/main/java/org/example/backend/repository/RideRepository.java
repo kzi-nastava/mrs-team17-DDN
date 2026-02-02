@@ -19,11 +19,17 @@ public interface RideRepository {
 
     boolean updateVehicleLocation(long driverId, double lat, double lng);
 
+    Optional<Long> findRideIdToRateForPassenger(long email);
+
+
     java.util.List<String> findPassengerEmails(Long rideId);
 
     Optional<RideAddresses> findRideAddresses(Long rideId);
 
     java.util.List<Long> findActiveRideIds();
+
+    // NEW: active ride for current passenger userId
+    Optional<Long> findActiveRideIdForPassenger(long userId);
 
     // NEW: one-way switch when car reaches pickup (prevents ping-pong)
     boolean markPickedUp(Long rideId);
