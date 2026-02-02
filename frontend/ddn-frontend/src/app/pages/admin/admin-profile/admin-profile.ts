@@ -1,9 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { API_BASE_URL } from '../../../app.config';
+import { AuthStore } from '../../../api/auth/auth.store';
 import { AdminProfileHttpDataSource } from '../../../api/admin/admin-profile.http-data-source';
 import {
   AdminProfileResponseDto,
@@ -18,10 +19,13 @@ import {
   styleUrl: './admin-profile.css',
 })
 export class AdminProfile implements OnInit {
-  private readonly apiBaseUrl = inject(API_BASE_URL); 
-  private readonly backendOrigin = this.apiBaseUrl.replace(/\/api\/?$/, ''); 
+  private readonly apiBaseUrl = inject(API_BASE_URL);
+  private readonly backendOrigin = this.apiBaseUrl.replace(/\/api\/?$/, '');
 
-  adminId = 1001;
+  private readonly authStore = inject(AuthStore);
+  private readonly router = inject(Router);
+
+  adminId!: number;
 
   profile: AdminProfileResponseDto | null = null;
 
@@ -40,6 +44,13 @@ export class AdminProfile implements OnInit {
   constructor(private api: AdminProfileHttpDataSource) {}
 
   ngOnInit(): void {
+    const id = this.authStore.getCurrentUserId();
+    if (!id) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.adminId = id;
     this.loadProfile();
   }
 

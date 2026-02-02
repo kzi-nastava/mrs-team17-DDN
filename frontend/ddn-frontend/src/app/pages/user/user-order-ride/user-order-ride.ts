@@ -1,10 +1,12 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import * as L from 'leaflet';
 
+import { AuthStore } from '../../../api/auth/auth.store';
 import {
   CreateRideRequestDto,
   CreateRideResponseDto,
@@ -19,10 +21,13 @@ import {
   templateUrl: './user-order-ride.html',
   styleUrl: './user-order-ride.css',
 })
-export class UserOrderRide implements AfterViewInit {
+export class UserOrderRide implements OnInit, AfterViewInit {
+  private readonly authStore = inject(AuthStore);
+  private readonly router = inject(Router);
+
   private map!: L.Map;
 
-  requesterUserId = 1001;
+  requesterUserId = 0;
 
   orderType: 'now' | 'schedule' = 'now';
   scheduledAtLocal = '';
@@ -55,7 +60,18 @@ export class UserOrderRide implements AfterViewInit {
 
   constructor(private api: RideOrderApiService, private http: HttpClient) {}
 
+  ngOnInit(): void {
+    const id = this.authStore.getCurrentUserId();
+    if (!id) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.requesterUserId = id;
+  }
+
   ngAfterViewInit(): void {
+    if (!this.requesterUserId) return;
+
     this.map = L.map('orderMap', {
       center: [45.2671, 19.8335],
       zoom: 13,
@@ -254,6 +270,11 @@ export class UserOrderRide implements AfterViewInit {
     this.errorMsg = '';
 
     if (this.isSubmitting) return;
+
+    if (!this.requesterUserId) {
+      this.errorMsg = 'You must be logged in to place an order.';
+      return;
+    }
 
     if (!this.start.address.trim() || !this.destination.address.trim()) {
       this.errorMsg = 'Please enter From/To address (and optionally pick coordinates on the map).';

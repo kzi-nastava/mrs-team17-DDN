@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import * as L from 'leaflet';
 
+import { AuthStore } from '../../../api/auth/auth.store';
 import {
   FavoriteRoutesApiService,
   FavoriteRouteAnyDto,
@@ -26,10 +27,12 @@ type FavouriteRideDetailsVm = {
   templateUrl: './user-favourite-ride-details.html',
   styleUrl: './user-favourite-ride-details.css',
 })
-export class UserFavouriteRideDetails implements AfterViewInit {
+export class UserFavouriteRideDetails implements OnInit, AfterViewInit {
+  private readonly authStore = inject(AuthStore);
+
   private map!: L.Map;
 
-  readonly userId = 3003;
+  userId!: number;
 
   isLoading = false;
   errorMsg = '';
@@ -58,7 +61,18 @@ export class UserFavouriteRideDetails implements AfterViewInit {
     this.vm = { ...this.vm, id: Number.isFinite(id) ? id : 0 };
   }
 
+  ngOnInit(): void {
+    const id = this.authStore.getCurrentUserId();
+    if (!id) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.userId = id;
+  }
+
   ngAfterViewInit(): void {
+    if (!this.userId) return;
+
     this.map = L.map('favDetailsMap', {
       center: [45.2671, 19.8335],
       zoom: 13,
@@ -125,7 +139,7 @@ export class UserFavouriteRideDetails implements AfterViewInit {
 
         this.isLoading = false;
         this.errorMsg =
-          'Backend endpoint trenutno vraća favorite bez koordinata (lat/lng), pa ORDER AGAIN ne može automatski prefillovati mapu.';
+          'Backend endpoint currently returns favorites without coordinates (lat/lng), so ORDER AGAIN cannot auto-prefill map.';
       },
       error: (err: HttpErrorResponse) => {
         this.isLoading = false;

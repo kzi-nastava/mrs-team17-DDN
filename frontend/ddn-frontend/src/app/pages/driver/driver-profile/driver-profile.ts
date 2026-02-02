@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -9,6 +9,8 @@ import {
   UpdateDriverProfileRequestDto,
 } from '../../../api/driver/models/driver-profile.models';
 import { API_BASE_URL } from '../../../app.config';
+import { DriverStateService } from '../../../state/driver-state.service';
+import { AuthStore } from '../../../api/auth/auth.store';
 
 @Component({
   selector: 'app-driver-profile',
@@ -18,7 +20,14 @@ import { API_BASE_URL } from '../../../app.config';
   styleUrl: './driver-profile.css',
 })
 export class DriverProfile implements OnInit {
-  driverId = 1;
+  private readonly baseUrl = inject(API_BASE_URL);
+  private readonly backendOrigin = this.baseUrl.replace(/\/api\/?$/, '');
+
+  private readonly driverState = inject(DriverStateService);
+  private readonly authStore = inject(AuthStore);
+  private readonly router = inject(Router);
+
+  driverId!: number;
 
   profile: DriverProfileResponseDto | null = null;
 
@@ -38,14 +47,21 @@ export class DriverProfile implements OnInit {
   activeFillPct = 0;
   activeLabel = '0h 0min';
 
-  private readonly baseUrl = inject(API_BASE_URL);
-  private readonly backendOrigin = this.baseUrl.replace(/\/api\/?$/, '');
-
   private imageBust = 0;
 
   constructor(private api: DriverProfileHttpDataSource) {}
 
   ngOnInit(): void {
+    const id = this.driverState.getDriverIdSnapshot() ?? this.authStore.getCurrentDriverId();
+
+    if (!id) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.driverId = id;
+    this.driverState.setDriverId(id);
+
     this.loadProfile();
   }
 
@@ -67,10 +83,10 @@ export class DriverProfile implements OnInit {
     return resolved;
   }
 
-  loadProfile(keepSuccessNotice = false): void {
+  loadProfile(): void {
     this.loading = true;
     this.errorMsg = null;
-    if (!keepSuccessNotice) this.successMsg = null;
+    this.successMsg = null;
 
     this.api.getProfile(this.driverId).subscribe({
       next: (res) => {
@@ -108,10 +124,9 @@ export class DriverProfile implements OnInit {
     };
 
     this.api.requestProfileChange(this.driverId, payload).subscribe({
-      next: () => {
+      next: (res) => {
         this.loading = false;
-        this.successMsg = 'Your profile update request has been sent to admins for review.';
-        this.loadProfile(true);
+        this.successMsg = `Request sent to admins for review (status: ${res.status}).`;
       },
       error: () => {
         this.loading = false;
@@ -141,7 +156,7 @@ export class DriverProfile implements OnInit {
       },
       error: () => {
         this.loading = false;
-        this.errorMsg = 'Image upload failed (backend endpoint missing or error).';
+        this.errorMsg = 'Image upload failed.';
       },
     });
 
@@ -163,10 +178,8 @@ export class DriverProfile implements OnInit {
     const u = (url ?? '').trim();
     if (!u) return '';
 
-    if (/^https?:\/\//i.test(u)) {
-      if (u.startsWith(this.backendOrigin)) {
-        return u.substring(this.backendOrigin.length);
-      }
+    if (/^https?:\/\//i.test(u) && u.startsWith(this.backendOrigin)) {
+      return u.substring(this.backendOrigin.length);
     }
 
     return u;
@@ -178,9 +191,7 @@ export class DriverProfile implements OnInit {
     const m = safe % 60;
 
     this.activeLabel = `${h}h ${m}min`;
-    if (h === 0 && m === 0) {
-      this.activeLabel = '';
-    }
+    if (h === 0 && m === 0) this.activeLabel = '';
 
     const pct = (safe / this.maxActiveMinutes) * 100;
     this.activeFillPct = Math.max(0, Math.min(100, Math.round(pct)));

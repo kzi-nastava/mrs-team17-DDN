@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
+import { AuthStore } from '../../../api/auth/auth.store';
 import {
   FavoriteRoutesApiService,
   FavoriteRouteAnyDto,
@@ -23,7 +24,10 @@ type FavouriteRideRow = {
   styleUrl: './user-favourite-rides.css',
 })
 export class UserFavouriteRides implements OnInit {
-  readonly userId = 3003;
+  private readonly authStore = inject(AuthStore);
+  private readonly router = inject(Router);
+
+  userId!: number;
 
   favourites: FavouriteRideRow[] = [];
   isLoading = false;
@@ -34,6 +38,12 @@ export class UserFavouriteRides implements OnInit {
   constructor(private api: FavoriteRoutesApiService) {}
 
   ngOnInit(): void {
+    const id = this.authStore.getCurrentUserId();
+    if (!id) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.userId = id;
     this.load();
   }
 
@@ -94,7 +104,8 @@ export class UserFavouriteRides implements OnInit {
   private extractMsg(err: HttpErrorResponse, fallback: string): string {
     return (
       (err as any)?.error?.message ||
-      (typeof (err as any)?.error === 'string' ? (err as any).error : '') || fallback
+      (typeof (err as any)?.error === 'string' ? (err as any).error : '') ||
+      fallback
     );
   }
 }

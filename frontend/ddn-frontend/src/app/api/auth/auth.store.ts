@@ -2,6 +2,13 @@ import { Injectable } from '@angular/core';
 
 export type AppRole = 'DRIVER' | 'PASSENGER' | 'ADMIN' | string;
 
+type JwtPayload = {
+  sub?: string;
+  email?: string;
+  role?: string;
+  driverId?: number | string;
+};
+
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
   private readonly KEY = 'ddn_token';
@@ -17,21 +24,50 @@ export class AuthStore {
   clear(): void {
     localStorage.removeItem(this.KEY);
   }
+
   logout(): void {
-  this.clear();
+    this.clear();
   }
 
-
   getRoleFromToken(token: string): AppRole | null {
+    const payload = this.getPayload(token);
+    return (payload?.role ?? null) as AppRole | null;
+  }
+
+  getUserIdFromToken(token: string): number | null {
+    const payload = this.getPayload(token);
+    const sub = (payload?.sub ?? '').toString();
+    const id = Number(sub);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
+  getDriverIdFromToken(token: string): number | null {
+    const payload = this.getPayload(token);
+    const raw = payload?.driverId;
+    const id = Number(raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
+  getCurrentUserId(): number | null {
+    const token = this.getToken();
+    if (!token) return null;
+    return this.getUserIdFromToken(token);
+  }
+
+  getCurrentDriverId(): number | null {
+    const token = this.getToken();
+    if (!token) return null;
+    return this.getDriverIdFromToken(token);
+  }
+
+  private getPayload(token: string): JwtPayload | null {
     try {
       const parts = token.split('.');
       if (parts.length !== 3) return null;
 
-      const payload = parts[1];
-      const json = this.base64UrlDecode(payload);
-      const obj = JSON.parse(json);
-
-      return (obj?.role ?? null) as AppRole | null;
+      const payloadB64 = parts[1];
+      const json = this.base64UrlDecode(payloadB64);
+      return JSON.parse(json) as JwtPayload;
     } catch {
       return null;
     }

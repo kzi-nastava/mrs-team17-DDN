@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class JwtService {
@@ -32,12 +33,21 @@ public class JwtService {
     }
 
     public String generateToken(long userId, String email, String role) {
+        return generateToken(userId, email, role, null);
+    }
+
+    public String generateToken(long userId, String email, String role, Long driverId) {
         Instant now = Instant.now();
         Instant exp = now.plusSeconds(ttlMinutes * 60);
 
+        var claims = new HashMap<String, Object>();
+        claims.put("email", email);
+        claims.put("role", role);
+        if (driverId != null) claims.put("driverId", driverId);
+
         return Jwts.builder()
                 .subject(Long.toString(userId))
-                .claims(Map.of("email", email, "role", role))
+                .claims(claims)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(exp))
                 .signWith(key)
