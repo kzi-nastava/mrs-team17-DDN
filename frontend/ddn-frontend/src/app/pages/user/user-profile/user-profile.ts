@@ -1,9 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { API_BASE_URL } from '../../../app.config';
+import { AuthStore } from '../../../api/auth/auth.store';
 import { UserProfileHttpDataSource } from '../../../api/user/user-profile.http-data-source';
 import {
   UserProfileResponseDto,
@@ -18,10 +19,12 @@ import {
   styleUrl: './user-profile.css',
 })
 export class UserProfile implements OnInit {
-  private readonly apiBaseUrl = inject(API_BASE_URL); // npr. http://localhost:8080/api
-  private readonly backendOrigin = this.apiBaseUrl.replace(/\/api\/?$/, ''); // -> http://localhost:8080
+  private readonly apiBaseUrl = inject(API_BASE_URL);
+  private readonly backendOrigin = this.apiBaseUrl.replace(/\/api\/?$/, '');
+  private readonly authStore = inject(AuthStore);
+  private readonly router = inject(Router);
 
-  userId = 3002;
+  userId!: number;
 
   profile: UserProfileResponseDto | null = null;
 
@@ -40,15 +43,17 @@ export class UserProfile implements OnInit {
   constructor(private api: UserProfileHttpDataSource) {}
 
   ngOnInit(): void {
+    const id = this.authStore.getCurrentUserId();
+    if (!id) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.userId = id;
     this.loadProfile();
   }
 
   get avatarUrl(): string {
-    const candidate =
-      this.form.profileImageUrl ||
-      this.profile?.profileImageUrl ||
-      '';
-
+    const candidate = this.form.profileImageUrl || this.profile?.profileImageUrl || '';
     return this.resolveImageUrl(candidate);
   }
 
@@ -57,10 +62,10 @@ export class UserProfile implements OnInit {
     img.src = 'avatar.svg';
   }
 
-  loadProfile(): void {
+  loadProfile(keepSuccessNotice = false): void {
     this.loading = true;
     this.errorMsg = null;
-    this.successMsg = null;
+    if (!keepSuccessNotice) this.successMsg = null;
 
     this.api.getProfile(this.userId).subscribe({
       next: (res) => {
@@ -103,8 +108,8 @@ export class UserProfile implements OnInit {
     this.api.updateProfile(this.userId, payload).subscribe({
       next: () => {
         this.loading = false;
-        this.successMsg = 'Profile updated.';
-        this.loadProfile();
+        this.successMsg = 'Profile successfully updated.';
+        this.loadProfile(true);
       },
       error: () => {
         this.loading = false;

@@ -44,6 +44,12 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
 
   {
+    path: 'driver/activate',
+    loadComponent: () =>
+      import('./pages/driver/driver-activate/driver-activate').then(m => m.DriverActivate),
+  },
+
+  {
     path: 'reset-password',
     loadComponent: () =>
       import('./pages/user/reset-password/reset-password').then(m => m.ResetPassword),
@@ -156,6 +162,8 @@ export const routes: Routes = [
           import('./pages/admin/admin-password-change/admin-password-change').then(m => m.AdminPasswordChange),
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
+      { path: 'update-requests/:requestId', loadComponent: () => import('./pages/admin/admin-update-request-details/admin-update-request-details').then(m => m.AdminUpdateRequestDetails),},
+      { path: 'update-requests', component: AdminUpdateRequests },
     ],
   },
 

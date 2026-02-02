@@ -85,6 +85,12 @@ public class AdminDriverProfileChangeController {
         dto.setDriverId(r.driverId);
         dto.setStatus(r.status);
 
+        dto.setFirstName(r.firstName);
+        dto.setLastName(r.lastName);
+        dto.setAddress(r.address);
+        dto.setPhoneNumber(r.phone);
+        dto.setProfileImageUrl(r.profileImageUrl);
+
         OffsetDateTime odt = r.createdAt;
         LocalDateTime ldt = (odt != null) ? odt.toLocalDateTime() : LocalDateTime.now();
         dto.setCreatedAt(ldt);

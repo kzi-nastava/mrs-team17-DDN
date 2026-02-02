@@ -63,14 +63,16 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
 
-        // SPEC: driver login -> automatically available=true
+        Long driverIdClaim = null;
+
         if ("DRIVER".equalsIgnoreCase(user.role())) {
-            drivers.findDriverIdByUserId(user.id())
-                    .ifPresent(driverId -> drivers.setAvailable(driverId, true));
+            driverIdClaim = drivers.findDriverIdByUserId(user.id()).orElse(null);
+            if (driverIdClaim != null) {
+                drivers.setAvailable(driverIdClaim, true);
+            }
         }
 
-        // 3) token
-        String token = jwt.generateToken(user.id(), user.email(), user.role());
+        String token = jwt.generateToken(user.id(), user.email(), user.role(), driverIdClaim);
 
         LoginResponseDto resp = new LoginResponseDto();
         resp.setToken(token);

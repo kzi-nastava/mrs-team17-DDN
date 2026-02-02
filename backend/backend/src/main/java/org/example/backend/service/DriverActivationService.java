@@ -3,7 +3,7 @@ package org.example.backend.service;
 import org.example.backend.dto.request.DriverActivateAccountRequestDto;
 import org.example.backend.repository.DriverActivationTokenRepository;
 import org.example.backend.repository.UserAccountRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,12 +12,16 @@ public class DriverActivationService {
 
     private final DriverActivationTokenRepository tokenRepo;
     private final UserAccountRepository userRepo;
+    private final PasswordEncoder passwordEncoder;
 
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-
-    public DriverActivationService(DriverActivationTokenRepository tokenRepo, UserAccountRepository userRepo) {
+    public DriverActivationService(
+            DriverActivationTokenRepository tokenRepo,
+            UserAccountRepository userRepo,
+            PasswordEncoder passwordEncoder
+    ) {
         this.tokenRepo = tokenRepo;
         this.userRepo = userRepo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -42,7 +46,7 @@ public class DriverActivationService {
         DriverActivationTokenRepository.TokenRow tokenRow = tokenRepo.findValidByToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid or expired token"));
 
-        String hash = encoder.encode(pass);
+        String hash = passwordEncoder.encode(pass);
         int updated = userRepo.activateAndSetPassword(tokenRow.userId(), hash);
         if (updated == 0) {
             throw new IllegalStateException("User not found");

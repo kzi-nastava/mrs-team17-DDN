@@ -34,19 +34,10 @@ public class DriverProfileController {
             return ResponseEntity.notFound().build();
         }
 
-        VehicleInfoResponseDto vehicle = new VehicleInfoResponseDto();
-        vehicle.setModel("Skoda Octavia");
-        vehicle.setType("standard");
-        vehicle.setLicensePlate("NS-123-AB");
-        vehicle.setSeats(4);
-        vehicle.setBabyTransport(true);
-        vehicle.setPetTransport(false);
-
         int activeMinutes = repo.calcActiveMinutesLast24h(driverId);
 
         DriverProfileResponseDto response = new DriverProfileResponseDto();
         response.setDriver(driver);
-        response.setVehicle(vehicle);
         response.setActiveMinutesLast24h(activeMinutes);
 
         return ResponseEntity.ok(response);

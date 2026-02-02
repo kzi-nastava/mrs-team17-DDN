@@ -34,4 +34,40 @@ public class JdbcUserRepository implements UserRepository {
                 .query(UserAuthResponseDto.class)
                 .optional();
     }
+
+    @Override
+    public Optional<UserAuthResponseDto> findAuthById(Long id) {
+        String sql = """
+        select
+            u.id            as id,
+            u.role          as role,
+            u.email         as email,
+            u.password_hash as password_hash,
+            u.is_active     as is_active,
+            u.blocked       as blocked
+        from users u
+        where u.id = :id
+    """;
+
+        return jdbc.sql(sql)
+                .param("id", id)
+                .query(UserAuthResponseDto.class)
+                .optional();
+    }
+
+    @Override
+    public int updatePasswordHash(Long id, String newPasswordHash) {
+        String sql = """
+        update users
+        set password_hash = :hash,
+            updated_at = now()
+        where id = :id
+    """;
+
+        return jdbc.sql(sql)
+                .param("hash", newPasswordHash)
+                .param("id", id)
+                .update();
+    }
+
 }

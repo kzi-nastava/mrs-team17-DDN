@@ -1,1 +1,53 @@
-<p>admin-update-requests works!</p>
+<div class="req-page">
+  <div class="req-card">
+
+    <div class="header">
+      <h2 class="title">Driver profile update requests</h2>
+
+      <button class="refresh-btn" type="button" (click)="load()" [disabled]="isLoading">
+        {{ isLoading ? 'Loading...' : 'Refresh' }}
+      </button>
+    </div>
+
+    <div class="table">
+      <div class="head">
+        <div class="col-request">Request</div>
+        <div class="col-actions"></div>
+      </div>
+
+      <div class="row" *ngFor="let r of requests">
+        <div class="col-request">
+          <div class="req-main">
+            <span class="driver">Driver #{{ r.driverId }}</span>
+            <span class="req-id">Request #{{ r.requestId }}</span>
+          </div>
+
+          <div class="req-meta">
+            <span class="meta-item">Created: {{ r.createdAt | date: 'medium' }}</span>
+            <span class="meta-dot" aria-hidden="true">•</span>
+            <span class="status" [ngClass]="(r.status || '').toLowerCase()">
+              {{ statusLabel(r.status) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="col-actions">
+          <button
+            class="details-btn"
+            type="button"
+            [routerLink]="['/admin/update-requests', r.requestId]"
+          >
+            Details
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="isLoading" class="state">Loading...</div>
+      <div *ngIf="!isLoading && requests.length === 0 && !errorMsg" class="state">
+        No driver profile update requests.
+      </div>
+      <div *ngIf="errorMsg" class="state err">{{ errorMsg }}</div>
+    </div>
+
+  </div>
+</div>
