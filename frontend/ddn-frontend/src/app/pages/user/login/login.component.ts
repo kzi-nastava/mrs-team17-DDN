@@ -6,6 +6,8 @@ import { RouterModule, Router } from '@angular/router';
 import { AuthApi } from '../../../api/auth/auth.api';
 import { AuthStore } from '../../../api/auth/auth.store';
 import { DriverStateService } from '../../../state/driver-state.service';
+import { take } from 'rxjs';
+import { DriverRidesHttpDataSource } from '../../../api/driver/driver-rides-http.datasource';
 
 @Component({
   selector: 'app-login',
@@ -19,6 +21,7 @@ export class LoginComponent {
   private authApi = inject(AuthApi);
   private authStore = inject(AuthStore);
   private driverState = inject(DriverStateService);
+  private driverRidesApi = inject(DriverRidesHttpDataSource);
 
   loginForm: FormGroup = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
@@ -68,8 +71,29 @@ export class LoginComponent {
           }
 
           this.driverState.setDriverId(driverId);
-          this.driverState.setAvailable(true);
-          this.router.navigate(['/driver/home']);
+          this.driverState.setAvailable(false);
+
+          this.driverRidesApi.getActiveRide().pipe(take(1)).subscribe({
+            next: () => {
+              this.driverState.setAvailable(false);
+              this.router.navigate(['/driver/active-ride']);
+              this.loading = false;
+            },
+            error: (err) => {
+              if (err?.status === 404) {
+                this.driverState.setAvailable(true);
+                this.router.navigate(['/driver/home']);
+                this.loading = false;
+                return;
+              }
+
+              this.error = 'Login ok, ali ne mogu provjeriti aktivnu vožnju.';
+              this.loading = false;
+            }
+          });
+
+          return;
+
         } else if (role === 'ADMIN') {
           this.router.navigate(['/admin/home']);
         } else {

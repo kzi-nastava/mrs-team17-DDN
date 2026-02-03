@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { UserNavbarComponent } from '../../../components/user-navbar/user-navbar';
 import { RIDE_TRACKING_DS } from '../../../api/user/ride-tracking.datasource';
-import { TrackingState } from '../../../api/user/models/ride-tracking.models';
+import { RideCheckpoint, TrackingState } from '../../../api/user/models/ride-tracking.models';
 
 type LatLng = { lat: number; lng: number };
 
@@ -26,6 +26,7 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   private destinationMarker: L.CircleMarker | null = null;
   private carMarker: L.CircleMarker | null = null;
   private routeLine: L.Polyline | null = null;
+  private checkpointMarkers: L.CircleMarker[] = [];
 
   private lastCar: LatLng | null = null;
   private carAnimFrame: number | null = null;
@@ -137,6 +138,8 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
 
       this.lastCar = { ...s.car };
 
+      this.drawCheckpoints(s.checkpoints ?? []);
+
       // RUTA SE CRTА JEDNOM: pickup -> destination (nikad se više ne menja)
       if (routePoints.length >= 2) {
         this.routeLine = L.polyline(routePoints, { weight: 4 }).addTo(this.map);
@@ -156,6 +159,7 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
         [s.pickup.lat, s.pickup.lng],
         [s.destination.lat, s.destination.lng],
       ]);
+      (s.checkpoints ?? []).forEach((cp) => bounds.extend([cp.lat, cp.lng]));
       this.map.fitBounds(bounds, { padding: [30, 30] });
 
       return;
@@ -163,6 +167,28 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
 
     // posle init-a: NE DIRAMO routeLine uopšte
     this.animateCarTo({ lat: s.car.lat, lng: s.car.lng }, 900);
+  }
+  private drawCheckpoints(checkpoints: RideCheckpoint[]): void {
+    this.checkpointMarkers.forEach((m) => {
+      try { m.remove(); } catch {}
+    });
+    this.checkpointMarkers = [];
+
+    if (!this.map || !checkpoints || checkpoints.length === 0) return;
+
+    checkpoints.forEach((cp) => {
+      const m = L.circleMarker([cp.lat, cp.lng], {
+        radius: 6,
+        color: '#ffffff',
+        weight: 2,
+        fillColor: '#ff9800',
+        fillOpacity: 0.95,
+      })
+        .addTo(this.map)
+        .bindPopup(`Stop ${cp.stopOrder}: ${cp.address}`);
+
+      this.checkpointMarkers.push(m);
+    });
   }
 
   private animateCarTo(target: LatLng, durationMs: number): void {

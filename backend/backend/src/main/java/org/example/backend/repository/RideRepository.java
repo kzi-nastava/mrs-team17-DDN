@@ -41,6 +41,7 @@ public interface RideRepository {
             java.time.OffsetDateTime endedAt,
             boolean canceled,
             boolean pickedUp,
+            int nextStopIndex,
             long driverId,
             double carLat,
             double carLng,
@@ -51,4 +52,9 @@ public interface RideRepository {
     ) {}
 
     boolean startRide(Long rideId);
+
+    java.util.List<RideStopPoint> findRideStopPoints(Long rideId);
+    boolean setNextStopIndex(Long rideId, int nextStopIndex);
+
+    record RideStopPoint(int stopOrder, double lat, double lng) {}
 }

@@ -12,8 +12,10 @@ import {
 
 type FavouriteRideRow = {
   id: number;
-  from: string;
-  to: string;
+  from: string;     
+  to: string;    
+  fromFull: string;
+  toFull: string;  
 };
 
 @Component({
@@ -57,14 +59,22 @@ export class UserFavouriteRides implements OnInit {
           const id = Number(x.id);
 
           if (isFavoriteRouteNew(x)) {
-            const from = this.shortAddr(x.start?.address);
-            const to = this.shortAddr(x.destination?.address);
-            return { id, from, to };
+            const fromFull = (x.start?.address || '').trim();
+            const toFull = (x.destination?.address || '').trim();
+
+            const from = this.displayAddr(fromFull);
+            const to = this.displayAddr(toFull);
+
+            return { id, from, to, fromFull, toFull };
           }
 
-          const from = this.shortAddr(x.startAddress);
-          const to = this.shortAddr(x.destinationAddress);
-          return { id, from, to };
+          const fromFull = (x.startAddress || '').trim();
+          const toFull = (x.destinationAddress || '').trim();
+
+          const from = this.displayAddr(fromFull);
+          const to = this.displayAddr(toFull);
+
+          return { id, from, to, fromFull, toFull };
         });
 
         this.isLoading = false;
@@ -94,11 +104,15 @@ export class UserFavouriteRides implements OnInit {
     });
   }
 
-  private shortAddr(s: string): string {
+  private displayAddr(s: string): string {
     const t = (s || '').trim();
     if (!t) return '—';
-    const idx = t.indexOf(',');
-    return idx > 0 ? t.slice(0, idx) : t;
+
+    const N = 42;
+
+    if (t.length <= N) return t;
+
+    return t.slice(0, N).trimEnd() + '...';
   }
 
   private extractMsg(err: HttpErrorResponse, fallback: string): string {
