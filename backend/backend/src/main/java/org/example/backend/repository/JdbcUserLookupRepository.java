@@ -35,6 +35,19 @@ public class JdbcUserLookupRepository implements UserLookupRepository {
     }
 
     @Override
+    public Optional<String> findRoleById(Long id) {
+        return jdbc.sql("""
+        select role
+        from users
+        where id = :id
+    """)
+                .param("id", id)
+                .query(String.class)
+                .optional();
+    }
+
+
+    @Override
     public Optional<UserBasic> findByEmail(String email) {
         return jdbc.sql("""
             select id, email, first_name, last_name, is_active, blocked, block_reason

@@ -1,0 +1,79 @@
+.content { padding: 24px; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+.grid { display: grid; grid-template-columns: 1fr; }
+
+.card {
+  border: 1px solid #2a2a2a;
+  border-radius: 14px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  padding: 14px;
+}
+
+.card-title { font-size: 14px; font-weight: 800; margin-bottom: 12px; }
+
+.chat {
+  height: 60vh;
+  overflow: auto;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  background: #111;
+  padding: 12px;
+}
+
+.hint { color: #cfcfcf; font-size: 12px; }
+
+.row { display: flex; margin: 10px 0; }
+.row.mine { justify-content: flex-end; }
+
+.bubble {
+  max-width: min(520px, 85%);
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.06);
+}
+
+.row.mine .bubble { background: rgba(47,47,47,0.9); }
+
+.meta { display: flex; gap: 10px; justify-content: space-between; margin-bottom: 6px; }
+.role { font-size: 11px; color: #cfcfcf; font-weight: 700; }
+.time { font-size: 11px; color: #9a9a9a; }
+
+.text { font-size: 13px; line-height: 1.35; white-space: pre-wrap; }
+
+.composer {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.input {
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #3a3a3a;
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  padding: 0 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  outline: none;
+}
+
+.btn {
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #444;
+  background: #2f2f2f;
+  color: #fff;
+  cursor: pointer;
+  padding: 0 16px;
+  font-size: 13px;
+}
+.btn:hover { background: #3a3a3a; border-color: #3a3a3a; }
+.btn:disabled {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+  color: #666;
+  cursor: not-allowed;
+}
