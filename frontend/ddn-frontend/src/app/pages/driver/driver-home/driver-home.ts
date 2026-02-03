@@ -56,7 +56,21 @@ export class DriverHomeComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.initMap();
-    this.loadAcceptedRide();
+
+    this.ridesApi.getActiveRide().pipe(take(1)).subscribe({
+      next: () => {
+        this.driverState.setAvailable(false);
+        this.router.navigate(['/driver/active-ride']);
+      },
+      error: (err) => {
+        if (err?.status === 404) {
+          this.driverState.setAvailable(true);
+          this.loadAcceptedRide();
+        } else {
+          this.error = 'Unable to check active ride.';
+        }
+      }
+    });
   }
 
   ngOnDestroy(): void {

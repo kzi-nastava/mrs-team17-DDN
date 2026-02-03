@@ -256,6 +256,7 @@ public class JdbcRideRepository implements RideRepository {
                 r.canceled,
                 r.picked_up,
                 r.driver_id,
+                r.next_stop_index,
                 r.start_lat as pickup_lat,
                 r.start_lng as pickup_lng,
                 r.dest_lat  as dest_lat,
@@ -291,6 +292,7 @@ public class JdbcRideRepository implements RideRepository {
                             rs.getObject("ended_at", java.time.OffsetDateTime.class),
                             rs.getBoolean("canceled"),
                             rs.getBoolean("picked_up"),
+                            rs.getInt("next_stop_index"),
                             rs.getLong("driver_id"),
                             carLat,
                             carLng,
@@ -440,4 +442,36 @@ public class JdbcRideRepository implements RideRepository {
 
         return updated > 0;
     }
+
+    @Override
+    public java.util.List<RideStopPoint> findRideStopPoints(Long rideId) {
+        return jdbc.sql("""
+        select stop_order, lat, lng
+        from ride_stops
+        where ride_id = :rideId
+        order by stop_order asc
+    """)
+                .param("rideId", rideId)
+                .query((rs, rowNum) -> new RideStopPoint(
+                        rs.getInt("stop_order"),
+                        rs.getDouble("lat"),
+                        rs.getDouble("lng")
+                ))
+                .list();
+    }
+
+    @Override
+    public boolean setNextStopIndex(Long rideId, int nextStopIndex) {
+        int updated = jdbc.sql("""
+        update rides
+        set next_stop_index = :idx
+        where id = :rideId
+    """)
+                .param("idx", nextStopIndex)
+                .param("rideId", rideId)
+                .update();
+
+        return updated > 0;
+    }
+
 }

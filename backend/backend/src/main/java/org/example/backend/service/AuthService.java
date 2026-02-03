@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.example.backend.repository.DriverRideRepository;
 
 @Service
 public class AuthService {
@@ -17,15 +18,18 @@ public class AuthService {
     private final DriverRepository drivers;
     private final PasswordEncoder passwordEncoder;
     private final org.example.backend.security.JwtService jwt;
+    private final DriverRideRepository driverRides;
 
     public AuthService(
             UserRepository users,
             DriverRepository drivers,
+            DriverRideRepository driverRides,
             PasswordEncoder passwordEncoder,
             org.example.backend.security.JwtService jwt
     ) {
         this.users = users;
         this.drivers = drivers;
+        this.driverRides = driverRides;
         this.passwordEncoder = passwordEncoder;
         this.jwt = jwt;
     }
@@ -68,7 +72,8 @@ public class AuthService {
         if ("DRIVER".equalsIgnoreCase(user.role())) {
             driverIdClaim = drivers.findDriverIdByUserId(user.id()).orElse(null);
             if (driverIdClaim != null) {
-                drivers.setAvailable(driverIdClaim, true);
+                boolean hasActiveRide = driverRides.findActiveRideDetails(driverIdClaim).isPresent();
+                drivers.setAvailable(driverIdClaim, !hasActiveRide);
             }
         }
 
