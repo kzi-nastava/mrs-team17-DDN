@@ -1,0 +1,26 @@
+<div class="content">
+  <div class="card">
+    <div class="card-title">Chats</div>
+
+    <div class="toolbar">
+      <input class="input" [(ngModel)]="query" placeholder="Search (email / name)..." />
+      <button class="btn" (click)="reload()">Search</button>
+    </div>
+
+    <div *ngIf="loading" class="hint">Loading...</div>
+
+    <div class="list" *ngIf="!loading">
+      <a class="item" *ngFor="let t of threads" [routerLink]="['/admin/chats', t.id]">
+        <div class="left">
+          <div class="id">Thread #{{ t.id }}</div>
+          <div class="user">UserId: {{ t.userId }}</div>
+        </div>
+        <div class="right">
+          <div class="time">{{ t.lastMessageAt ? (t.lastMessageAt | date:'short') : 'No messages' }}</div>
+        </div>
+      </a>
+
+      <div *ngIf="threads.length === 0" class="hint">No chats</div>
+    </div>
+  </div>
+</div>

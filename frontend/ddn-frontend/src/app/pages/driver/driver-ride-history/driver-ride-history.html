@@ -40,7 +40,10 @@
         (click)="openRideDetails(ride.rideId)"
       >
         <span>{{ formatDateOnly(ride.startedAt) }}</span>
-        <span>{{ ride.startAddress }} → {{ ride.endAddress }}</span>
+        <span>
+  {{ truncate(ride.startAddress + ' → ' + ride.endAddress) }}
+</span>
+
         <span>{{ ride.price }} RSD</span>
 
         <span

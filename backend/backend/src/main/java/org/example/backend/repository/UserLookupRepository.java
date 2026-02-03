@@ -17,4 +17,6 @@ public interface UserLookupRepository {
     Optional<UserBasic> findById(Long id);
 
     Optional<UserBasic> findByEmail(String email);
+    Optional<String> findRoleById(Long id);
+
 }

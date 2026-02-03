@@ -116,4 +116,8 @@ export class DriverRideHistoryComponent implements OnInit {
   isCanceled(status: string | undefined, canceled: boolean): boolean {
     return canceled || (status || '').toUpperCase() === 'CANCELED';
   }
+  truncate(text: string, max = 40): string {
+  return text.length > max ? text.slice(0, max) + '…' : text;
+}
+
 }

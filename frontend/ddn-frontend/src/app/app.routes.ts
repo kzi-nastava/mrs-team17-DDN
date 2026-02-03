@@ -37,6 +37,8 @@ import { RideLifecycleHttpDataSource } from './api/driver/ride-lifecycle.http.da
 // guards
 import { authGuard } from './api/auth/auth.guard';
 import { roleGuard } from './api/auth/role.guard';
+import { ChatHttpDataSource } from './api/chat/chat.http.datasource';
+import { CHAT_DS } from './api/chat/chat.datasource';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -82,6 +84,13 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { roles: ['PASSENGER'] },
     children: [
+{
+  path: 'support',
+  loadComponent: () => import('./pages/user/user-chat/user-chat').then(m => m.UserChat),
+  providers: [{ provide: CHAT_DS, useClass: ChatHttpDataSource }],
+},
+
+
       {
         path: 'home',
         loadComponent: () =>
@@ -148,6 +157,17 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN'] },
     children: [
+      {
+  path: 'chats',
+  loadComponent: () => import('./pages/admin/admin-chats/admin-chats').then(m => m.AdminChats),
+  providers: [{ provide: CHAT_DS, useClass: ChatHttpDataSource }],
+},
+{
+  path: 'chats/:threadId',
+  loadComponent: () => import('./pages/admin/admin-chat-details/admin-chat-details').then(m => m.AdminChatDetails),
+  providers: [{ provide: CHAT_DS, useClass: ChatHttpDataSource }],
+},
+
       { path: 'home', component: AdminHome },
       { path: 'update-requests', component: AdminUpdateRequests },
       { path: 'create-driver', component: AdminCreateDriver },
