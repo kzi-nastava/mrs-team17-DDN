@@ -188,6 +188,48 @@ public class RideOrderService {
             }
         }
 
+        if (orderType.equals("schedule")) {
+
+            Long rideId = rideOrderRepo.insertScheduledRideReturningId(
+                    scheduledAt,
+                    safeTrim(start.getAddress()),
+                    safeTrim(dest.getAddress()),
+                    price,
+                    "SCHEDULED",
+                    start.getLat(), start.getLng(),
+                    dest.getLat(), dest.getLng(),
+                    metrics.distanceMeters,
+                    metrics.durationSeconds,
+                    vehicleType,
+                    baby,
+                    pet,
+                    requiredSeats
+            );
+
+            if (req.getCheckpoints() != null && !req.getCheckpoints().isEmpty()) {
+                List<RideStopRepository.StopRow> stops = new ArrayList<>();
+                int ord = 1;
+                for (RidePointRequestDto cp : req.getCheckpoints()) {
+                    stops.add(new RideStopRepository.StopRow(
+                            ord++,
+                            cp.getAddress(),
+                            cp.getLat(),
+                            cp.getLng()
+                    ));
+                }
+                rideStopRepo.insertStops(rideId, stops);
+            }
+
+            passengerRepo.insertPassengers(rideId, passengers);
+
+            CreateRideResponseDto resp = new CreateRideResponseDto();
+            resp.setRideId(rideId);
+            resp.setDriverId(null);
+            resp.setStatus("SCHEDULED");
+            resp.setPrice(price);
+            return resp;
+        }
+
         DriverPick pick = null;
         Long rideId = null;
 
