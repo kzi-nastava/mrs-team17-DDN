@@ -35,4 +35,6 @@ public interface DriverMatchingRepository {
     );
 
     boolean setDriverAvailable(Long driverId, boolean available);
+
+    boolean tryClaimAvailableDriver(Long driverId);
 }

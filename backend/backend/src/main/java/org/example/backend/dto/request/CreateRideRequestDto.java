@@ -1,5 +1,6 @@
 package org.example.backend.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,7 +10,7 @@ import java.util.List;
 
 public class CreateRideRequestDto {
 
-    @NotNull
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long requesterUserId;
 
     @NotBlank
@@ -17,10 +18,12 @@ public class CreateRideRequestDto {
 
     private OffsetDateTime scheduledAt;
 
-    @NotNull @Valid
+    @NotNull
+    @Valid
     private RidePointRequestDto start;
 
-    @NotNull @Valid
+    @NotNull
+    @Valid
     private RidePointRequestDto destination;
 
     @Valid
@@ -39,33 +42,83 @@ public class CreateRideRequestDto {
 
     public CreateRideRequestDto() {}
 
-    public Long getRequesterUserId() { return requesterUserId; }
-    public void setRequesterUserId(Long requesterUserId) { this.requesterUserId = requesterUserId; }
+    public Long getRequesterUserId() {
+        return requesterUserId;
+    }
 
-    public String getOrderType() { return orderType; }
-    public void setOrderType(String orderType) { this.orderType = orderType; }
+    public void setRequesterUserId(Long requesterUserId) {
+        this.requesterUserId = requesterUserId;
+    }
 
-    public OffsetDateTime getScheduledAt() { return scheduledAt; }
-    public void setScheduledAt(OffsetDateTime scheduledAt) { this.scheduledAt = scheduledAt; }
+    public String getOrderType() {
+        return orderType;
+    }
 
-    public RidePointRequestDto getStart() { return start; }
-    public void setStart(RidePointRequestDto start) { this.start = start; }
+    public void setOrderType(String orderType) {
+        this.orderType = orderType;
+    }
 
-    public RidePointRequestDto getDestination() { return destination; }
-    public void setDestination(RidePointRequestDto destination) { this.destination = destination; }
+    public OffsetDateTime getScheduledAt() {
+        return scheduledAt;
+    }
 
-    public List<RidePointRequestDto> getCheckpoints() { return checkpoints; }
-    public void setCheckpoints(List<RidePointRequestDto> checkpoints) { this.checkpoints = checkpoints; }
+    public void setScheduledAt(OffsetDateTime scheduledAt) {
+        this.scheduledAt = scheduledAt;
+    }
 
-    public List<String> getLinkedUsers() { return linkedUsers; }
-    public void setLinkedUsers(List<String> linkedUsers) { this.linkedUsers = linkedUsers; }
+    public RidePointRequestDto getStart() {
+        return start;
+    }
 
-    public String getVehicleType() { return vehicleType; }
-    public void setVehicleType(String vehicleType) { this.vehicleType = vehicleType; }
+    public void setStart(RidePointRequestDto start) {
+        this.start = start;
+    }
 
-    public Boolean getBabyTransport() { return babyTransport; }
-    public void setBabyTransport(Boolean babyTransport) { this.babyTransport = babyTransport; }
+    public RidePointRequestDto getDestination() {
+        return destination;
+    }
 
-    public Boolean getPetTransport() { return petTransport; }
-    public void setPetTransport(Boolean petTransport) { this.petTransport = petTransport; }
+    public void setDestination(RidePointRequestDto destination) {
+        this.destination = destination;
+    }
+
+    public List<RidePointRequestDto> getCheckpoints() {
+        return checkpoints;
+    }
+
+    public void setCheckpoints(List<RidePointRequestDto> checkpoints) {
+        this.checkpoints = checkpoints;
+    }
+
+    public List<String> getLinkedUsers() {
+        return linkedUsers;
+    }
+
+    public void setLinkedUsers(List<String> linkedUsers) {
+        this.linkedUsers = linkedUsers;
+    }
+
+    public String getVehicleType() {
+        return vehicleType;
+    }
+
+    public void setVehicleType(String vehicleType) {
+        this.vehicleType = vehicleType;
+    }
+
+    public Boolean getBabyTransport() {
+        return babyTransport;
+    }
+
+    public void setBabyTransport(Boolean babyTransport) {
+        this.babyTransport = babyTransport;
+    }
+
+    public Boolean getPetTransport() {
+        return petTransport;
+    }
+
+    public void setPetTransport(Boolean petTransport) {
+        this.petTransport = petTransport;
+    }
 }

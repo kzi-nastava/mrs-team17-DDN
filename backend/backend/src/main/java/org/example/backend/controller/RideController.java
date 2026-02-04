@@ -6,6 +6,8 @@ import org.example.backend.dto.response.PassengerRideHistoryResponseDto;
 import org.example.backend.dto.response.RideReportResponseDto;
 import org.example.backend.dto.response.RideRatingResponseDto;
 import org.example.backend.dto.response.RideTrackingResponseDto;
+import org.example.backend.repository.DriverRepository;
+import org.example.backend.service.DriverRideService;
 import org.example.backend.service.PassengerRideHistoryService;
 import org.example.backend.service.RideRatingService;
 import org.example.backend.service.RideService;
@@ -27,15 +29,21 @@ public class RideController {
     private final RideService rideService;
     private final RideRatingService rideRatingService;
     private final PassengerRideHistoryService passengerRideHistoryService;
+    private final DriverRideService driverRideService;
+    private final DriverRepository driverRepository;
 
     public RideController(
             RideService rideService,
             RideRatingService rideRatingService,
-            PassengerRideHistoryService passengerRideHistoryService
+            PassengerRideHistoryService passengerRideHistoryService,
+            DriverRideService driverRideService,
+            DriverRepository driverRepository
     ) {
         this.rideService = rideService;
         this.rideRatingService = rideRatingService;
         this.passengerRideHistoryService = passengerRideHistoryService;
+        this.driverRideService = driverRideService;
+        this.driverRepository = driverRepository;
     }
 
     // -------------------------
@@ -89,7 +97,8 @@ public class RideController {
 
     @PutMapping("/{rideId}/finish")
     public ResponseEntity<Void> finishRide(@PathVariable Long rideId) {
-        rideService.finishRide(rideId);
+        long driverId = requireDriverId();
+        driverRideService.finishRide(driverId, rideId);
         return ResponseEntity.ok().build();
     }
 
@@ -124,13 +133,10 @@ public class RideController {
 
     @PutMapping("/{rideId}/start")
     public ResponseEntity<Void> startRide(@PathVariable Long rideId) {
-        rideService.startRide(rideId);
+        long driverId = requireDriverId();
+        driverRideService.startRide(driverId, rideId);
         return ResponseEntity.ok().build();
     }
-
-    // -------------------------
-    // Helpers
-    // -------------------------
 
     private long requirePassengerUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -151,5 +157,30 @@ public class RideController {
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid authentication principal");
         }
+    }
+
+    private long requireDriverId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+
+        boolean isDriver = auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_DRIVER".equals(a.getAuthority()));
+
+        if (!isDriver) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only drivers can access this endpoint");
+        }
+
+        long userId;
+        try {
+            userId = Long.parseLong(auth.getPrincipal().toString());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid authentication principal");
+        }
+
+        return driverRepository.findDriverIdByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Driver profile not found"));
     }
 }

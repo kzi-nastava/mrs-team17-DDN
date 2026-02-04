@@ -21,9 +21,12 @@ public class DriverProfileChangeRequestService {
     @Transactional
     public boolean approve(Long requestId, Long adminId, String note) {
         DriverProfileChangeRequestRepository.DriverProfileChangeRequestRow r =
-                repo.findByIdForUpdate(requestId).orElse(null);
+                repo.findById(requestId).orElse(null);
 
         if (r == null || !"PENDING".equals(r.status)) return false;
+
+        int updated = repo.markApproved(requestId, adminId, note, OffsetDateTime.now());
+        if (updated != 1) return false;
 
         String updateUsersSql = """
             update users u
@@ -48,14 +51,13 @@ public class DriverProfileChangeRequestService {
                 .param("driverId", r.driverId)
                 .update();
 
-        int updated = repo.markApproved(requestId, adminId, note, OffsetDateTime.now());
-        return updated == 1;
+        return true;
     }
 
     @Transactional
     public boolean reject(Long requestId, Long adminId, String note) {
         DriverProfileChangeRequestRepository.DriverProfileChangeRequestRow r =
-                repo.findByIdForUpdate(requestId).orElse(null);
+                repo.findById(requestId).orElse(null);
 
         if (r == null || !"PENDING".equals(r.status)) return false;
 

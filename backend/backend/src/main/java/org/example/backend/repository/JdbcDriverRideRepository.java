@@ -146,7 +146,6 @@ public class JdbcDriverRideRepository implements DriverRideRepository {
                 });
     }
 
-
     @Override
     public List<DriverRideDetailsResponseDto> findAcceptedRides(Long driverId) {
         String sql = """
@@ -186,6 +185,25 @@ public class JdbcDriverRideRepository implements DriverRideRepository {
               and ended_at is null
               and canceled = false
               and status in ('ACCEPTED', 'ACTIVE')
+        """)
+                .param("rideId", rideId)
+                .param("driverId", driverId)
+                .update();
+
+        return updated > 0;
+    }
+
+    @Override
+    public boolean finishRide(Long driverId, Long rideId) {
+        int updated = jdbc.sql("""
+            update rides
+            set ended_at = now(),
+                status = 'COMPLETED'
+            where id = :rideId
+              and driver_id = :driverId
+              and ended_at is null
+              and canceled = false
+              and status = 'ACTIVE'
         """)
                 .param("rideId", rideId)
                 .param("driverId", driverId)

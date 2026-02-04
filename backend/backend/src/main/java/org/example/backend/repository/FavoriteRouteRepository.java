@@ -44,6 +44,8 @@ public interface FavoriteRouteRepository {
 
     List<RideStopRow> findRideStopsByRideId(Long rideId);
 
+    boolean rideBelongsToUser(Long rideId, Long userId);
+
     record RideRouteRow(
             Long rideId,
             String startAddress,
