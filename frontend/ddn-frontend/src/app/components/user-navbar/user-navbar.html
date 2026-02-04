@@ -25,6 +25,29 @@
   </div>
 
   <div class="nav-right">
+    <div class="notif-wrapper">
+  <button class="notif-btn" (click)="toggle()">
+    🔔
+    <span *ngIf="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+  </button>
+
+  <div class="notif-dropdown" *ngIf="open">
+    <div
+      class="notif-item"
+      *ngFor="let n of notifications"
+      (click)="clickNotification(n)"
+      [class.unread]="!n.readAt"
+    >
+      <div class="title">{{ n.title }}</div>
+      <div class="msg">{{ n.message }}</div>
+    </div>
+
+    <div *ngIf="notifications.length === 0" class="empty">
+      No notifications
+    </div>
+  </div>
+</div>
+
     <a class="nav-link" routerLink="/user/support" routerLinkActive="active">
       Support
     </a>

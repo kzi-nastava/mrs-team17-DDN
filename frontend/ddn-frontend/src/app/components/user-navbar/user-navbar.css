@@ -139,3 +139,65 @@ button.logout-btn {
   background: #e53935;
   border-radius: 2px;
 }
+.notif-wrapper {
+  position: relative;
+}
+
+.notif-btn {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: #e53935;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  padding: 2px 6px;
+}
+
+.notif-dropdown {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  width: 320px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 6px;
+  z-index: 1000;
+}
+
+.notif-item {
+  padding: 10px;
+  border-bottom: 1px solid #222;
+  cursor: pointer;
+}
+
+.notif-item.unread {
+  background: rgba(229, 57, 53, 0.12);
+}
+
+.notif-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.title {
+  font-weight: 500;
+}
+
+.msg {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.empty {
+  padding: 12px;
+  text-align: center;
+  opacity: 0.6;
+}

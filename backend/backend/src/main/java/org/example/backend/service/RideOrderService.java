@@ -7,7 +7,8 @@ import org.example.backend.exception.ActiveRideConflictException;
 import org.example.backend.exception.NoAvailableDriverException;
 import org.example.backend.osrm.OsrmClient;
 import org.example.backend.repository.*;
-
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +25,6 @@ public class RideOrderService {
 
     private static final BigDecimal PRICE_PER_KM = new BigDecimal("120");
     private static final double FALLBACK_AVG_SPEED_KMH = 35.0;
-
     private static final int FINISHING_SOON_THRESHOLD_SECONDS = 10 * 60;
 
     private final OsrmClient osrmClient;
@@ -33,6 +33,12 @@ public class RideOrderService {
     private final RideStopRepository rideStopRepo;
     private final RidePassengerRepository passengerRepo;
     private final UserLookupRepository userLookupRepo;
+    private final MailService mailService;
+    private final NotificationService notificationService;
+    private final MailQueueService mailQueueService;
+
+    @Value("${app.frontend.base-url:http://localhost:4200}")
+    private String frontendBaseUrl;
 
     public RideOrderService(
             OsrmClient osrmClient,
@@ -40,7 +46,9 @@ public class RideOrderService {
             RideOrderRepository rideOrderRepo,
             RideStopRepository rideStopRepo,
             RidePassengerRepository passengerRepo,
-            UserLookupRepository userLookupRepo
+            UserLookupRepository userLookupRepo,
+            MailService mailService,
+            NotificationService notificationService, MailQueueService mailQueueService
     ) {
         this.osrmClient = osrmClient;
         this.driverRepo = driverRepo;
@@ -48,6 +56,9 @@ public class RideOrderService {
         this.rideStopRepo = rideStopRepo;
         this.passengerRepo = passengerRepo;
         this.userLookupRepo = userLookupRepo;
+        this.mailService = mailService;
+        this.notificationService = notificationService;
+        this.mailQueueService = mailQueueService;
     }
 
     @Transactional
@@ -122,6 +133,7 @@ public class RideOrderService {
             throw new ActiveRideConflictException("User already has an active ride.");
         }
 
+        // --- passengers list (always includes requester) ---
         List<RidePassengerRepository.PassengerRow> passengers = new ArrayList<>();
         passengers.add(new RidePassengerRepository.PassengerRow(
                 requester.firstName() + " " + requester.lastName(),
@@ -149,6 +161,9 @@ public class RideOrderService {
 
                 var opt = userLookupRepo.findByEmail(e);
 
+                // ako nije registrovan, ipak računamo sedište,
+                // ali ga ne dodajemo u ride_passengers jer nemamo pouzdan email u sistemu
+                // (ako ti u req stvarno šalješ EMAIL adrese, onda možeš i ovde da ga dodaš kao "guest")
                 if (opt.isEmpty()) {
                     requiredSeats++;
                     continue;
@@ -208,6 +223,36 @@ public class RideOrderService {
         }
 
         passengerRepo.insertPassengers(rideId, passengers);
+
+// ===== mail "ride accepted" (jednostavno, ≤10s) =====
+        String startAddr = safeTrim(start.getAddress());
+        String destAddr  = safeTrim(dest.getAddress());
+        String trackingLink = frontendBaseUrl + "/user/ride-tracking?rideId=" + rideId;
+
+        List<SimpleMailMessage> out = new ArrayList<>();
+
+        for (RidePassengerRepository.PassengerRow p : passengers) {
+            String email = p.email() == null ? "" : p.email().trim();
+            if (!email.isEmpty()) {
+                out.add(
+                        mailService.buildRideAcceptedEmail(
+                                email,
+                                rideId,
+                                startAddr,
+                                destAddr,
+                                trackingLink
+                        )
+                );
+            }
+        }
+
+        mailQueueService.sendBatchWithin(out, 10_000);
+// ================================================
+
+
+        // notifikacije samo registrovanima (repo mapira ride_passengers.email -> users.id)
+        notificationService.notifyRideAccepted(rideId);
+        // ======================================================
 
         driverRepo.setDriverAvailable(pick.driverId, false);
 

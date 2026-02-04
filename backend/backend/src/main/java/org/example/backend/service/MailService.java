@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 public class MailService {
 
     private final JavaMailSender mailSender;
+    @Value("${app.frontend.base-url:http://localhost:4200}")
+    private String frontendBaseUrl;
+
 
     @Value("${spring.mail.from}")
     private String from;
@@ -31,6 +34,65 @@ public class MailService {
 
         mailSender.send(msg);
     }
+    public SimpleMailMessage buildRideFinishedEmail(
+            String to,
+            Long rideId,
+            String startAddress,
+            String destinationAddress
+    ) {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(from);
+        msg.setTo(to);
+        msg.setSubject("Ride finished");
+        msg.setText(
+                "Your ride has been completed.\n\n" +
+                        "Ride ID: " + rideId + "\n" +
+                        "From: " + startAddress + "\n" +
+                        "To: " + destinationAddress + "\n\n" +
+                        "You can rate the ride within 3 days."
+        );
+        return msg;
+    }
+
+
+    public SimpleMailMessage buildRideAcceptedEmail(
+            String to, Long rideId, String startAddress, String destinationAddress, String trackingLink
+    ) {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(from);
+        msg.setTo(to);
+        msg.setSubject("Ride accepted");
+        msg.setText(
+                "You were added to a ride and a driver has accepted it.\n\n" +
+                        "Ride ID: " + rideId + "\n" +
+                        "From: " + startAddress + "\n" +
+                        "To: " + destinationAddress + "\n\n" +
+                        "Track the ride: " + trackingLink + "\n"
+        );
+        return msg;
+    }
+
+    public void sendRideAcceptedEmail(
+            String to,
+            Long rideId,
+            String startAddress,
+            String destinationAddress,
+            String trackingLink
+    ) {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(from);
+        msg.setTo(to);
+        msg.setSubject("Ride accepted");
+        msg.setText(
+                "You were added to a ride and a driver has accepted it.\n\n" +
+                        "Ride ID: " + rideId + "\n" +
+                        "From: " + startAddress + "\n" +
+                        "To: " + destinationAddress + "\n\n" +
+                        "Track the ride: " + trackingLink + "\n"
+        );
+        mailSender.send(msg);
+    }
+
 
     public void sendRideFinishedEmail(
             String to,
