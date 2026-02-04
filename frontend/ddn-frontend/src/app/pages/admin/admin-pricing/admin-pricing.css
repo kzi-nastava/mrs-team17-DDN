@@ -1,0 +1,5 @@
+@import '../admin-chats/admin-chats.css';
+
+.right .input {
+  width: 180px;
+}

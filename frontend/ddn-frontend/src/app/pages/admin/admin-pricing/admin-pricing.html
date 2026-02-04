@@ -1,0 +1,47 @@
+<div class="content">
+  <div class="card">
+    <div class="card-title">Pricing</div>
+
+    <div class="list">
+      <div class="item">
+        <div class="left">
+          <div class="id">Standard</div>
+          <div class="user">Base price for standard vehicle</div>
+        </div>
+        <div class="right">
+          <input class="input" type="number" [(ngModel)]="standardPrice" />
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="left">
+          <div class="id">Luxury</div>
+          <div class="user">Base price for luxury vehicle</div>
+        </div>
+        <div class="right">
+          <input class="input" type="number" [(ngModel)]="luxuryPrice" />
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="left">
+          <div class="id">Van</div>
+          <div class="user">Base price for van</div>
+        </div>
+        <div class="right">
+          <input class="input" type="number" [(ngModel)]="vanPrice" />
+        </div>
+      </div>
+    </div>
+
+    <div style="height: 12px"></div>
+
+    <button class="btn" [disabled]="true">Save</button>
+
+    <div style="height: 10px"></div>
+
+    <div class="hint">
+      Backend not connected yet. Save will be enabled once pricing API is implemented.
+    </div>
+  </div>
+</div>

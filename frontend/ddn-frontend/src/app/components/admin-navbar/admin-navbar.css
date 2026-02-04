@@ -1,5 +1,5 @@
 .navbar {
-  height: fit-content;
+  height: 60px;
   width: 100%;
   background: linear-gradient(to bottom, #000, #111);
   display: flex;
@@ -14,22 +14,18 @@
 .nav-left,
 .nav-right {
   display: flex;
-  gap: 32px;
+  gap: 18px;
   align-items: center;
+  white-space: nowrap;
 }
 
 .nav-left {
   flex: 1;
+  overflow: hidden; /* ostaje, ali više ne seče dropdown */
 }
 
 .nav-center {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.nav-center:empty {
-  pointer-events: none;
+  flex: 0;
 }
 
 .nav-right {
@@ -37,63 +33,45 @@
   justify-content: flex-end;
 }
 
+/* ===== UNIFIED NAV ITEMS ===== */
+.nav-link,
+.nav-link.logout-btn,
+.more-btn {
+  height: 36px;
+  min-height: 36px;
+  line-height: 36px;
+  padding: 0 10px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+}
+
+/* ===== LINKS ===== */
 .nav-link {
   color: white;
   text-decoration: none;
-  font-size: 20px;
-  font-weight: 100;
+  font-size: 16px;
+  font-weight: 300;
   cursor: pointer;
-
-  padding: 6px 14px;
-  display: inline-flex;
-  align-items: center;
 
   transition: opacity 0.2s ease;
   position: relative;
+
+  background: transparent;
+  border: none;
 }
 
 .nav-link:hover {
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
-.panic-btn {
-  width: 73px;
-  height: 34px;
-  background: #e53935;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.panic-btn img {
-  width: 24px;
-  height: 24px;
-  display: block;
-}
-
-.logout-btn {
-  border: 1px solid #444;
-  border-radius: 6px;
-  font-weight: 300;
-
-  background: rgba(255, 255, 255, 0.08); /* TAMNO default */
-  color: #fff;
-
-  transition: all 0.2s ease;
-}
-
-.logout-btn:hover {
-  background: rgba(255, 255, 255, 0.16); /* SVETLIJE na hover */
-  border-color: #666;
-  opacity: 1;
-}
-
-
+/* ===== ACTIVE LINK ===== */
 .nav-link.active {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 6px;
-  opacity: 1;
 }
 
 .nav-link.active::after {
@@ -106,4 +84,68 @@
   height: 2px;
   background: #e53935;
   border-radius: 2px;
+}
+
+/* ===== LOGOUT BUTTON ===== */
+.logout-btn {
+  border: 1px solid #444;
+  border-radius: 6px;
+  font-weight: 300;
+
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: #666;
+}
+
+button.logout-btn {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ===== MORE BUTTON ===== */
+.more-btn {
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.more-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #666;
+  opacity: 1;
+}
+
+/* ===== DROPDOWN (fixed, ne može da ga iseče parent overflow) ===== */
+.more-menu {
+  position: fixed;
+  min-width: 180px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 99999;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.more-item {
+  display: block;
+  padding: 10px 12px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 300;
+  border-bottom: 1px solid #222;
+}
+
+.more-item:last-child {
+  border-bottom: none;
+}
+
+.more-item:hover {
+  background: rgba(255, 255, 255, 0.06);
 }

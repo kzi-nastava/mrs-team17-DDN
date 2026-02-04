@@ -1,0 +1,20 @@
+<div class="content">
+  <div class="card">
+    <div class="card-title">Ride status</div>
+
+    <div class="toolbar">
+      <input
+        class="input"
+        [(ngModel)]="query"
+        placeholder="Search driver (name / email)..."
+      />
+      <button class="btn" (click)="reload()">Search</button>
+    </div>
+
+    <div *ngIf="loading" class="hint">Loading...</div>
+
+    <div *ngIf="!loading" class="hint">
+      No data yet (backend not connected).
+    </div>
+  </div>
+</div>
