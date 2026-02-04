@@ -6,10 +6,12 @@ import org.example.backend.dto.response.RideTrackingResponseDto;
 import org.example.backend.osrm.OsrmClient;
 import org.example.backend.repository.RideRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,11 +20,15 @@ public class RideService {
     private final RideRepository repository;
     private final OsrmClient osrm;
     private final MailService mailService;
+    private final MailQueueService mailQueueService;
+    private final NotificationService notificationService;
 
-    public RideService(RideRepository repository, OsrmClient osrm, MailService mailService) {
+    public RideService(RideRepository repository, OsrmClient osrm, MailService mailService, MailQueueService mailQueueService, NotificationService notificationService) {
         this.repository = repository;
         this.osrm = osrm;
         this.mailService = mailService;
+        this.mailQueueService = mailQueueService;
+        this.notificationService = notificationService;
     }
 
     // NEW: passenger "my active ride"
@@ -60,15 +66,25 @@ public class RideService {
 
         var addresses = repository.findRideAddresses(rideId)
                 .orElse(new RideRepository.RideAddresses("", ""));
+        List<SimpleMailMessage> out = new ArrayList<>();
 
         for (String email : emails) {
-            mailService.sendRideFinishedEmail(
-                    email,
-                    rideId,
-                    addresses.startAddress(),
-                    addresses.destinationAddress()
-            );
+            if (email != null && !email.isBlank()) {
+                out.add(
+                        mailService.buildRideFinishedEmail(
+                                email,
+                                rideId,
+                                addresses.startAddress(),
+                                addresses.destinationAddress()
+                        )
+                );
+            }
         }
+
+        mailQueueService.sendBatchWithin(out, 20_000);
+        notificationService.notifyRideFinished(rideId);
+
+
     }
 
     /**
