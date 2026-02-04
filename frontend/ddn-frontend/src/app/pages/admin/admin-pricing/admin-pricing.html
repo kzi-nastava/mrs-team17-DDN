@@ -36,12 +36,15 @@
 
     <div style="height: 12px"></div>
 
-    <button class="btn" [disabled]="true">Save</button>
+<div *ngIf="loading" class="hint">Loading...</div>
 
-    <div style="height: 10px"></div>
+<button class="btn" (click)="save()" [disabled]="loading || saving">
+  {{ saving ? 'Saving...' : 'Save' }}
+</button>
 
-    <div class="hint">
-      Backend not connected yet. Save will be enabled once pricing API is implemented.
-    </div>
+<div style="height: 10px"></div>
+
+<div *ngIf="error" class="hint">{{ error }}</div>
+
   </div>
 </div>

@@ -35,6 +35,8 @@ public class RideOrderService {
     private final MailService mailService;
     private final NotificationService notificationService;
     private final MailQueueService mailQueueService;
+    private final PricingService pricingService;
+
 
     @Value("${app.frontend.base-url:http://localhost:4200}")
     private String frontendBaseUrl;
@@ -48,7 +50,7 @@ public class RideOrderService {
             UserLookupRepository userLookupRepo,
             MailService mailService,
             NotificationService notificationService,
-            MailQueueService mailQueueService
+            MailQueueService mailQueueService, PricingService pricingService
     ) {
         this.osrmClient = osrmClient;
         this.driverRepo = driverRepo;
@@ -59,6 +61,7 @@ public class RideOrderService {
         this.mailService = mailService;
         this.notificationService = notificationService;
         this.mailQueueService = mailQueueService;
+        this.pricingService = pricingService;
     }
 
     @Transactional
@@ -114,7 +117,7 @@ public class RideOrderService {
         BigDecimal km = BigDecimal.valueOf(metrics.distanceMeters)
                 .divide(BigDecimal.valueOf(1000), 6, RoundingMode.HALF_UP);
 
-        BigDecimal base = basePrice(vehicleType);
+        BigDecimal base = pricingService.basePrice(vehicleType);
         BigDecimal price = base.add(km.multiply(PRICE_PER_KM))
                 .setScale(2, RoundingMode.HALF_UP);
 
