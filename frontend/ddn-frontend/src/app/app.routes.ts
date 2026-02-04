@@ -158,6 +158,17 @@ export const routes: Routes = [
     data: { roles: ['ADMIN'] },
     children: [
       {
+  path: 'ride-status',
+  loadComponent: () =>
+    import('./pages/admin/admin-ride-status/admin-ride-status').then(m => m.AdminRideStatus),
+},
+{
+  path: 'pricing',
+  loadComponent: () =>
+    import('./pages/admin/admin-pricing/admin-pricing').then(m => m.AdminPricing),
+},
+
+      {
   path: 'chats',
   loadComponent: () => import('./pages/admin/admin-chats/admin-chats').then(m => m.AdminChats),
   providers: [{ provide: CHAT_DS, useClass: ChatHttpDataSource }],
