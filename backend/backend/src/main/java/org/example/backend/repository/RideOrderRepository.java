@@ -5,6 +5,8 @@ import java.time.OffsetDateTime;
 
 public interface RideOrderRepository {
 
+    boolean userHasActiveRide(String email);
+
     Long insertRideReturningId(
             Long driverId,
             OffsetDateTime scheduledAt,
@@ -15,9 +17,23 @@ public interface RideOrderRepository {
             double startLat, double startLng,
             double destLat, double destLng,
             double carLat, double carLng,
-            Double estDistanceMeters,
-            Double estDurationSeconds
+            double distanceMeters,
+            double durationSeconds
     );
 
-    boolean userHasActiveRide(String email);
+    Long insertScheduledRideReturningId(
+            OffsetDateTime scheduledAt,
+            String startAddress,
+            String destinationAddress,
+            BigDecimal price,
+            String status,
+            double startLat, double startLng,
+            double destLat, double destLng,
+            double distanceMeters,
+            double durationSeconds,
+            String vehicleType,
+            boolean babyTransport,
+            boolean petTransport,
+            int requiredSeats
+    );
 }
