@@ -190,4 +190,24 @@ public class JdbcFavoriteRouteRepository implements FavoriteRouteRepository {
                 ))
                 .list();
     }
+
+    @Override
+    public boolean rideBelongsToUser(Long rideId, Long userId) {
+        Boolean exists = jdbc.sql("""
+            select exists (
+                select 1
+                from ride_passengers rp
+                join users u on lower(u.email) = lower(rp.email)
+                where rp.ride_id = :rideId
+                  and u.id = :userId
+                  and rp.email is not null
+            )
+        """)
+                .param("rideId", rideId)
+                .param("userId", userId)
+                .query(Boolean.class)
+                .single();
+
+        return Boolean.TRUE.equals(exists);
+    }
 }

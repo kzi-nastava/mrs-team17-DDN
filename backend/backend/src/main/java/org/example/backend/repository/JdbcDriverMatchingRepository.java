@@ -144,4 +144,18 @@ public class JdbcDriverMatchingRepository implements DriverMatchingRepository {
 
         return updated > 0;
     }
+
+    @Override
+    public boolean tryClaimAvailableDriver(Long driverId) {
+        int updated = jdbc.sql("""
+            update drivers
+            set available = false
+            where id = :id
+              and available = true
+        """)
+                .param("id", driverId)
+                .update();
+
+        return updated > 0;
+    }
 }

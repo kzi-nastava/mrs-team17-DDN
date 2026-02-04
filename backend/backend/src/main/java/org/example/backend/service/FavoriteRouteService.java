@@ -4,8 +4,10 @@ import org.example.backend.dto.response.AddFavoriteFromRideResponseDto;
 import org.example.backend.dto.response.FavoriteRoutePointResponseDto;
 import org.example.backend.dto.response.FavoriteRouteResponseDto;
 import org.example.backend.repository.FavoriteRouteRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +35,10 @@ public class FavoriteRouteService {
 
     @Transactional
     public AddFavoriteFromRideResponseDto addFromRide(Long userId, Long rideId) {
+
+        if (!favoriteRepo.rideBelongsToUser(rideId, userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can add favorite only from your own ride.");
+        }
 
         FavoriteRouteRepository.RideRouteRow ride = favoriteRepo.findRideRouteByRideId(rideId)
                 .orElseThrow(() -> new IllegalArgumentException("Ride not found"));

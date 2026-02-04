@@ -3,8 +3,12 @@ package org.example.backend.controller;
 import org.example.backend.dto.response.ProfileChangeRequestResponseDto;
 import org.example.backend.repository.DriverProfileChangeRequestRepository;
 import org.example.backend.service.DriverProfileChangeRequestService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -17,8 +21,6 @@ public class AdminDriverProfileChangeController {
 
     private final DriverProfileChangeRequestRepository repo;
     private final DriverProfileChangeRequestService service;
-
-    private static final Long ADMIN_ID = 1L;
 
     public AdminDriverProfileChangeController(DriverProfileChangeRequestRepository repo,
                                               DriverProfileChangeRequestService service) {
@@ -42,7 +44,9 @@ public class AdminDriverProfileChangeController {
 
     @GetMapping("/{requestId}")
     public ResponseEntity<ProfileChangeRequestResponseDto> getRequest(@PathVariable Long requestId) {
-        return repo.findByIdForUpdate(requestId)
+        requireAdminUserId();
+
+        return repo.findById(requestId)
                 .map(r -> ResponseEntity.ok(toDto(r)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -52,13 +56,12 @@ public class AdminDriverProfileChangeController {
             @PathVariable Long requestId,
             @RequestParam(required = false) String note
     ) {
-        boolean ok = service.approve(requestId, ADMIN_ID, note);
+        long adminId = requireAdminUserId();
 
-        if (!ok) {
-            return ResponseEntity.notFound().build();
-        }
+        boolean ok = service.approve(requestId, adminId, note);
+        if (!ok) return ResponseEntity.notFound().build();
 
-        return repo.findByIdForUpdate(requestId)
+        return repo.findById(requestId)
                 .map(r -> ResponseEntity.ok(toDto(r)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -68,13 +71,12 @@ public class AdminDriverProfileChangeController {
             @PathVariable Long requestId,
             @RequestParam(required = false) String reason
     ) {
-        boolean ok = service.reject(requestId, ADMIN_ID, reason);
+        long adminId = requireAdminUserId();
 
-        if (!ok) {
-            return ResponseEntity.notFound().build();
-        }
+        boolean ok = service.reject(requestId, adminId, reason);
+        if (!ok) return ResponseEntity.notFound().build();
 
-        return repo.findByIdForUpdate(requestId)
+        return repo.findById(requestId)
                 .map(r -> ResponseEntity.ok(toDto(r)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -96,5 +98,26 @@ public class AdminDriverProfileChangeController {
         dto.setCreatedAt(ldt);
 
         return dto;
+    }
+
+    private long requireAdminUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+
+        if (!isAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can access this endpoint");
+        }
+
+        try {
+            return Long.parseLong(auth.getPrincipal().toString());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid authentication principal");
+        }
     }
 }

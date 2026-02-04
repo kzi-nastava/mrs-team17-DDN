@@ -56,6 +56,12 @@ public class DriverController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/rides/{rideId}/finish")
+    public ResponseEntity<Void> finishRide(@PathVariable Long rideId) {
+        driverRideService.finishRide(getCurrentDriverId(), rideId);
+        return ResponseEntity.ok().build();
+    }
+
     private Long getCurrentDriverId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
