@@ -1,0 +1,31 @@
+<div class="content">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">Support chat</div>
+
+      <div class="chat" id="chat-scroll">
+        <div *ngIf="loading" class="hint">Loading...</div>
+
+        <div *ngFor="let m of messages" class="row" [class.mine]="isMine(m)">
+          <div class="bubble">
+            <div class="meta">
+              <span class="role">{{ m.senderRole }}</span>
+              <span class="time">{{ m.sentAt | date:'short' }}</span>
+            </div>
+            <div class="text">{{ m.content }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="composer">
+        <input
+          class="input"
+          [(ngModel)]="input"
+          placeholder="Type a message..."
+          (keydown.enter)="send()"
+        />
+        <button class="btn" (click)="send()">Send</button>
+      </div>
+    </div>
+  </div>
+</div>

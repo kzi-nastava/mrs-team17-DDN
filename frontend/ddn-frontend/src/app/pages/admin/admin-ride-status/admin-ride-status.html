@@ -1,0 +1,101 @@
+<div class="content">
+  <div class="card">
+    <div class="card-title">Ride status</div>
+
+    <div class="toolbar">
+      <input class="input" [(ngModel)]="query" placeholder="Search driver (name / email)..." />
+      <button class="btn" (click)="reload()">Search</button>
+    </div>
+
+    <div *ngIf="loading" class="hint">Loading...</div>
+    <div *ngIf="!loading && error" class="hint">{{ error }}</div>
+
+    <div class="list" *ngIf="!loading && !error">
+      <div class="row" *ngFor="let r of rows">
+        <div
+          class="item clickable"
+          (click)="toggleDetails(r)"
+          [class.expanded]="expandedRideId === r.rideId"
+        >
+          <div class="left">
+            <div class="id">Ride #{{ r.rideId }}</div>
+            <div class="user">
+              Driver:
+              {{ (r.driverFirstName || '') + ' ' + (r.driverLastName || '') }}
+              ({{ r.driverEmail || 'no email' }})
+            </div>
+          </div>
+
+          <div class="right">
+            <div class="time">{{ r.startedAt ? (r.startedAt | date:'short') : '—' }}</div>
+            <div class="time">{{ r.carLat.toFixed(5) }}, {{ r.carLng.toFixed(5) }}</div>
+          </div>
+        </div>
+
+        <div class="details" *ngIf="expandedRideId === r.rideId">
+          <div class="details-head">
+            <div class="pill">
+              <span class="dot" [class.ok]="(details?.status || '') === 'ACTIVE'"></span>
+              <span>{{ details?.status || '—' }}</span>
+            </div>
+
+            <div class="meta">
+              <div class="meta-item">
+                <div class="k">ETA</div>
+                <div class="v">{{ details?.etaMinutes != null ? (details?.etaMinutes + ' min') : '—' }}</div>
+              </div>
+              <div class="meta-item">
+                <div class="k">Distance</div>
+                <div class="v">{{ details?.distanceKm != null ? (details?.distanceKm + ' km') : '—' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="detailsLoading" class="hint">Loading details...</div>
+          <div *ngIf="!detailsLoading && detailsError" class="hint">{{ detailsError }}</div>
+
+          <div class="details-body" *ngIf="!detailsLoading && !detailsError">
+            <div class="mini-map-wrap">
+              <div class="mini-map" [id]="'mini-map-' + r.rideId"></div>
+              <div class="map-caption">
+                Car position:
+                {{ (details?.car?.lat ?? r.carLat).toFixed(5) }},
+                {{ (details?.car?.lng ?? r.carLng).toFixed(5) }}
+              </div>
+            </div>
+
+            <div class="grid">
+              <div class="kv">
+                <div class="k">Pickup</div>
+                <div class="v">
+                  {{ details?.pickup?.lat?.toFixed(5) }}, {{ details?.pickup?.lng?.toFixed(5) }}
+                </div>
+              </div>
+
+              <div class="kv">
+                <div class="k">Destination</div>
+                <div class="v">
+                  {{ details?.destination?.lat?.toFixed(5) }}, {{ details?.destination?.lng?.toFixed(5) }}
+                </div>
+              </div>
+
+              <div class="kv full">
+                <div class="k">Checkpoints</div>
+                <div class="v">
+                  <div *ngIf="(details?.checkpoints?.length || 0) === 0" class="muted">—</div>
+                  <div class="cp" *ngFor="let cp of (details?.checkpoints || [])">
+                    <span class="cp-ord">#{{ cp.order }}</span>
+                    <span class="cp-addr">{{ cp.address }}</span>
+                    <span class="cp-coord">({{ cp.lat.toFixed(5) }}, {{ cp.lng.toFixed(5) }})</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="rows.length === 0" class="hint">No active rides</div>
+    </div>
+  </div>
+</div>

@@ -20,6 +20,8 @@ export class NavbarComponent {
 
   logout(): void {
     this.auth.clear();
+    this.driverState.setDriverId(null);
+    this.driverState.setAvailable(false);
     this.router.navigate(['/login']);
   }
 }

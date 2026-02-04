@@ -7,24 +7,23 @@ import org.example.backend.exception.ActiveRideConflictException;
 import org.example.backend.exception.NoAvailableDriverException;
 import org.example.backend.osrm.OsrmClient;
 import org.example.backend.repository.*;
-
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class RideOrderService {
 
     private static final BigDecimal PRICE_PER_KM = new BigDecimal("120");
     private static final double FALLBACK_AVG_SPEED_KMH = 35.0;
-
     private static final int FINISHING_SOON_THRESHOLD_SECONDS = 10 * 60;
 
     private final OsrmClient osrmClient;
@@ -33,6 +32,14 @@ public class RideOrderService {
     private final RideStopRepository rideStopRepo;
     private final RidePassengerRepository passengerRepo;
     private final UserLookupRepository userLookupRepo;
+    private final MailService mailService;
+    private final NotificationService notificationService;
+    private final MailQueueService mailQueueService;
+    private final PricingService pricingService;
+
+
+    @Value("${app.frontend.base-url:http://localhost:4200}")
+    private String frontendBaseUrl;
 
     public RideOrderService(
             OsrmClient osrmClient,
@@ -40,7 +47,10 @@ public class RideOrderService {
             RideOrderRepository rideOrderRepo,
             RideStopRepository rideStopRepo,
             RidePassengerRepository passengerRepo,
-            UserLookupRepository userLookupRepo
+            UserLookupRepository userLookupRepo,
+            MailService mailService,
+            NotificationService notificationService,
+            MailQueueService mailQueueService, PricingService pricingService
     ) {
         this.osrmClient = osrmClient;
         this.driverRepo = driverRepo;
@@ -48,10 +58,14 @@ public class RideOrderService {
         this.rideStopRepo = rideStopRepo;
         this.passengerRepo = passengerRepo;
         this.userLookupRepo = userLookupRepo;
+        this.mailService = mailService;
+        this.notificationService = notificationService;
+        this.mailQueueService = mailQueueService;
+        this.pricingService = pricingService;
     }
 
     @Transactional
-    public CreateRideResponseDto createRide(CreateRideRequestDto req) {
+    public CreateRideResponseDto createRide(long requesterUserId, CreateRideRequestDto req) {
 
         String orderType = safeLower(req.getOrderType());
         String vehicleType = safeLower(req.getVehicleType());
@@ -103,11 +117,11 @@ public class RideOrderService {
         BigDecimal km = BigDecimal.valueOf(metrics.distanceMeters)
                 .divide(BigDecimal.valueOf(1000), 6, RoundingMode.HALF_UP);
 
-        BigDecimal base = basePrice(vehicleType);
+        BigDecimal base = pricingService.basePrice(vehicleType);
         BigDecimal price = base.add(km.multiply(PRICE_PER_KM))
                 .setScale(2, RoundingMode.HALF_UP);
 
-        UserLookupRepository.UserBasic requester = userLookupRepo.findById(req.getRequesterUserId())
+        UserLookupRepository.UserBasic requester = userLookupRepo.findById(requesterUserId)
                 .orElseThrow(() -> new IllegalArgumentException("Requester user not found"));
 
         if (!requester.active()) {
@@ -133,16 +147,28 @@ public class RideOrderService {
             addedEmails.add(requester.email().trim().toLowerCase());
         }
 
+        int requiredSeats = 1;
+
         if (req.getLinkedUsers() != null) {
             for (String raw : req.getLinkedUsers()) {
                 String e = safeTrim(raw);
-                if (e.isEmpty()) continue;
+
+                if (e.isEmpty()) {
+                    requiredSeats++;
+                    continue;
+                }
 
                 String lower = e.toLowerCase();
                 if (addedEmails.contains(lower)) continue;
 
-                UserLookupRepository.UserBasic u = userLookupRepo.findByEmail(e)
-                        .orElseThrow(() -> new IllegalArgumentException("Linked user not found: " + e));
+                var opt = userLookupRepo.findByEmail(e);
+
+                if (opt.isEmpty()) {
+                    requiredSeats++;
+                    continue;
+                }
+
+                UserLookupRepository.UserBasic u = opt.get();
 
                 if (!u.active()) {
                     throw new IllegalArgumentException("Linked user is not active: " + e);
@@ -160,24 +186,94 @@ public class RideOrderService {
                         u.email()
                 ));
                 addedEmails.add(lower);
+
+                requiredSeats++;
             }
         }
 
-        DriverPick pick = pickDriver(vehicleType, baby, pet, start.getLat(), start.getLng());
+        if (orderType.equals("schedule")) {
 
-        Long rideId = rideOrderRepo.insertRideReturningId(
-                pick.driverId,
-                scheduledAt,
-                safeTrim(start.getAddress()),
-                safeTrim(dest.getAddress()),
-                price,
-                "ACCEPTED",
-                start.getLat(), start.getLng(),
-                dest.getLat(), dest.getLng(),
-                pick.carLat, pick.carLng,
-                metrics.distanceMeters,
-                metrics.durationSeconds
-        );
+            Long rideId = rideOrderRepo.insertScheduledRideReturningId(
+                    scheduledAt,
+                    safeTrim(start.getAddress()),
+                    safeTrim(dest.getAddress()),
+                    price,
+                    "SCHEDULED",
+                    start.getLat(), start.getLng(),
+                    dest.getLat(), dest.getLng(),
+                    metrics.distanceMeters,
+                    metrics.durationSeconds,
+                    vehicleType,
+                    baby,
+                    pet,
+                    requiredSeats
+            );
+
+            if (req.getCheckpoints() != null && !req.getCheckpoints().isEmpty()) {
+                List<RideStopRepository.StopRow> stops = new ArrayList<>();
+                int ord = 1;
+                for (RidePointRequestDto cp : req.getCheckpoints()) {
+                    stops.add(new RideStopRepository.StopRow(
+                            ord++,
+                            cp.getAddress(),
+                            cp.getLat(),
+                            cp.getLng()
+                    ));
+                }
+                rideStopRepo.insertStops(rideId, stops);
+            }
+
+            passengerRepo.insertPassengers(rideId, passengers);
+
+            CreateRideResponseDto resp = new CreateRideResponseDto();
+            resp.setRideId(rideId);
+            resp.setDriverId(null);
+            resp.setStatus("SCHEDULED");
+            resp.setPrice(price);
+            return resp;
+        }
+
+        DriverPick pick = null;
+        Long rideId = null;
+
+        pick = reserveNearestAvailableDriver(vehicleType, baby, pet, requiredSeats, start.getLat(), start.getLng());
+        if (pick != null) {
+            try {
+                rideId = insertRide(pick, scheduledAt, start, dest, price, metrics);
+            } catch (DataIntegrityViolationException ex) {
+                driverRepo.setDriverAvailable(pick.driverId, true);
+
+                if (isUniqueViolation(ex)) {
+                    pick = null;
+                } else {
+                    throw ex;
+                }
+            }
+        }
+
+        if (rideId == null) {
+            List<DriverPick> finishingSoonPicks =
+                    finishingSoonPicksOrdered(vehicleType, baby, pet, requiredSeats, start.getLat(), start.getLng());
+
+            for (DriverPick candidate : finishingSoonPicks) {
+                try {
+                    rideId = insertRide(candidate, scheduledAt, start, dest, price, metrics);
+                    pick = candidate;
+
+                    driverRepo.setDriverAvailable(pick.driverId, false);
+                    break;
+                } catch (DataIntegrityViolationException ex) {
+                    if (isUniqueViolation(ex)) {
+                        continue;
+                    }
+                    throw ex;
+                }
+            }
+        }
+
+        if (rideId == null || pick == null) {
+            throw new NoAvailableDriverException("No available drivers for selected criteria");
+        }
 
         if (req.getCheckpoints() != null && !req.getCheckpoints().isEmpty()) {
             List<RideStopRepository.StopRow> stops = new ArrayList<>();
@@ -195,7 +291,28 @@ public class RideOrderService {
 
         passengerRepo.insertPassengers(rideId, passengers);
 
-        driverRepo.setDriverAvailable(pick.driverId, false);
+        String startAddr = safeTrim(start.getAddress());
+        String destAddr  = safeTrim(dest.getAddress());
+        String trackingLink = frontendBaseUrl + "/user/ride-tracking?rideId=" + rideId;
+
+        List<SimpleMailMessage> out = new ArrayList<>();
+        for (RidePassengerRepository.PassengerRow p : passengers) {
+            String email = p.email() == null ? "" : p.email().trim();
+            if (!email.isEmpty()) {
+                out.add(
+                        mailService.buildRideAcceptedEmail(
+                                email,
+                                rideId,
+                                startAddr,
+                                destAddr,
+                                trackingLink
+                        )
+                );
+            }
+        }
+        mailQueueService.sendBatchWithin(out, 10_000);
+
+        notificationService.notifyRideAccepted(rideId);
 
         CreateRideResponseDto resp = new CreateRideResponseDto();
         resp.setRideId(rideId);
@@ -203,6 +320,28 @@ public class RideOrderService {
         resp.setStatus("ACCEPTED");
         resp.setPrice(price);
         return resp;
+    }
+
+    private Long insertRide(DriverPick pick,
+                            OffsetDateTime scheduledAt,
+                            RidePointRequestDto start,
+                            RidePointRequestDto dest,
+                            BigDecimal price,
+                            RouteMetrics metrics) {
+
+        return rideOrderRepo.insertRideReturningId(
+                pick.driverId,
+                scheduledAt,
+                safeTrim(start.getAddress()),
+                safeTrim(dest.getAddress()),
+                price,
+                "ACCEPTED",
+                start.getLat(), start.getLng(),
+                dest.getLat(), dest.getLng(),
+                pick.carLat, pick.carLng,
+                metrics.distanceMeters,
+                metrics.durationSeconds
+        );
     }
 
     private static class DriverPick {
@@ -217,28 +356,95 @@ public class RideOrderService {
         }
     }
 
-    private DriverPick pickDriver(String vehicleType, boolean baby, boolean pet, double startLat, double startLng) {
-        List<DriverMatchingRepository.CandidateDriver> candidates =
-                driverRepo.findAvailableDrivers(vehicleType, baby, pet);
+    private DriverPick reserveNearestAvailableDriver(String vehicleType,
+                                                     boolean baby,
+                                                     boolean pet,
+                                                     int requiredSeats,
+                                                     double startLat,
+                                                     double startLng) {
 
-        if (!candidates.isEmpty()) {
-            DriverMatchingRepository.CandidateDriver chosen =
-                    chooseNearestToStart(candidates, startLat, startLng);
+        for (int attempt = 0; attempt < 2; attempt++) {
+            List<DriverMatchingRepository.CandidateDriver> candidates =
+                    driverRepo.findAvailableDrivers(vehicleType, baby, pet, requiredSeats);
 
-            return new DriverPick(chosen.driverId(), chosen.vehicleLat(), chosen.vehicleLng());
+            if (candidates.isEmpty()) return null;
+
+            List<CandidateWithDist> ordered = new ArrayList<>();
+            for (DriverMatchingRepository.CandidateDriver c : candidates) {
+                double km = haversineKm(startLat, startLng, c.vehicleLat(), c.vehicleLng());
+                ordered.add(new CandidateWithDist(c, km));
+            }
+            ordered.sort(Comparator.comparingDouble(o -> o.distKm));
+
+            for (CandidateWithDist cand : ordered) {
+                Long driverId = cand.c.driverId();
+                if (driverRepo.tryClaimAvailableDriver(driverId)) {
+                    return new DriverPick(driverId, cand.c.vehicleLat(), cand.c.vehicleLng());
+                }
+            }
         }
 
-        List<DriverMatchingRepository.FinishingSoonDriver> finishingSoon =
-                driverRepo.findDriversFinishingSoon(vehicleType, baby, pet, FINISHING_SOON_THRESHOLD_SECONDS);
+        return null;
+    }
 
-        if (finishingSoon.isEmpty()) {
-            throw new NoAvailableDriverException("No available drivers for selected criteria");
+    private static class CandidateWithDist {
+        final DriverMatchingRepository.CandidateDriver c;
+        final double distKm;
+
+        CandidateWithDist(DriverMatchingRepository.CandidateDriver c, double distKm) {
+            this.c = c;
+            this.distKm = distKm;
         }
+    }
 
-        DriverMatchingRepository.FinishingSoonDriver chosen =
-                chooseBestFinishingSoon(finishingSoon, startLat, startLng);
+    private List<DriverPick> finishingSoonPicksOrdered(String vehicleType,
+                                                       boolean baby,
+                                                       boolean pet,
+                                                       int requiredSeats,
+                                                       double startLat,
+                                                       double startLng) {
 
-        return new DriverPick(chosen.driverId(), chosen.vehicleLat(), chosen.vehicleLng());
+        List<DriverMatchingRepository.FinishingSoonDriver> fs =
+                driverRepo.findDriversFinishingSoon(vehicleType, baby, pet, requiredSeats, FINISHING_SOON_THRESHOLD_SECONDS);
+
+        if (fs.isEmpty()) return Collections.emptyList();
+
+        List<FinishingWithDist> ordered = new ArrayList<>();
+        for (DriverMatchingRepository.FinishingSoonDriver d : fs) {
+            double kmToFinish = haversineKm(startLat, startLng, d.finishLat(), d.finishLng());
+            ordered.add(new FinishingWithDist(d, kmToFinish));
+        }
+        ordered.sort(Comparator.comparingDouble(o -> o.distKmToFinish));
+
+        List<DriverPick> out = new ArrayList<>();
+        for (FinishingWithDist o : ordered) {
+            out.add(new DriverPick(o.d.driverId(), o.d.vehicleLat(), o.d.vehicleLng()));
+        }
+        return out;
+    }
+
+    private static class FinishingWithDist {
+        final DriverMatchingRepository.FinishingSoonDriver d;
+        final double distKmToFinish;
+
+        FinishingWithDist(DriverMatchingRepository.FinishingSoonDriver d, double distKmToFinish) {
+            this.d = d;
+            this.distKmToFinish = distKmToFinish;
+        }
+    }
+
+    private static boolean isUniqueViolation(Throwable ex) {
+        Throwable t = ex;
+        while (t != null) {
+            if (t instanceof SQLException) {
+                String state = ((SQLException) t).getSQLState();
+                if ("23505".equals(state)) {
+                    return true;
+                }
+            }
+            t = t.getCause();
+        }
+        return false;
     }
 
     private static class RouteMetrics {
@@ -295,42 +501,6 @@ public class RideOrderService {
         if (vehicleTypeLower.equals("luxury"))   return new BigDecimal("300");
         if (vehicleTypeLower.equals("van"))      return new BigDecimal("250");
         return new BigDecimal("200");
-    }
-
-    private static DriverMatchingRepository.CandidateDriver chooseNearestToStart(
-            List<DriverMatchingRepository.CandidateDriver> candidates,
-            double startLat,
-            double startLng
-    ) {
-        DriverMatchingRepository.CandidateDriver best = null;
-        double bestKm = Double.POSITIVE_INFINITY;
-
-        for (DriverMatchingRepository.CandidateDriver c : candidates) {
-            double km = haversineKm(startLat, startLng, c.vehicleLat(), c.vehicleLng());
-            if (km < bestKm) {
-                bestKm = km;
-                best = c;
-            }
-        }
-        return best;
-    }
-
-    private static DriverMatchingRepository.FinishingSoonDriver chooseBestFinishingSoon(
-            List<DriverMatchingRepository.FinishingSoonDriver> drivers,
-            double startLat,
-            double startLng
-    ) {
-        DriverMatchingRepository.FinishingSoonDriver best = null;
-        double bestKm = Double.POSITIVE_INFINITY;
-
-        for (DriverMatchingRepository.FinishingSoonDriver d : drivers) {
-            double km = haversineKm(startLat, startLng, d.finishLat(), d.finishLng());
-            if (km < bestKm) {
-                bestKm = km;
-                best = d;
-            }
-        }
-        return best;
     }
 
     private static double haversineKm(double lat1, double lon1, double lat2, double lon2) {

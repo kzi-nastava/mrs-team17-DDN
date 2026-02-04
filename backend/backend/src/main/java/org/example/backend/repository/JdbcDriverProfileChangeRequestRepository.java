@@ -44,12 +44,11 @@ public class JdbcDriverProfileChangeRequestRepository implements DriverProfileCh
     }
 
     @Override
-    public Optional<DriverProfileChangeRequestRow> findByIdForUpdate(Long requestId) {
+    public Optional<DriverProfileChangeRequestRow> findById(Long requestId) {
         String sql = """
             select id, driver_id, first_name, last_name, address, phone, profile_image_url, status, created_at
             from driver_profile_change_requests
             where id = :id
-            for update
         """;
 
         return jdbc.sql(sql)

@@ -1,4 +1,3 @@
-// backend/src/main/java/org/example/backend/service/RideService.java
 package org.example.backend.service;
 
 import org.example.backend.dto.request.RideReportRequestDto;
@@ -7,10 +6,12 @@ import org.example.backend.dto.response.RideTrackingResponseDto;
 import org.example.backend.osrm.OsrmClient;
 import org.example.backend.repository.RideRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,12 +20,23 @@ public class RideService {
     private final RideRepository repository;
     private final OsrmClient osrm;
     private final MailService mailService;
+    private final MailQueueService mailQueueService;
+    private final NotificationService notificationService;
 
-    public RideService(RideRepository repository, OsrmClient osrm, MailService mailService) {
+    public RideService(RideRepository repository, OsrmClient osrm, MailService mailService, MailQueueService mailQueueService, NotificationService notificationService) {
         this.repository = repository;
         this.osrm = osrm;
         this.mailService = mailService;
+        this.mailQueueService = mailQueueService;
+        this.notificationService = notificationService;
     }
+
+    // NEW: passenger "my active ride"
+    public Long getActiveRideIdForPassenger(long userId) {
+        return repository.findActiveRideIdForPassenger(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No active ride"));
+    }
+
 
     public RideTrackingResponseDto getRideTracking(Long rideId) {
         return repository.findTrackingByRideId(rideId)
@@ -39,6 +51,11 @@ public class RideService {
         }
     }
 
+    public Long getRideIdToRateForPassenger(long userId) {
+        return repository.findRideIdToRateForPassenger(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No ride to rate"));
+    }
+
     public void finishRide(Long rideId) {
         boolean ok = repository.finishRide(rideId);
         if (!ok) {
@@ -49,15 +66,25 @@ public class RideService {
 
         var addresses = repository.findRideAddresses(rideId)
                 .orElse(new RideRepository.RideAddresses("", ""));
+        List<SimpleMailMessage> out = new ArrayList<>();
 
         for (String email : emails) {
-            mailService.sendRideFinishedEmail(
-                    email,
-                    rideId,
-                    addresses.startAddress(),
-                    addresses.destinationAddress()
-            );
+            if (email != null && !email.isBlank()) {
+                out.add(
+                        mailService.buildRideFinishedEmail(
+                                email,
+                                rideId,
+                                addresses.startAddress(),
+                                addresses.destinationAddress()
+                        )
+                );
+            }
         }
+
+        mailQueueService.sendBatchWithin(out, 20_000);
+        notificationService.notifyRideFinished(rideId);
+
+
     }
 
     /**
@@ -81,18 +108,17 @@ public class RideService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ride already ended/canceled");
         }
 
-        // keep it strict: only ACTIVE moves
         if (!"ACTIVE".equals(snap.status())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ride is not ACTIVE");
         }
 
         final double PICKUP_THRESHOLD_M = 80.0;
-        final double DEST_THRESHOLD_M = 30.0; // used only to "snap" to destination, not to finish
+        final double STOP_THRESHOLD_M = 60.0;
+        final double DEST_THRESHOLD_M = 30.0;
         final double STEP_METERS = 25.0;
 
         boolean pickedUp = snap.pickedUp();
 
-        // 1) If not picked up yet, check pickup threshold and switch once
         if (!pickedUp) {
             double distToPickup = haversineMeters(
                     snap.carLat(), snap.carLng(),
@@ -101,29 +127,53 @@ public class RideService {
 
             if (distToPickup <= PICKUP_THRESHOLD_M) {
                 repository.markPickedUp(rideId);
-                pickedUp = true;
-
-                // optional: snap car exactly to pickup to avoid oscillation
                 repository.updateVehicleLocation(snap.driverId(), snap.pickupLat(), snap.pickupLng());
-                return;
-            }
-        } else {
-            // 2) If already picked up, stop moving when close enough to destination (do NOT finish)
-            double distToDest = haversineMeters(
-                    snap.carLat(), snap.carLng(),
-                    snap.destLat(), snap.destLng()
-            );
-
-            if (distToDest <= DEST_THRESHOLD_M) {
-                // snap to destination and stop
-                repository.updateVehicleLocation(snap.driverId(), snap.destLat(), snap.destLng());
                 return;
             }
         }
 
-        // 3) Compute target based on phase
-        double targetLat = pickedUp ? snap.destLat() : snap.pickupLat();
-        double targetLng = pickedUp ? snap.destLng() : snap.pickupLng();
+        double targetLat;
+        double targetLng;
+
+        if (!pickedUp) {
+            targetLat = snap.pickupLat();
+            targetLng = snap.pickupLng();
+        } else {
+            var stops = repository.findRideStopPoints(rideId);
+            int idx = Math.max(0, snap.nextStopIndex());
+
+            if (idx < stops.size()) {
+                var nextStop = stops.get(idx);
+
+                double distToStop = haversineMeters(
+                        snap.carLat(), snap.carLng(),
+                        nextStop.lat(), nextStop.lng()
+                );
+
+                if (distToStop <= STOP_THRESHOLD_M) {
+                    repository.setNextStopIndex(rideId, idx + 1);
+                    repository.updateVehicleLocation(snap.driverId(), nextStop.lat(), nextStop.lng());
+                    return;
+                }
+
+                targetLat = nextStop.lat();
+                targetLng = nextStop.lng();
+
+            } else {
+                double distToDest = haversineMeters(
+                        snap.carLat(), snap.carLng(),
+                        snap.destLat(), snap.destLng()
+                );
+
+                if (distToDest <= DEST_THRESHOLD_M) {
+                    repository.updateVehicleLocation(snap.driverId(), snap.destLat(), snap.destLng());
+                    return;
+                }
+
+                targetLat = snap.destLat();
+                targetLng = snap.destLng();
+            }
+        }
 
         OsrmClient.RouteWithGeometry route;
         try {
@@ -137,9 +187,7 @@ public class RideService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OSRM route geometry not available");
         }
 
-        if (route.geometry() == null || route.geometry().size() < 2) {
-            return;
-        }
+        if (route.geometry() == null || route.geometry().size() < 2) return;
 
         var next = advanceAlongPolylineMeters(
                 snap.carLat(), snap.carLng(),

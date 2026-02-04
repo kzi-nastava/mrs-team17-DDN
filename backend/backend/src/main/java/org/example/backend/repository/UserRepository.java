@@ -6,4 +6,6 @@ import java.util.Optional;
 
 public interface UserRepository {
     Optional<UserAuthResponseDto> findAuthByEmail(String email);
+    Optional<UserAuthResponseDto> findAuthById(Long id);
+    int updatePasswordHash(Long id, String newPasswordHash);
 }

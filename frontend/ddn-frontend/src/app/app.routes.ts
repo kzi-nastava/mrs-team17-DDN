@@ -37,11 +37,19 @@ import { RideLifecycleHttpDataSource } from './api/driver/ride-lifecycle.http.da
 // guards
 import { authGuard } from './api/auth/auth.guard';
 import { roleGuard } from './api/auth/role.guard';
+import { ChatHttpDataSource } from './api/chat/chat.http.datasource';
+import { CHAT_DS } from './api/chat/chat.datasource';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
 
   { path: 'login', component: LoginComponent },
+
+  {
+    path: 'driver/activate',
+    loadComponent: () =>
+      import('./pages/driver/driver-activate/driver-activate').then(m => m.DriverActivate),
+  },
 
   {
     path: 'reset-password',
@@ -76,6 +84,13 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { roles: ['PASSENGER'] },
     children: [
+{
+  path: 'support',
+  loadComponent: () => import('./pages/user/user-chat/user-chat').then(m => m.UserChat),
+  providers: [{ provide: CHAT_DS, useClass: ChatHttpDataSource }],
+},
+
+
       {
         path: 'home',
         loadComponent: () =>
@@ -97,7 +112,7 @@ export const routes: Routes = [
           import('./pages/user/user-profile/user-profile').then(m => m.UserProfile),
       },
       {
-        path: 'ride-tracking/:rideId',
+        path: 'ride-tracking',
         component: RideTrackingComponent,
         providers: [{ provide: RIDE_TRACKING_DS, useClass: RideTrackingHttpDataSource }],
       },
@@ -142,6 +157,28 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN'] },
     children: [
+      {
+  path: 'ride-status',
+  loadComponent: () =>
+    import('./pages/admin/admin-ride-status/admin-ride-status').then(m => m.AdminRideStatus),
+},
+{
+  path: 'pricing',
+  loadComponent: () =>
+    import('./pages/admin/admin-pricing/admin-pricing').then(m => m.AdminPricing),
+},
+
+      {
+  path: 'chats',
+  loadComponent: () => import('./pages/admin/admin-chats/admin-chats').then(m => m.AdminChats),
+  providers: [{ provide: CHAT_DS, useClass: ChatHttpDataSource }],
+},
+{
+  path: 'chats/:threadId',
+  loadComponent: () => import('./pages/admin/admin-chat-details/admin-chat-details').then(m => m.AdminChatDetails),
+  providers: [{ provide: CHAT_DS, useClass: ChatHttpDataSource }],
+},
+
       { path: 'home', component: AdminHome },
       { path: 'update-requests', component: AdminUpdateRequests },
       { path: 'create-driver', component: AdminCreateDriver },
@@ -156,6 +193,8 @@ export const routes: Routes = [
           import('./pages/admin/admin-password-change/admin-password-change').then(m => m.AdminPasswordChange),
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
+      { path: 'update-requests/:requestId', loadComponent: () => import('./pages/admin/admin-update-request-details/admin-update-request-details').then(m => m.AdminUpdateRequestDetails),},
+      { path: 'update-requests', component: AdminUpdateRequests },
     ],
   },
 

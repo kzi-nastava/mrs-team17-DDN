@@ -1,1 +1,74 @@
-<p>user-ride-history works!</p>
+<div class="page">
+  <div class="card-fixed">
+
+    <div class="header">
+      <h1 class="title">Ride history</h1>
+
+      <div class="filter-section">
+        <label class="label" for="fromDate">From:</label>
+        <input id="fromDate" type="date" class="date-input" [(ngModel)]="fromDate" />
+
+        <label class="label" for="toDate">To:</label>
+        <input id="toDate" type="date" class="date-input" [(ngModel)]="toDate" />
+
+        <button class="filter-btn" type="button" (click)="load()">Filter</button>
+      </div>
+    </div>
+
+    <div class="table">
+      <div class="head">
+        <div class="col-date">Date</div>
+        <div class="col-route">Route</div>
+        <div class="col-actions"></div>
+      </div>
+
+      <div class="row" *ngFor="let r of rides">
+        <div class="col-date">{{ formatDate(r.startedAt) }}</div>
+
+        <div class="col-route">
+          <div class="route-one-line">
+            <span class="route-from">{{ r.startAddress }}</span>
+            <span class="route-arrow" aria-hidden="true">⟶</span>
+            <span class="route-to">{{ r.destinationAddress }}</span>
+          </div>
+
+          <div class="stops">
+            <span class="stops-label">Checkpoints:</span>
+
+            <div class="stops-lines" *ngIf="cleanStops(r.stops).length > 0; else noStops">
+              <div class="stop-line" *ngFor="let s of cleanStops(r.stops)">{{ s }}</div>
+            </div>
+
+            <ng-template #noStops>
+              <span class="stops-text">—</span>
+            </ng-template>
+          </div>
+        </div>
+
+        <div class="col-actions">
+          <button
+            class="fav-btn"
+            type="button"
+            [disabled]="addingRideId === r.rideId || addedRideIds.has(r.rideId)"
+            (click)="addToFavourites(r.rideId)"
+          >
+            {{
+              addedRideIds.has(r.rideId)
+                ? 'Added'
+                : (addingRideId === r.rideId ? 'Adding...' : 'Add to favourites')
+            }}
+          </button>
+
+          <button class="rate-btn" type="button" disabled title="Coming soon">
+            Rate
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="isLoading" class="state">Loading...</div>
+      <div *ngIf="!isLoading && rides.length === 0" class="state">No rides yet.</div>
+      <div *ngIf="errorMsg" class="state err">{{ errorMsg }}</div>
+    </div>
+
+  </div>
+</div>

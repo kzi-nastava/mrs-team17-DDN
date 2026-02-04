@@ -2,16 +2,49 @@
   <div class="start-ride-grid">
 
     <div class="start-left">
-      <div class="drive-title">Drive #33874828</div>
+      <div class="drive-title">
+        <ng-container *ngIf="ride; else noRideTitle">
+          Drive #{{ ride.rideId }}
+        </ng-container>
+        <ng-template #noRideTitle>
+          Drive
+        </ng-template>
+      </div>
 
-      <div class="drive-line">Route start: Futoška 25</div>
-      <div class="drive-line">Route end: Futoška 55</div>
+      <div class="drive-line" *ngIf="ride; else loadingLines">
+        Route start: {{ ride.startAddress }}
+      </div>
+      <div class="drive-line" *ngIf="ride; else loadingLines2">
+        Route end: {{ ride.destinationAddress }}
+      </div>
 
-      <div class="drive-line muted">Estimated duration: 24min</div>
+      <div class="drive-line muted" *ngIf="tracking">
+        Estimated duration: {{ tracking.etaMinutes }}min
+      </div>
+      <div class="drive-line muted" *ngIf="ride && !tracking">
+        Estimated duration: —
+      </div>
 
-      <button class="start-btn" type="button">
-        START
+      <div class="drive-line error" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <button
+        class="start-btn"
+        type="button"
+        (click)="startRide()"
+        [disabled]="!canStart()"
+      >
+        {{ starting ? 'STARTING...' : 'START' }}
       </button>
+
+      <ng-template #loadingLines>
+        <div class="drive-line muted">{{ loading ? 'Loading...' : '' }}</div>
+      </ng-template>
+
+      <ng-template #loadingLines2>
+        <div class="drive-line muted">{{ loading ? 'Loading...' : '' }}</div>
+      </ng-template>
     </div>
 
     <div class="start-right">

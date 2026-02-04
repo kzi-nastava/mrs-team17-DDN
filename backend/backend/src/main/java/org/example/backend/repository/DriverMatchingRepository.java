@@ -22,15 +22,19 @@ public interface DriverMatchingRepository {
     List<CandidateDriver> findAvailableDrivers(
             String vehicleTypeLower,
             boolean babyTransport,
-            boolean petTransport
+            boolean petTransport,
+            int requiredSeats
     );
 
     List<FinishingSoonDriver> findDriversFinishingSoon(
             String vehicleTypeLower,
             boolean babyTransport,
             boolean petTransport,
+            int requiredSeats,
             int remainingSecondsThreshold
     );
 
     boolean setDriverAvailable(Long driverId, boolean available);
+
+    boolean tryClaimAvailableDriver(Long driverId);
 }

@@ -1,14 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import * as L from 'leaflet';
 
+import { AuthStore } from '../../../api/auth/auth.store';
 import {
   FavoriteRoutesApiService,
   FavoriteRouteAnyDto,
   isFavoriteRouteNew
 } from '../../../api/user/favorite-routes.http-data-source';
+
+import { RoutingHttpDataSource, RoutePreviewResponse } from '../../../api/routing/routing-http.datasource';
 
 type RidePointRequestDto = { address: string; lat: number; lng: number };
 
@@ -26,10 +29,13 @@ type FavouriteRideDetailsVm = {
   templateUrl: './user-favourite-ride-details.html',
   styleUrl: './user-favourite-ride-details.css',
 })
-export class UserFavouriteRideDetails implements AfterViewInit {
+export class UserFavouriteRideDetails implements OnInit, AfterViewInit {
+  private readonly authStore = inject(AuthStore);
+  private readonly routingApi = inject(RoutingHttpDataSource);
+
   private map!: L.Map;
 
-  readonly userId = 3003;
+  userId!: number;
 
   isLoading = false;
   errorMsg = '';
@@ -48,6 +54,8 @@ export class UserFavouriteRideDetails implements AfterViewInit {
   private routeLayer?: L.Polyline;
   private markers: L.CircleMarker[] = [];
 
+  private routeReqSeq = 0;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -58,7 +66,18 @@ export class UserFavouriteRideDetails implements AfterViewInit {
     this.vm = { ...this.vm, id: Number.isFinite(id) ? id : 0 };
   }
 
+  ngOnInit(): void {
+    const id = this.authStore.getCurrentUserId();
+    if (!id) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.userId = id;
+  }
+
   ngAfterViewInit(): void {
+    if (!this.userId) return;
+
     this.map = L.map('favDetailsMap', {
       center: [45.2671, 19.8335],
       zoom: 13,
@@ -111,6 +130,7 @@ export class UserFavouriteRideDetails implements AfterViewInit {
           this.prefillCps = stops.map(s => ({ address: s.address, lat: s.lat, lng: s.lng }));
 
           this.drawRoute([this.prefillStart, ...this.prefillCps, this.prefillDest]);
+
           this.isLoading = false;
           return;
         }
@@ -125,7 +145,7 @@ export class UserFavouriteRideDetails implements AfterViewInit {
 
         this.isLoading = false;
         this.errorMsg =
-          'Backend endpoint trenutno vraća favorite bez koordinata (lat/lng), pa ORDER AGAIN ne može automatski prefillovati mapu.';
+          'Backend endpoint currently returns favorites without coordinates (lat/lng), so ORDER AGAIN cannot auto-prefill map.';
       },
       error: (err: HttpErrorResponse) => {
         this.isLoading = false;
@@ -141,13 +161,57 @@ export class UserFavouriteRideDetails implements AfterViewInit {
   private drawRoute(points: RidePointRequestDto[]): void {
     this.clearRoute();
 
-    const latLngs: L.LatLngExpression[] = points.map(p => [p.lat, p.lng]);
+    this.drawMarkers(points);
+
+    const seq = ++this.routeReqSeq;
+
+    this.routingApi
+      .previewRoute(points.map(p => ({ lat: p.lat, lng: p.lng })))
+      .subscribe({
+        next: (res: RoutePreviewResponse) => {
+          if (seq !== this.routeReqSeq) return;
+
+          const route = res?.route;
+          if (route && route.length >= 2) {
+            this.drawPolyline(route.map(p => [p.lat, p.lng] as L.LatLngExpression));
+            return;
+          }
+
+          this.drawPolyline(points.map(p => [p.lat, p.lng] as L.LatLngExpression));
+        },
+        error: () => {
+          if (seq !== this.routeReqSeq) return;
+          this.drawPolyline(points.map(p => [p.lat, p.lng] as L.LatLngExpression));
+        }
+      });
+  }
+
+  private drawPolyline(latLngs: L.LatLngExpression[]): void {
+    if (!this.map) return;
+
+    if (this.routeLayer) {
+      try { this.routeLayer.remove(); } catch {}
+      this.routeLayer = undefined;
+    }
 
     this.routeLayer = L.polyline(latLngs, {
       weight: 5,
       opacity: 0.9,
       color: '#28c200',
     }).addTo(this.map);
+
+    this.markers.forEach(m => {
+      try { m.bringToFront(); } catch {}
+    });
+
+    try {
+      this.map.fitBounds(this.routeLayer.getBounds(), { padding: [30, 30] });
+    } catch {
+    }
+  }
+
+  private drawMarkers(points: RidePointRequestDto[]): void {
+    if (!this.map) return;
 
     points.forEach((p, idx) => {
       const isStart = idx === 0;
@@ -165,16 +229,16 @@ export class UserFavouriteRideDetails implements AfterViewInit {
 
       this.markers.push(m);
     });
-
-    this.map.fitBounds(this.routeLayer.getBounds(), { padding: [30, 30] });
   }
 
   private clearRoute(): void {
     if (this.routeLayer) {
-      this.routeLayer.remove();
+      try { this.routeLayer.remove(); } catch {}
       this.routeLayer = undefined;
     }
-    this.markers.forEach(m => m.remove());
+    this.markers.forEach(m => {
+      try { m.remove(); } catch {}
+    });
     this.markers = [];
   }
 }

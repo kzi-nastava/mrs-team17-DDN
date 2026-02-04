@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.OffsetDateTime;
 import java.util.Locale;
@@ -24,6 +25,7 @@ public class AdminDriverService {
     private final VehicleRepository vehicleRepo;
     private final DriverActivationTokenRepository tokenRepo;
     private final MailService mailService;
+    private final PasswordEncoder passwordEncoder;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -38,13 +40,15 @@ public class AdminDriverService {
             DriverRepository driverRepo,
             VehicleRepository vehicleRepo,
             DriverActivationTokenRepository tokenRepo,
-            MailService mailService
+            MailService mailService,
+            PasswordEncoder passwordEncoder
     ) {
         this.userRepo = userRepo;
         this.driverRepo = driverRepo;
         this.vehicleRepo = vehicleRepo;
         this.tokenRepo = tokenRepo;
         this.mailService = mailService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -68,7 +72,7 @@ public class AdminDriverService {
         Boolean pet = req.getPetTransport();
         if (baby == null || pet == null) throw new IllegalArgumentException("babyTransport and petTransport are required");
 
-        String placeholderHash = encoder.encode(UUID.randomUUID().toString());
+        String placeholderHash = passwordEncoder.encode(UUID.randomUUID().toString());
 
         Long userId = userRepo.insertDriverUserReturningId(
                 email,

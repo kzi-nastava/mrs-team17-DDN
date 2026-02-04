@@ -1,0 +1,27 @@
+<div class="content">
+  <div class="top">
+    <a class="back" routerLink="/admin/chats">← Back</a>
+    <div class="title">Thread #{{ threadId }}</div>
+  </div>
+
+  <div class="card">
+    <div *ngIf="loading" class="hint">Loading...</div>
+
+    <div class="chat" id="admin-chat-scroll" *ngIf="!loading">
+      <div *ngFor="let m of messages" class="row" [class.admin]="m.senderRole === 'ADMIN'">
+        <div class="bubble">
+          <div class="meta">
+            <span class="role">{{ m.senderRole }}</span>
+            <span class="time">{{ m.sentAt | date:'short' }}</span>
+          </div>
+          <div class="text">{{ m.content }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="composer">
+      <input class="input" [(ngModel)]="input" placeholder="Type a reply..." (keydown.enter)="send()" />
+      <button class="btn" (click)="send()">Send</button>
+    </div>
+  </div>
+</div>

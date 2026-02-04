@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
+import { AuthStore } from '../../../api/auth/auth.store';
 import {
   FavoriteRoutesApiService,
   FavoriteRouteAnyDto,
@@ -11,8 +12,10 @@ import {
 
 type FavouriteRideRow = {
   id: number;
-  from: string;
-  to: string;
+  from: string;     
+  to: string;    
+  fromFull: string;
+  toFull: string;  
 };
 
 @Component({
@@ -23,7 +26,10 @@ type FavouriteRideRow = {
   styleUrl: './user-favourite-rides.css',
 })
 export class UserFavouriteRides implements OnInit {
-  readonly userId = 3003;
+  private readonly authStore = inject(AuthStore);
+  private readonly router = inject(Router);
+
+  userId!: number;
 
   favourites: FavouriteRideRow[] = [];
   isLoading = false;
@@ -34,6 +40,12 @@ export class UserFavouriteRides implements OnInit {
   constructor(private api: FavoriteRoutesApiService) {}
 
   ngOnInit(): void {
+    const id = this.authStore.getCurrentUserId();
+    if (!id) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.userId = id;
     this.load();
   }
 
@@ -47,14 +59,22 @@ export class UserFavouriteRides implements OnInit {
           const id = Number(x.id);
 
           if (isFavoriteRouteNew(x)) {
-            const from = this.shortAddr(x.start?.address);
-            const to = this.shortAddr(x.destination?.address);
-            return { id, from, to };
+            const fromFull = (x.start?.address || '').trim();
+            const toFull = (x.destination?.address || '').trim();
+
+            const from = this.displayAddr(fromFull);
+            const to = this.displayAddr(toFull);
+
+            return { id, from, to, fromFull, toFull };
           }
 
-          const from = this.shortAddr(x.startAddress);
-          const to = this.shortAddr(x.destinationAddress);
-          return { id, from, to };
+          const fromFull = (x.startAddress || '').trim();
+          const toFull = (x.destinationAddress || '').trim();
+
+          const from = this.displayAddr(fromFull);
+          const to = this.displayAddr(toFull);
+
+          return { id, from, to, fromFull, toFull };
         });
 
         this.isLoading = false;
@@ -84,17 +104,22 @@ export class UserFavouriteRides implements OnInit {
     });
   }
 
-  private shortAddr(s: string): string {
+  private displayAddr(s: string): string {
     const t = (s || '').trim();
     if (!t) return '—';
-    const idx = t.indexOf(',');
-    return idx > 0 ? t.slice(0, idx) : t;
+
+    const N = 42;
+
+    if (t.length <= N) return t;
+
+    return t.slice(0, N).trimEnd() + '...';
   }
 
   private extractMsg(err: HttpErrorResponse, fallback: string): string {
     return (
       (err as any)?.error?.message ||
-      (typeof (err as any)?.error === 'string' ? (err as any).error : '') || fallback
+      (typeof (err as any)?.error === 'string' ? (err as any).error : '') ||
+      fallback
     );
   }
 }

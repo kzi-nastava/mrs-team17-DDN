@@ -1,16 +1,21 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { Router } from '@angular/router';
+import { Subject, firstValueFrom, of } from 'rxjs';
+import { catchError, debounceTime, finalize, switchMap, takeUntil } from 'rxjs/operators';
 import * as L from 'leaflet';
 
+import { AuthStore } from '../../../api/auth/auth.store';
 import {
   CreateRideRequestDto,
   CreateRideResponseDto,
   RideOrderApiService,
   RidePointRequestDto
 } from '../../../api/user/ride-order.http-data-source';
+
+import { RoutingHttpDataSource, RoutePreviewResponse } from '../../../api/routing/routing-http.datasource';
 
 @Component({
   selector: 'app-user-order-ride',
@@ -19,10 +24,14 @@ import {
   templateUrl: './user-order-ride.html',
   styleUrl: './user-order-ride.css',
 })
-export class UserOrderRide implements AfterViewInit {
+export class UserOrderRide implements OnInit, AfterViewInit, OnDestroy {
+  private readonly authStore = inject(AuthStore);
+  private readonly router = inject(Router);
+  private readonly routingApi = inject(RoutingHttpDataSource);
+
   private map!: L.Map;
 
-  requesterUserId = 1001;
+  requesterUserId = 0;
 
   orderType: 'now' | 'schedule' = 'now';
   scheduledAtLocal = '';
@@ -53,9 +62,29 @@ export class UserOrderRide implements AfterViewInit {
   private checkpointMarkers: L.CircleMarker[] = [];
   private checkpointCounter = 1;
 
+  private previewTrigger$ = new Subject<void>();
+  private destroy$ = new Subject<void>();
+
+  private previewLine: L.Polyline | null = null;
+
+  previewLoading = false;
+  previewEtaMinutes: number | null = null;
+  previewDistanceKm: number | null = null;
+
   constructor(private api: RideOrderApiService, private http: HttpClient) {}
 
+  ngOnInit(): void {
+    const id = this.authStore.getCurrentUserId();
+    if (!id) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.requesterUserId = id;
+  }
+
   ngAfterViewInit(): void {
+    if (!this.requesterUserId) return;
+
     this.map = L.map('orderMap', {
       center: [45.2671, 19.8335],
       zoom: 13,
@@ -65,6 +94,41 @@ export class UserOrderRide implements AfterViewInit {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(this.map);
+
+    this.previewTrigger$
+      .pipe(
+        debounceTime(300),
+        switchMap(() => {
+          const pts = this.getPreviewPoints();
+          if (pts.length < 2) {
+            this.clearPreviewLine();
+            this.previewEtaMinutes = null;
+            this.previewDistanceKm = null;
+            return of(null);
+          }
+
+          this.previewLoading = true;
+
+          return this.routingApi.previewRoute(pts).pipe(
+            catchError(() => of(null)),
+            finalize(() => (this.previewLoading = false))
+          );
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((res: RoutePreviewResponse | null) => {
+        if (!res || !res.route || res.route.length < 2) {
+          this.clearPreviewLine();
+          this.previewEtaMinutes = null;
+          this.previewDistanceKm = null;
+          return;
+        }
+
+        this.previewEtaMinutes = res.etaMinutes;
+        this.previewDistanceKm = res.distanceKm;
+
+        this.drawPreviewLine(res.route);
+      });
 
     this.applyPrefillFromNavState();
 
@@ -88,6 +152,15 @@ export class UserOrderRide implements AfterViewInit {
     setTimeout(() => this.map.invalidateSize(), 0);
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    try {
+      this.map?.remove();
+    } catch {
+    }
+  }
+
   private applyPrefillFromNavState(): void {
     const st: any = history.state?.prefillRide;
     if (!st?.start || !st?.destination) return;
@@ -104,16 +177,7 @@ export class UserOrderRide implements AfterViewInit {
       this.drawCheckpointMarker(cp.lat, cp.lng);
     }
 
-    const pts: L.LatLngExpression[] = [
-      [this.start.lat, this.start.lng],
-      ...this.checkpoints.map(c => [c.lat, c.lng] as L.LatLngExpression),
-      [this.destination.lat, this.destination.lng],
-    ];
-
-    if (pts.length >= 2) {
-      const line = L.polyline(pts);
-      this.map.fitBounds(line.getBounds(), { padding: [30, 30] });
-    }
+    this.previewTrigger$.next();
   }
 
   private drawStartMarker(lat: number, lng: number): void {
@@ -191,6 +255,8 @@ export class UserOrderRide implements AfterViewInit {
     this.isGeocoding = false;
 
     this.drawStartMarker(lat, lng);
+
+    this.previewTrigger$.next();
   }
 
   private async setDestinationFromMap(lat: number, lng: number): Promise<void> {
@@ -202,6 +268,8 @@ export class UserOrderRide implements AfterViewInit {
     this.isGeocoding = false;
 
     this.drawDestMarker(lat, lng);
+
+    this.previewTrigger$.next();
   }
 
   private async addCheckpointFromMap(lat: number, lng: number): Promise<void> {
@@ -211,6 +279,8 @@ export class UserOrderRide implements AfterViewInit {
 
     this.checkpoints.push({ address: addr, lat, lng });
     this.drawCheckpointMarker(lat, lng);
+
+    this.previewTrigger$.next();
   }
 
   addCheckpoint(): void {
@@ -222,7 +292,11 @@ export class UserOrderRide implements AfterViewInit {
     const lng = center ? center.lng : 19.8335;
 
     this.checkpoints.push({ address: v, lat, lng });
+    this.drawCheckpointMarker(lat, lng);
+
     this.checkpointInput = '';
+
+    this.previewTrigger$.next();
   }
 
   addUser(): void {
@@ -254,6 +328,11 @@ export class UserOrderRide implements AfterViewInit {
     this.errorMsg = '';
 
     if (this.isSubmitting) return;
+
+    if (!this.requesterUserId) {
+      this.errorMsg = 'You must be logged in to place an order.';
+      return;
+    }
 
     if (!this.start.address.trim() || !this.destination.address.trim()) {
       this.errorMsg = 'Please enter From/To address (and optionally pick coordinates on the map).';
@@ -302,6 +381,7 @@ export class UserOrderRide implements AfterViewInit {
         this.scheduledAtLocal = '';
 
         this.checkpoints = [];
+
         this.startMarker?.remove();
         this.startMarker = undefined;
 
@@ -316,6 +396,10 @@ export class UserOrderRide implements AfterViewInit {
         this.linkedUsersPayload = [];
         this.userEmailInput = '';
         this.guestCounter = 1;
+
+        this.clearPreviewLine();
+        this.previewEtaMinutes = null;
+        this.previewDistanceKm = null;
       },
       error: (err: HttpErrorResponse) => {
         this.isSubmitting = false;
@@ -326,5 +410,44 @@ export class UserOrderRide implements AfterViewInit {
         this.errorMsg = msg;
       }
     });
+  }
+
+  private getPreviewPoints(): { lat: number; lng: number }[] {
+    const pts: { lat: number; lng: number }[] = [];
+
+    if (this.startMarker) pts.push({ lat: this.start.lat, lng: this.start.lng });
+    if (this.checkpoints.length > 0) pts.push(...this.checkpoints.map(c => ({ lat: c.lat, lng: c.lng })));
+    if (this.destMarker) pts.push({ lat: this.destination.lat, lng: this.destination.lng });
+
+    return pts;
+  }
+
+  private drawPreviewLine(route: { lat: number; lng: number }[]): void {
+    if (!this.map) return;
+
+    const latlngs: L.LatLngExpression[] = route.map(p => [p.lat, p.lng]);
+
+    if (this.previewLine) {
+      this.previewLine.setLatLngs(latlngs);
+    } else {
+      this.previewLine = L.polyline(latlngs, {
+        weight: 6,
+        opacity: 0.9,
+        color: '#2dc200',
+      }).addTo(this.map);
+    }
+
+    try {
+      this.map.fitBounds(this.previewLine.getBounds(), { padding: [30, 30] });
+    } catch {
+    }
+  }
+
+  private clearPreviewLine(): void {
+    if (!this.map) return;
+    if (this.previewLine) {
+      try { this.map.removeLayer(this.previewLine); } catch {}
+      this.previewLine = null;
+    }
   }
 }

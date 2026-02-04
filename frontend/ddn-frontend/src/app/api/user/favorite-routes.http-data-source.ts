@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, map, of, throwError } from 'rxjs';
+import { Observable, catchError, map } from 'rxjs';
 
-/** Novi backend format (po dogovoru): start/destination/stops su objekti sa address/lat/lng */
 export interface FavoriteRoutePointResponseDto {
   address: string;
   lat: number;
@@ -17,7 +16,6 @@ export interface FavoriteRouteResponseDto {
   stops: FavoriteRoutePointResponseDto[];
 }
 
-/** Fallback za stari format (ako ti endpoint još vraća stringove) */
 export interface FavoriteRouteLegacyResponseDto {
   id: number;
   startAddress: string;
@@ -27,6 +25,11 @@ export interface FavoriteRouteLegacyResponseDto {
 }
 
 export type FavoriteRouteAnyDto = FavoriteRouteResponseDto | FavoriteRouteLegacyResponseDto;
+
+export interface AddFavoriteFromRideResponseDto {
+  favoriteRouteId: number;
+  status: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class FavoriteRoutesApiService {
@@ -42,12 +45,16 @@ export class FavoriteRoutesApiService {
 
   getFavorite(userId: number, favoriteRouteId: number): Observable<FavoriteRouteAnyDto> {
     return this.http
-      .get<FavoriteRouteAnyDto>(`${this.baseUrl}/api/users/${userId}/favorite-routes/${favoriteRouteId}`)
+      .get<FavoriteRouteAnyDto>(
+        `${this.baseUrl}/api/users/${userId}/favorite-routes/${favoriteRouteId}`
+      )
       .pipe(
         catchError(() =>
           this.listFavorites(userId).pipe(
             map(list => {
-              const found = (list || []).find(x => Number((x as any).id) === Number(favoriteRouteId));
+              const found = (list || []).find(
+                x => Number((x as any).id) === Number(favoriteRouteId)
+              );
               if (!found) throw new Error('Favourite route not found.');
               return found;
             })
@@ -56,10 +63,18 @@ export class FavoriteRoutesApiService {
       );
   }
 
-  removeFavorite(userId: number, favoriteRouteId: number) {
-  return this.http.delete<void>(`${this.baseUrl}/api/users/${userId}/favorite-routes/${favoriteRouteId}`);
-}
+  addFromRide(userId: number, rideId: number): Observable<AddFavoriteFromRideResponseDto> {
+    return this.http.post<AddFavoriteFromRideResponseDto>(
+      `${this.baseUrl}/api/users/${userId}/favorite-routes/from-ride/${rideId}`,
+      null
+    );
+  }
 
+  removeFavorite(userId: number, favoriteRouteId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.baseUrl}/api/users/${userId}/favorite-routes/${favoriteRouteId}`
+    );
+  }
 }
 
 export function isFavoriteRouteNew(x: any): x is FavoriteRouteResponseDto {

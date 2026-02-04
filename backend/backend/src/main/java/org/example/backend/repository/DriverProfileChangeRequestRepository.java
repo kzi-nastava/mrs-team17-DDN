@@ -8,7 +8,7 @@ public interface DriverProfileChangeRequestRepository {
 
     List<DriverProfileChangeRequestRow> findAll(String status);
 
-    Optional<DriverProfileChangeRequestRow> findByIdForUpdate(Long requestId);
+    Optional<DriverProfileChangeRequestRow> findById(Long requestId);
 
     int markApproved(Long requestId, Long adminId, String note, OffsetDateTime decidedAt);
 

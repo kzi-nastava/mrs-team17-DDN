@@ -1,0 +1,50 @@
+<div class="content">
+  <div class="card">
+    <div class="card-title">Pricing</div>
+
+    <div class="list">
+      <div class="item">
+        <div class="left">
+          <div class="id">Standard</div>
+          <div class="user">Base price for standard vehicle</div>
+        </div>
+        <div class="right">
+          <input class="input" type="number" [(ngModel)]="standardPrice" />
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="left">
+          <div class="id">Luxury</div>
+          <div class="user">Base price for luxury vehicle</div>
+        </div>
+        <div class="right">
+          <input class="input" type="number" [(ngModel)]="luxuryPrice" />
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="left">
+          <div class="id">Van</div>
+          <div class="user">Base price for van</div>
+        </div>
+        <div class="right">
+          <input class="input" type="number" [(ngModel)]="vanPrice" />
+        </div>
+      </div>
+    </div>
+
+    <div style="height: 12px"></div>
+
+<div *ngIf="loading" class="hint">Loading...</div>
+
+<button class="btn" (click)="save()" [disabled]="loading || saving">
+  {{ saving ? 'Saving...' : 'Save' }}
+</button>
+
+<div style="height: 10px"></div>
+
+<div *ngIf="error" class="hint">{{ error }}</div>
+
+  </div>
+</div>

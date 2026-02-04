@@ -141,6 +141,10 @@
           {{ successMsg }}
         </div>
 
+        <div *ngIf="previewEtaMinutes !== null && previewDistanceKm !== null" style="margin-top:10px; font-weight:600;">
+          Preview: {{ previewDistanceKm }} km • {{ previewEtaMinutes }} min
+        </div>
+
         <div class="actions">
           <button type="submit" class="primary-action-driver" [disabled]="isSubmitting">
             {{ isSubmitting ? 'PLACING...' : 'PLACE ORDER' }}

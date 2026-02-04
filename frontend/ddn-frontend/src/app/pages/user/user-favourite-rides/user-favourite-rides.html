@@ -11,10 +11,16 @@
 
       <div class="row" *ngFor="let r of favourites">
         <div class="col-route">
-          <div class="route-one-line">
-            <span class="route-from">{{ r.from }}</span>
-            <span class="route-arrow" aria-hidden="true">⟶</span>
-            <span class="route-to">{{ r.to }}</span>
+          <div class="route-block">
+            <div class="route-line">
+              <span class="route-label">From:</span>
+              <span class="route-text" [title]="r.fromFull">{{ r.from }}</span>
+            </div>
+
+            <div class="route-line">
+              <span class="route-label">To:</span>
+              <span class="route-text route-text-muted" [title]="r.toFull">{{ r.to }}</span>
+            </div>
           </div>
         </div>
 

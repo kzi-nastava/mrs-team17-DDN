@@ -3,6 +3,7 @@ package org.example.backend.repository;
 
 import org.example.backend.dto.request.RideReportRequestDto;
 import org.example.backend.dto.response.LatLngDto;
+import org.example.backend.dto.response.RideCheckpointDto;
 import org.example.backend.dto.response.RideReportResponseDto;
 import org.example.backend.dto.response.RideTrackingResponseDto;
 import org.example.backend.osrm.OsrmClient;
@@ -39,6 +40,53 @@ public class JdbcRideRepository implements RideRepository {
     }
 
     @Override
+    public Optional<Long> findActiveRideIdForPassenger(long userId) {
+        return jdbc.sql("""
+            select r.id
+            from rides r
+            join ride_passengers rp
+              on rp.ride_id = r.id
+            join users u
+              on lower(u.email) = lower(rp.email)
+            where u.id = :userId
+              and r.status = 'ACTIVE'
+              and r.canceled = false
+              and r.ended_at is null
+            order by r.started_at desc nulls last, r.id desc
+            limit 1
+        """)
+                .param("userId", userId)
+                .query(Long.class)
+                .optional();
+    }
+
+    // NEW: last completed ride (<= 3 days) that is NOT rated yet, for this passenger (by email)
+    @Override
+    public Optional<Long> findRideIdToRateForPassenger(long userId) {
+        return jdbc.sql("""
+            select r.id
+            from rides r
+            join ride_passengers rp
+              on rp.ride_id = r.id
+            join users u
+              on lower(u.email) = lower(rp.email)
+            left join ride_ratings rr
+              on rr.ride_id = r.id
+            where u.id = :userId
+              and r.status = 'COMPLETED'
+              and r.canceled = false
+              and r.ended_at is not null
+              and r.ended_at >= now() - interval '3 days'
+              and rr.id is null
+            order by r.ended_at desc, r.id desc
+            limit 1
+        """)
+                .param("userId", userId)
+                .query(Long.class)
+                .optional();
+    }
+
+    @Override
     public Optional<RideTrackingResponseDto> findTrackingByRideId(Long rideId) {
 
         String sql = """
@@ -47,10 +95,10 @@ public class JdbcRideRepository implements RideRepository {
             r.picked_up,
             r.start_lat, r.start_lng,
             r.dest_lat,  r.dest_lng,
-            v.latitude   as car_lat,
-            v.longitude  as car_lng
+            coalesce(v.latitude,  r.start_lat) as car_lat,
+            coalesce(v.longitude, r.start_lng) as car_lng
         from rides r
-        join vehicles v
+        left join vehicles v
           on v.driver_id = r.driver_id
         where r.id = :rideId
     """;
@@ -61,77 +109,115 @@ public class JdbcRideRepository implements RideRepository {
 
                     boolean pickedUp = rs.getBoolean("picked_up");
 
-                    double startLat = rs.getDouble("start_lat");
-                    double startLng = rs.getDouble("start_lng");
-                    double destLat  = rs.getDouble("dest_lat");
-                    double destLng  = rs.getDouble("dest_lng");
-                    double carLat   = rs.getDouble("car_lat");
-                    double carLng   = rs.getDouble("car_lng");
+                    Double startLatObj = (Double) rs.getObject("start_lat");
+                    Double startLngObj = (Double) rs.getObject("start_lng");
+                    Double destLatObj  = (Double) rs.getObject("dest_lat");
+                    Double destLngObj  = (Double) rs.getObject("dest_lng");
+                    Double carLatObj   = (Double) rs.getObject("car_lat");
+                    Double carLngObj   = (Double) rs.getObject("car_lng");
 
-                    RideTrackingResponseDto dto = new RideTrackingResponseDto();
-                    dto.setStatus(rs.getString("status"));
+                    if (startLatObj == null || startLngObj == null || destLatObj == null || destLngObj == null) {
+                        throw new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST,
+                                "Missing coordinates for tracking (pickup/destination)"
+                        );
+                    }
+
+                    double startLat = startLatObj;
+                    double startLng = startLngObj;
+                    double destLat  = destLatObj;
+                    double destLng  = destLngObj;
+
+                    double carLat = (carLatObj != null) ? carLatObj : startLat;
+                    double carLng = (carLngObj != null) ? carLngObj : startLng;
 
                     LatLngDto pickup = new LatLngDto(startLat, startLng);
                     LatLngDto destination = new LatLngDto(destLat, destLng);
                     LatLngDto car = new LatLngDto(carLat, carLng);
 
+                    // 1) Učitaj checkpoint-e iz ride_stops
+                    java.util.List<RideCheckpointDto> checkpoints = jdbc.sql("""
+                    select stop_order, address, lat, lng
+                    from ride_stops
+                    where ride_id = :rideId
+                    order by stop_order asc
+                """)
+                            .param("rideId", rideId)
+                            .query((rs2, rn) -> new RideCheckpointDto(
+                                    rs2.getInt("stop_order"),
+                                    rs2.getString("address"),
+                                    rs2.getDouble("lat"),
+                                    rs2.getDouble("lng")
+                            ))
+                            .list();
+
+                    RideTrackingResponseDto dto = new RideTrackingResponseDto();
+                    dto.setStatus(rs.getString("status"));
                     dto.setPickup(pickup);
                     dto.setDestination(destination);
                     dto.setCar(car);
+                    dto.setCheckpoints(checkpoints);
 
-                    // ROUTE: uvek pickup -> destination (statična linija)
+                    // 2) RUTA za mapu: pickup -> checkpoints -> destination (OSRM road-following)
+                    java.util.List<OsrmClient.Point> routePoints = new java.util.ArrayList<>();
+                    routePoints.add(new OsrmClient.Point(pickup.getLat(), pickup.getLng()));
+                    for (RideCheckpointDto cp : checkpoints) {
+                        routePoints.add(new OsrmClient.Point(cp.getLat(), cp.getLng()));
+                    }
+                    routePoints.add(new OsrmClient.Point(destination.getLat(), destination.getLng()));
+
+                    OsrmClient.RouteWithGeometry routeForMap;
                     try {
-                        var route = osrm.routeDrivingWithGeometry(
-                                java.util.List.of(
-                                        new OsrmClient.Point(pickup.getLat(), pickup.getLng()),
-                                        new OsrmClient.Point(destination.getLat(), destination.getLng())
-                                )
-                        );
-
+                        routeForMap = osrm.routeDrivingWithGeometry(routePoints);
                         dto.setRoute(
-                                route.geometry().stream()
+                                routeForMap.geometry().stream()
                                         .map(p -> new LatLngDto(p.lat(), p.lon()))
                                         .toList()
                         );
                     } catch (Exception e) {
-                        dto.setRoute(java.util.List.of());
+                        throw new ResponseStatusException(
+                                HttpStatus.SERVICE_UNAVAILABLE,
+                                "OSRM not available for route geometry"
+                        );
                     }
 
-                    double distanceKm;
-                    int etaMinutes;
+                    // 3) ETA/DIST: prije pickup-a računamo pickup->...->destination,
+                    //             nakon pickup-a računamo car->...->destination (sa istim checkpoints)
+                    try {
+                        double distanceKm;
+                        int etaMinutes;
 
-                    if (!pickedUp) {
-                        // 🚕 VOZAČ IDE KA PICKUP-U → ETA/DISTANCE ZAMRZNUTI
-                        var res = osrm.routeDriving(
-                                java.util.List.of(
-                                        new OsrmClient.Point(pickup.getLat(), pickup.getLng()),
-                                        new OsrmClient.Point(destination.getLat(), destination.getLng())
-                                )
+                        if (!pickedUp) {
+                            distanceKm = routeForMap.distanceMeters() / 1000.0;
+                            etaMinutes = (int) Math.max(1, Math.ceil(routeForMap.durationSeconds() / 60.0));
+                        } else {
+                            java.util.List<OsrmClient.Point> etaPoints = new java.util.ArrayList<>();
+                            etaPoints.add(new OsrmClient.Point(car.getLat(), car.getLng()));
+                            for (RideCheckpointDto cp : checkpoints) {
+                                etaPoints.add(new OsrmClient.Point(cp.getLat(), cp.getLng()));
+                            }
+                            etaPoints.add(new OsrmClient.Point(destination.getLat(), destination.getLng()));
+
+                            var etaRes = osrm.routeDriving(etaPoints);
+                            distanceKm = etaRes.distanceMeters() / 1000.0;
+                            etaMinutes = (int) Math.max(1, Math.ceil(etaRes.durationSeconds() / 60.0));
+                        }
+
+                        dto.setDistanceKm(Math.round(distanceKm * 100.0) / 100.0);
+                        dto.setEtaMinutes(etaMinutes);
+
+                    } catch (Exception e) {
+                        throw new ResponseStatusException(
+                                HttpStatus.SERVICE_UNAVAILABLE,
+                                "OSRM not available for ETA/distance"
                         );
-
-                        distanceKm = res.distanceMeters() / 1000.0;
-                        etaMinutes = (int) Math.max(1, Math.ceil(res.durationSeconds() / 60.0));
-
-                    } else {
-                        // 🚗 NAKON PICKUP-A → REAL-TIME
-                        var res = osrm.routeDriving(
-                                java.util.List.of(
-                                        new OsrmClient.Point(car.getLat(), car.getLng()),
-                                        new OsrmClient.Point(destination.getLat(), destination.getLng())
-                                )
-                        );
-
-                        distanceKm = res.distanceMeters() / 1000.0;
-                        etaMinutes = (int) Math.max(1, Math.ceil(res.durationSeconds() / 60.0));
                     }
-
-                    dto.setDistanceKm(Math.round(distanceKm * 100.0) / 100.0);
-                    dto.setEtaMinutes(etaMinutes);
 
                     return dto;
                 })
                 .optional();
     }
+
 
     @Override
     public java.util.List<String> findPassengerEmails(Long rideId) {
@@ -170,6 +256,7 @@ public class JdbcRideRepository implements RideRepository {
                 r.canceled,
                 r.picked_up,
                 r.driver_id,
+                r.next_stop_index,
                 r.start_lat as pickup_lat,
                 r.start_lng as pickup_lng,
                 r.dest_lat  as dest_lat,
@@ -205,6 +292,7 @@ public class JdbcRideRepository implements RideRepository {
                             rs.getObject("ended_at", java.time.OffsetDateTime.class),
                             rs.getBoolean("canceled"),
                             rs.getBoolean("picked_up"),
+                            rs.getInt("next_stop_index"),
                             rs.getLong("driver_id"),
                             carLat,
                             carLng,
@@ -354,4 +442,36 @@ public class JdbcRideRepository implements RideRepository {
 
         return updated > 0;
     }
+
+    @Override
+    public java.util.List<RideStopPoint> findRideStopPoints(Long rideId) {
+        return jdbc.sql("""
+        select stop_order, lat, lng
+        from ride_stops
+        where ride_id = :rideId
+        order by stop_order asc
+    """)
+                .param("rideId", rideId)
+                .query((rs, rowNum) -> new RideStopPoint(
+                        rs.getInt("stop_order"),
+                        rs.getDouble("lat"),
+                        rs.getDouble("lng")
+                ))
+                .list();
+    }
+
+    @Override
+    public boolean setNextStopIndex(Long rideId, int nextStopIndex) {
+        int updated = jdbc.sql("""
+        update rides
+        set next_stop_index = :idx
+        where id = :rideId
+    """)
+                .param("idx", nextStopIndex)
+                .param("rideId", rideId)
+                .update();
+
+        return updated > 0;
+    }
+
 }

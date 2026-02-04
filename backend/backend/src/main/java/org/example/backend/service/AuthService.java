@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.example.backend.repository.DriverRideRepository;
 
 @Service
 public class AuthService {
@@ -17,15 +18,18 @@ public class AuthService {
     private final DriverRepository drivers;
     private final PasswordEncoder passwordEncoder;
     private final org.example.backend.security.JwtService jwt;
+    private final DriverRideRepository driverRides;
 
     public AuthService(
             UserRepository users,
             DriverRepository drivers,
+            DriverRideRepository driverRides,
             PasswordEncoder passwordEncoder,
             org.example.backend.security.JwtService jwt
     ) {
         this.users = users;
         this.drivers = drivers;
+        this.driverRides = driverRides;
         this.passwordEncoder = passwordEncoder;
         this.jwt = jwt;
     }
@@ -63,14 +67,17 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
 
-        // SPEC: driver login -> automatically available=true
+        Long driverIdClaim = null;
+
         if ("DRIVER".equalsIgnoreCase(user.role())) {
-            drivers.findDriverIdByUserId(user.id())
-                    .ifPresent(driverId -> drivers.setAvailable(driverId, true));
+            driverIdClaim = drivers.findDriverIdByUserId(user.id()).orElse(null);
+            if (driverIdClaim != null) {
+                boolean hasActiveRide = driverRides.findActiveRideDetails(driverIdClaim).isPresent();
+                drivers.setAvailable(driverIdClaim, !hasActiveRide);
+            }
         }
 
-        // 3) token
-        String token = jwt.generateToken(user.id(), user.email(), user.role());
+        String token = jwt.generateToken(user.id(), user.email(), user.role(), driverIdClaim);
 
         LoginResponseDto resp = new LoginResponseDto();
         resp.setToken(token);

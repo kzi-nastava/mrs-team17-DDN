@@ -34,6 +34,8 @@ export class DriverActiveRideComponent implements OnInit {
     this.loading = true;
     this.error = null;
     this.ride = null;
+    this.finished = false;
+    this.driverState.setAvailable(false);
 
     this.ridesApi
       .getActiveRide()
@@ -50,6 +52,7 @@ export class DriverActiveRideComponent implements OnInit {
         error: () => {
           this.error = 'No active ride.';
           this.ride = null;
+          this.driverState.setAvailable(true);
         },
       });
   }

@@ -1,5 +1,16 @@
 <div class="content">
   <div class="map-wrap">
+
+    <div class="rate-banner" *ngIf="pendingRideId">
+  <div class="rate-text">
+    Your ride is finished. Please rate your driver.
+  </div>
+
+  <a class="rate-btn" [routerLink]="['/user/rides', pendingRideId, 'rate']">
+    RATE NOW
+  </a>
+</div>
+
     <div id="map" class="map"></div>
 
     <div class="map-legend">
@@ -15,6 +26,8 @@
         <span>Busy: {{ busyCount }}</span>
       </div>
     </div>
+
+    
 
     <button class="order-ride-btn" type="button" routerLink="/user/order-ride">
       ORDER RIDE

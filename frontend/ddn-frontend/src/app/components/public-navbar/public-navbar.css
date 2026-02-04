@@ -1,42 +1,86 @@
-.public-navbar {
+.navbar {
   height: 60px;
   width: 100%;
   background: linear-gradient(to bottom, #000, #111);
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid #333;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 0 32px;
   box-sizing: border-box;
   font-family: 'Montserrat', sans-serif;
+  color: #fff;
 }
 
-.left .logo {
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.right {
+.nav-left,
+.nav-right {
   display: flex;
   gap: 20px;
   align-items: center;
 }
 
-.right a {
-  color: white;
-  text-decoration: none;
-  font-size: 20px;
-  padding: 6px 14px;        
-  border: 1px solid #444;   
-  border-radius: 6px;       
-  transition: all 0.3s ease;
-  cursor: pointer;
+.nav-left {
+  flex: 1;
 }
 
+.nav-center {
+  flex: 1;
+}
 
-.right a:hover {
-  background-color: #4e504e; 
-  color: #fff;               
-  border: 1px solid #4e504e; 
+.nav-right {
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* logo */
+.logo {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 300;
+  cursor: pointer;
+  padding: 0 14px;
+  height: 36px;
+  line-height: 36px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* nav items */
+.nav-link {
+  height: 36px;
+  min-height: 36px;
+  line-height: 36px;
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  color: #fff;
+  text-decoration: none;
+  font-size: 20px;
+  font-weight: 100;
+
+  border: 1px solid #444;
+  border-radius: 6px;
+
+  background: rgba(255, 255, 255, 0.06);
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #666;
+}
+
+/* optional: CTA malo jači */
+.nav-cta {
+  background: rgba(229, 57, 53, 0.18);
+  border-color: rgba(229, 57, 53, 0.35);
+}
+
+.nav-cta:hover {
+  background: rgba(229, 57, 53, 0.28);
+  border-color: rgba(229, 57, 53, 0.55);
 }

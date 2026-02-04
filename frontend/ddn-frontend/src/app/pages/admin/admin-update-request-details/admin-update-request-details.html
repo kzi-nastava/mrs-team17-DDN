@@ -1,0 +1,83 @@
+<div class="det-page">
+  <div class="det-card">
+
+    <div class="topbar">
+      <a class="back" routerLink="/admin/update-requests">← Back</a>
+      <button class="refresh-btn" type="button" (click)="load()" [disabled]="isLoading || !!acting">
+        {{ isLoading ? 'Loading...' : 'Refresh' }}
+      </button>
+    </div>
+
+    <h2 class="title">Update request details</h2>
+
+    <div *ngIf="errorMsg" class="state err">{{ errorMsg }}</div>
+
+    <div *ngIf="request" class="meta">
+      <div class="meta-row">
+        <span>Request:</span>
+        <b>#{{ request.requestId }}</b>
+      </div>
+      <div class="meta-row">
+        <span>Driver:</span>
+        <b>#{{ request.driverId }}</b>
+      </div>
+      <div class="meta-row">
+        <span>Status:</span>
+        <b>{{ request.status }}</b>
+      </div>
+      <div class="meta-row">
+        <span>Created:</span>
+        <b>{{ request.createdAt | date: 'medium' }}</b>
+      </div>
+    </div>
+
+    <div class="section-title">Requested changes</div>
+
+    <div *ngIf="isLoading" class="state">Loading...</div>
+
+    <div *ngIf="!isLoading && request && changes.length === 0 && !errorMsg" class="state">
+      This request does not contain any actual changes compared to the current profile.
+    </div>
+
+    <div *ngIf="!isLoading && changes.length > 0" class="changes">
+      <div class="chg-head">
+        <div class="col-field">Field</div>
+        <div class="col-cur">Current</div>
+        <div class="col-req">Requested</div>
+      </div>
+
+      <div class="chg-row" *ngFor="let c of changes">
+        <div class="col-field">{{ c.field }}</div>
+
+        <ng-container [ngSwitch]="c.kind">
+
+            <ng-container *ngSwitchCase="'text'">
+            <div class="col-cur">{{ c.current ?? '—' }}</div>
+            <div class="col-req">{{ c.requested ?? '—' }}</div>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'image'">
+            <div class="col-cur">
+                <img class="img" [src]="(c.currentUrl ?? '') || '/default-user.png'" alt="Current image" />
+            </div>
+            <div class="col-req">
+                <img class="img" [src]="(c.requestedUrl ?? '') || '/default-user.png'" alt="Requested image" />
+            </div>
+            </ng-container>
+
+        </ng-container>
+        </div>
+    </div>
+
+    <div class="actions" *ngIf="request">
+      <button class="approve-btn" type="button" (click)="approve()" [disabled]="!!acting || request.status !== 'PENDING'">
+        {{ acting === 'approve' ? 'Approving...' : 'Approve' }}
+      </button>
+
+      <button class="reject-btn" type="button" (click)="reject()" [disabled]="!!acting || request.status !== 'PENDING'">
+        {{ acting === 'reject' ? 'Rejecting...' : 'Reject' }}
+      </button>
+    </div>
+
+  </div>
+</div>

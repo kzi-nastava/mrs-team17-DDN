@@ -12,10 +12,18 @@
       Create Driver
     </a>
 
-
-    <a class="nav-link" routerLink="/admin/reports" routerLinkActive="active">
-      Reports
+    <a class="nav-link" routerLink="/admin/chats" routerLinkActive="active">
+      Chats
     </a>
+
+    <button
+      #moreBtn
+      class="nav-link more-btn"
+      type="button"
+      (click)="toggleMore($event)"
+    >
+      More ▾
+    </button>
   </div>
 
   <div class="nav-center"></div>
@@ -24,9 +32,28 @@
     <a class="nav-link" routerLink="/admin/profile" routerLinkActive="active">
       Profile
     </a>
-  <button class="nav-link logout-btn" type="button" (click)="logout()">
-  Log Out
-  </button>
 
+    <button class="nav-link logout-btn" type="button" (click)="logout()">
+      Log Out
+    </button>
   </div>
 </nav>
+
+<!-- DROPDOWN RENDEROVAN VAN nav-left (fixed), pa ga overflow ne seče -->
+<div
+  class="more-menu"
+  *ngIf="moreOpen"
+  [style.left.px]="moreLeft"
+  [style.top.px]="moreTop"
+  (click)="$event.stopPropagation()"
+>
+  <a class="more-item" routerLink="/admin/ride-status" (click)="closeMore()">
+    Ride Status
+  </a>
+  <a class="more-item" routerLink="/admin/pricing" (click)="closeMore()">
+    Pricing
+  </a>
+  <a class="more-item" routerLink="/admin/reports" (click)="closeMore()">
+    Reports
+  </a>
+</div>

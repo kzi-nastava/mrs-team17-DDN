@@ -1,17 +1,24 @@
 package org.example.backend.controller;
 
 import org.example.backend.dto.request.UpdateDriverProfileRequestDto;
-import org.example.backend.dto.response.*;
+import org.example.backend.dto.response.ProfileChangeRequestResponseDto;
+import org.example.backend.dto.response.ProfileImageUploadResponseDto;
+import org.example.backend.dto.response.DriverProfileResponseDto;
+import org.example.backend.dto.response.UserProfileResponseDto;
 import org.example.backend.repository.DriverProfileRepository;
+import org.example.backend.repository.DriverRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.time.OffsetDateTime;
 import java.util.Locale;
 
 @RestController
@@ -19,34 +26,38 @@ import java.util.Locale;
 public class DriverProfileController {
 
     private final DriverProfileRepository repo;
+    private final DriverRepository driverRepository;
 
-    public DriverProfileController(DriverProfileRepository repo) {
+    public DriverProfileController(DriverProfileRepository repo, DriverRepository driverRepository) {
         this.repo = repo;
+        this.driverRepository = driverRepository;
     }
 
     @GetMapping("/{driverId}/profile")
     public ResponseEntity<DriverProfileResponseDto> getDriverProfile(@PathVariable Long driverId) {
+        Authentication auth = requireAuth();
 
-        UserProfileResponseDto driver = repo.findDriverUserProfile(driverId)
-                .orElse(null);
+        boolean isAdmin = hasRole(auth, "ROLE_ADMIN");
+        boolean isDriver = hasRole(auth, "ROLE_DRIVER");
 
+        if (!isAdmin && !isDriver) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Forbidden");
+        }
+
+        if (isDriver && !isAdmin) {
+            long currentDriverId = requireCurrentDriverId();
+            enforceSameDriver(driverId, currentDriverId);
+        }
+
+        UserProfileResponseDto driver = repo.findDriverUserProfile(driverId).orElse(null);
         if (driver == null) {
             return ResponseEntity.notFound().build();
         }
-
-        VehicleInfoResponseDto vehicle = new VehicleInfoResponseDto();
-        vehicle.setModel("Skoda Octavia");
-        vehicle.setType("standard");
-        vehicle.setLicensePlate("NS-123-AB");
-        vehicle.setSeats(4);
-        vehicle.setBabyTransport(true);
-        vehicle.setPetTransport(false);
 
         int activeMinutes = repo.calcActiveMinutesLast24h(driverId);
 
         DriverProfileResponseDto response = new DriverProfileResponseDto();
         response.setDriver(driver);
-        response.setVehicle(vehicle);
         response.setActiveMinutesLast24h(activeMinutes);
 
         return ResponseEntity.ok(response);
@@ -55,32 +66,35 @@ public class DriverProfileController {
     @PostMapping("/{driverId}/profile-change-requests")
     public ResponseEntity<ProfileChangeRequestResponseDto> requestProfileChange(
             @PathVariable Long driverId,
-            @RequestBody UpdateDriverProfileRequestDto request) {
+            @RequestBody UpdateDriverProfileRequestDto request
+    ) {
+        long currentDriverId = requireCurrentDriverId();
+        enforceSameDriver(driverId, currentDriverId);
 
-        if (!repo.findDriverUserProfile(driverId).isPresent()) {
+        if (!repo.findDriverUserProfile(currentDriverId).isPresent()) {
             return ResponseEntity.notFound().build();
         }
 
-        OffsetDateTime now = OffsetDateTime.now();
-        Long requestId = repo.insertProfileChangeRequest(driverId, request, now);
+        var now = java.time.OffsetDateTime.now();
+        Long requestId = repo.insertProfileChangeRequest(currentDriverId, request, now);
 
         ProfileChangeRequestResponseDto response = new ProfileChangeRequestResponseDto();
         response.setRequestId(requestId);
-        response.setDriverId(driverId);
+        response.setDriverId(currentDriverId);
         response.setStatus("PENDING");
         response.setCreatedAt(now.toLocalDateTime());
 
         return ResponseEntity.accepted().body(response);
     }
 
-    @PostMapping(
-            value = "/{driverId}/profile-image",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
+    @PostMapping(value = "/{driverId}/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProfileImageUploadResponseDto> uploadProfileImage(
             @PathVariable Long driverId,
             @RequestPart("file") MultipartFile file
     ) throws IOException {
+
+        long currentDriverId = requireCurrentDriverId();
+        enforceSameDriver(driverId, currentDriverId);
 
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body(new ProfileImageUploadResponseDto(null));
@@ -98,13 +112,50 @@ public class DriverProfileController {
         String ext = getExtension(original);
         if (ext.isEmpty()) ext = "png";
 
-        String filename = "driver-" + driverId + "-" + System.currentTimeMillis() + "." + ext;
+        String filename = "driver-" + currentDriverId + "-" + System.currentTimeMillis() + "." + ext;
         File target = new File(baseDir, filename);
 
         Files.copy(file.getInputStream(), target.toPath());
 
         String url = "/public/profile-images/" + filename;
         return ResponseEntity.ok(new ProfileImageUploadResponseDto(url));
+    }
+
+    private void enforceSameDriver(Long pathDriverId, long currentDriverId) {
+        if (pathDriverId == null || pathDriverId.longValue() != currentDriverId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can access only your own driver profile.");
+        }
+    }
+
+    private Authentication requireAuth() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+        return auth;
+    }
+
+    private boolean hasRole(Authentication auth, String role) {
+        return auth.getAuthorities().stream().anyMatch(a -> role.equals(a.getAuthority()));
+    }
+
+    private long requireCurrentDriverId() {
+        Authentication auth = requireAuth();
+
+        boolean isDriver = hasRole(auth, "ROLE_DRIVER");
+        if (!isDriver) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only drivers can access this endpoint");
+        }
+
+        long userId;
+        try {
+            userId = Long.parseLong(auth.getPrincipal().toString());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid authentication principal");
+        }
+
+        return driverRepository.findDriverIdByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Driver profile not found"));
     }
 
     private String getExtension(String filename) {

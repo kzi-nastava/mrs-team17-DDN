@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { finalize, filter, switchMap, take, map } from 'rxjs';
+import { finalize } from 'rxjs';
 import { DriverRidesHttpDataSource } from '../../../api/driver/driver-rides-http.datasource';
 import { DriverRideHistoryItem } from '../../../api/driver/models/driver-rides.models';
-import { DriverStateService } from '../../../state/driver-state.service';
+import { AuthStore } from '../../../api/auth/auth.store';
 
 @Component({
   selector: 'app-driver-ride-history',
@@ -24,13 +24,22 @@ export class DriverRideHistoryComponent implements OnInit {
   constructor(
     private router: Router,
     private ridesApi: DriverRidesHttpDataSource,
-    private driverState: DriverStateService
+    private authStore: AuthStore
   ) {}
 
   ngOnInit(): void {
-    if (!this.driverState.getDriverIdSnapshot()) {
-      this.driverState.setDriverId(1);
+    const token = this.authStore.getToken();
+    if (!token) {
+      this.router.navigate(['/login']);
+      return;
     }
+
+    const role = this.authStore.getRoleFromToken(token);
+    if (role !== 'DRIVER') {
+      this.router.navigate(['/login']);
+      return;
+    }
+
     this.loadRides();
   }
 
@@ -56,12 +65,9 @@ export class DriverRideHistoryComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.driverState.driverId$
+    this.ridesApi
+      .getDriverRides(this.from, this.to)
       .pipe(
-        take(1),
-        map((id) => Number(id)),
-        filter((id) => Number.isFinite(id) && id > 0),
-        switchMap(() => this.ridesApi.getDriverRides(this.from, this.to)),
         finalize(() => {
           this.loading = false;
         })
@@ -110,4 +116,8 @@ export class DriverRideHistoryComponent implements OnInit {
   isCanceled(status: string | undefined, canceled: boolean): boolean {
     return canceled || (status || '').toUpperCase() === 'CANCELED';
   }
+  truncate(text: string, max = 40): string {
+  return text.length > max ? text.slice(0, max) + '…' : text;
+}
+
 }

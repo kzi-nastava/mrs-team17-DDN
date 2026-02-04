@@ -19,11 +19,17 @@ public interface RideRepository {
 
     boolean updateVehicleLocation(long driverId, double lat, double lng);
 
+    Optional<Long> findRideIdToRateForPassenger(long email);
+
+
     java.util.List<String> findPassengerEmails(Long rideId);
 
     Optional<RideAddresses> findRideAddresses(Long rideId);
 
     java.util.List<Long> findActiveRideIds();
+
+    // NEW: active ride for current passenger userId
+    Optional<Long> findActiveRideIdForPassenger(long userId);
 
     // NEW: one-way switch when car reaches pickup (prevents ping-pong)
     boolean markPickedUp(Long rideId);
@@ -35,6 +41,7 @@ public interface RideRepository {
             java.time.OffsetDateTime endedAt,
             boolean canceled,
             boolean pickedUp,
+            int nextStopIndex,
             long driverId,
             double carLat,
             double carLng,
@@ -45,4 +52,9 @@ public interface RideRepository {
     ) {}
 
     boolean startRide(Long rideId);
+
+    java.util.List<RideStopPoint> findRideStopPoints(Long rideId);
+    boolean setNextStopIndex(Long rideId, int nextStopIndex);
+
+    record RideStopPoint(int stopOrder, double lat, double lng) {}
 }
