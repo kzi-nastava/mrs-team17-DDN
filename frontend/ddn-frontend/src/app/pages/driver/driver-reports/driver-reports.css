@@ -77,7 +77,6 @@
   opacity: 0.9;
   font-size: 12px;
 }
-
 .state.err { color: #ffb3b3; opacity: 1; }
 
 .summary {
@@ -166,9 +165,7 @@
   padding-bottom: 2px;
 }
 
-.chart {
-  min-width: 640px;
-}
+.chart { min-width: 640px; }
 
 .bars {
   display: flex;

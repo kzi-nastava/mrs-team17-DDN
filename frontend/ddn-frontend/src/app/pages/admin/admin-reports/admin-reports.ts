@@ -2,31 +2,42 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { UserReportsHttpDataSource } from '../../../api/user/reports.http.datasource';
-import { RideStatsReportResponseDto, RideStatsPointDto } from '../../../api/user/models/reports.models';
+import { AdminReportsHttpDataSource } from '../../../api/admin/admin-reports.http.datasource';
+import { AdminUsersHttpDataSource } from '../../../api/admin/admin-users.http.datasource';
+import { AdminUserOptionDto } from '../../../api/admin/models/admin-user-option.model';
+
+import { RideStatsPointDto, RideStatsReportResponseDto } from '../../../api/user/models/reports.models';
 
 type MetricKey = 'rides' | 'kilometers' | 'money';
 
 type ChartBar = {
-  date: string;     
-  label: string;  
+  date: string;
+  label: string;
   value: number;
-  pct: number;      
+  pct: number;
   tooltip: string;
 };
 
 @Component({
-  selector: 'app-user-reports',
+  selector: 'app-admin-reports',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './user-reports.html',
-  styleUrl: './user-reports.css',
+  templateUrl: './admin-reports.html',
+  styleUrl: './admin-reports.css',
 })
-export class UserReports implements OnInit {
-  private readonly ds = inject(UserReportsHttpDataSource);
+export class AdminReports implements OnInit {
+  private readonly reportsDs = inject(AdminReportsHttpDataSource);
+  private readonly usersDs = inject(AdminUsersHttpDataSource);
 
   fromDate = '';
   toDate = '';
+
+  role: 'DRIVER' | 'PASSENGER' = 'DRIVER';
+  scope: 'ALL' | 'USER' = 'ALL';
+
+  users: AdminUserOptionDto[] = [];
+  usersLoading = false;
+  selectedUserId: number | null = null;
 
   isLoading = false;
   errorMsg = '';
@@ -44,21 +55,65 @@ export class UserReports implements OnInit {
     this.load();
   }
 
+  onRoleChange(): void {
+    if (this.scope === 'USER') {
+      this.selectedUserId = null;
+      this.loadUsers();
+    }
+  }
+
+  onScopeChange(): void {
+    this.errorMsg = '';
+    if (this.scope === 'ALL') {
+      this.selectedUserId = null;
+      this.users = [];
+    } else {
+      this.loadUsers();
+    }
+  }
+
+  private loadUsers(): void {
+    this.usersLoading = true;
+    this.users = [];
+    this.selectedUserId = null;
+
+    this.usersDs.listUsers(this.role, '', 500).subscribe({
+      next: (res) => {
+        this.users = res || [];
+        this.usersLoading = false;
+      },
+      error: () => {
+        this.usersLoading = false;
+        this.errorMsg = 'Failed to load users for dropdown.';
+      },
+    });
+  }
+
   load(): void {
+    this.errorMsg = '';
+
     if (!this.fromDate || !this.toDate) {
       this.errorMsg = 'Please choose both dates.';
       return;
     }
-
     if (this.fromDate > this.toDate) {
       this.errorMsg = 'From date must be before To date.';
       return;
     }
 
-    this.isLoading = true;
-    this.errorMsg = '';
+    let userId: number | undefined = undefined;
 
-    this.ds.getMyRideReport(this.fromDate, this.toDate).subscribe({
+    if (this.scope === 'USER') {
+      if (!this.selectedUserId) {
+        this.errorMsg = 'Please select a user.';
+        return;
+      }
+      userId = this.selectedUserId;
+    }
+
+    this.isLoading = true;
+
+    this.reportsDs.getAdminRideReport(this.role, this.fromDate, this.toDate, userId).subscribe({
       next: (res) => {
         this.report = res;
         this.isLoading = false;
@@ -79,7 +134,7 @@ export class UserReports implements OnInit {
   }
 
   get isPassenger(): boolean {
-    return (this.report?.targetRole ?? 'PASSENGER') === 'PASSENGER';
+    return (this.report?.targetRole ?? this.role) === 'PASSENGER';
   }
 
   get moneyLabel(): string {
@@ -109,6 +164,13 @@ export class UserReports implements OnInit {
   formatNumber(n: number, decimals: number): string {
     if (n === null || n === undefined || Number.isNaN(n)) return '0';
     return n.toFixed(decimals);
+  }
+
+  userLabel(u: AdminUserOptionDto): string {
+    const fn = (u.firstName || '').trim();
+    const ln = (u.lastName || '').trim();
+    const name = (ln || fn) ? `${ln} ${fn}`.trim() : 'User';
+    return `${name} (${u.email}) #${u.id}`;
   }
 
   private rebuildChart(): void {
@@ -142,7 +204,6 @@ export class UserReports implements OnInit {
 
   private makeTooltip(p: RideStatsPointDto, v: number): string {
     const d = p.date;
-
     if (this.metric === 'rides') return `${d}: ${Math.round(v)} rides`;
     if (this.metric === 'kilometers') return `${d}: ${this.formatNumber(v, 2)} km`;
     return `${d}: ${this.formatNumber(v, 2)} RSD`;
