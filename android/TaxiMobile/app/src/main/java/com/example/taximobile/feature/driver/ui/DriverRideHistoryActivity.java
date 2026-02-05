@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/taximobile/feature/driver/ui/DriverRideHistoryActivity.java
 package com.example.taximobile.feature.driver.ui;
 
 import android.content.Intent;
@@ -8,8 +9,10 @@ import androidx.core.util.Pair;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.taximobile.R;
-import com.example.taximobile.feature.driver.adapter.RideAdapter;
 import com.example.taximobile.databinding.ActivityDriverRideHistoryBinding;
+import com.example.taximobile.feature.driver.adapter.RideAdapter;
+import com.example.taximobile.feature.driver.data.DriverRideRepository;
+import com.example.taximobile.feature.driver.data.dto.response.DriverRideHistoryResponseDto;
 import com.example.taximobile.feature.driver.model.Ride;
 import com.google.android.material.datepicker.MaterialDatePicker;
 
@@ -23,6 +26,14 @@ public class DriverRideHistoryActivity extends DriverBaseActivity {
 
     private ActivityDriverRideHistoryBinding binding;
 
+    private final ArrayList<Ride> rides = new ArrayList<>();
+    private RideAdapter adapter;
+
+    private DriverRideRepository repo;
+
+    private String fromIso = null; // yyyy-MM-dd
+    private String toIso = null;   // yyyy-MM-dd
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,16 +43,24 @@ public class DriverRideHistoryActivity extends DriverBaseActivity {
 
         toolbar.setTitle(getString(R.string.title_ride_history));
 
-        // Make date fields behave like picker inputs (no keyboard)
+        repo = new DriverRideRepository(this);
+
+        binding.recyclerRides.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new RideAdapter(rides, ride -> {
+            Intent i = new Intent(this, DriverRideDetailsActivity.class);
+            i.putExtra("rideId", ride.getRideId());
+            startActivity(i);
+        });
+        binding.recyclerRides.setAdapter(adapter);
+
         binding.etFrom.setFocusable(false);
         binding.etFrom.setClickable(true);
         binding.etTo.setFocusable(false);
         binding.etTo.setClickable(true);
 
-        // Date range picker (fills both From and To)
         MaterialDatePicker<Pair<Long, Long>> rangePicker =
                 MaterialDatePicker.Builder.dateRangePicker()
-                        .setTitleText("Select date range")
+                        .setTitleText(getString(R.string.select_date_range))
                         .build();
 
         View.OnClickListener openPicker = vv ->
@@ -56,80 +75,74 @@ public class DriverRideHistoryActivity extends DriverBaseActivity {
             Long start = selection.first;
             Long end = selection.second;
 
-            if (start != null) binding.etFrom.setText(formatDate(start));
-            if (end != null) binding.etTo.setText(formatDate(end));
-        });
-
-        ArrayList<Ride> rides = new ArrayList<>();
-
-        rides.add(new Ride(
-                "13.12.2025 14:30",
-                "13.12.2025 15:05",
-                "FTN → Železnička",
-                820,
-                "Completed",
-                false,
-                "Marko Marković",
-                "marko@gmail.com"
-        ));
-
-        rides.add(new Ride(
-                "12.12.2025 09:15",
-                "12.12.2025 09:45",
-                "Limanski → Centar",
-                650,
-                "Completed",
-                false,
-                null,
-                null
-        ));
-
-        rides.add(new Ride(
-                "11.12.2025 21:40",
-                "11.12.2025 21:55",
-                "Aviv Park → Bulevar",
-                900,
-                "Cancelled",
-                false,
-                null,
-                null
-        ));
-
-        rides.add(new Ride(
-                "10.12.2025 17:05",
-                "10.12.2025 17:25",
-                "Spens → Telep",
-                500,
-                "Completed",
-                true,
-                "Ana Anić",
-                "ana@gmail.com"
-        ));
-
-        binding.recyclerRides.setLayoutManager(new LinearLayoutManager(this));
-
-        binding.recyclerRides.setAdapter(new RideAdapter(rides, ride -> {
-            Intent i = new Intent(this, DriverRideDetailsActivity.class);
-
-            i.putExtra("dateStart", ride.getDateStart());
-            i.putExtra("dateEnd", ride.getDateEnd());
-            i.putExtra("route", ride.getRoute());
-            i.putExtra("price", ride.getPrice());
-            i.putExtra("status", ride.getStatus());
-            i.putExtra("panic", ride.isPanic());
-
-            if (ride.getPassengerName() != null) {
-                i.putExtra("passengerName", ride.getPassengerName());
-                i.putExtra("passengerEmail", ride.getPassengerEmail());
+            if (start != null) {
+                binding.etFrom.setText(formatUiDate(start));
+                fromIso = formatIsoDate(start);
+            }
+            if (end != null) {
+                binding.etTo.setText(formatUiDate(end));
+                toIso = formatIsoDate(end);
             }
 
-            startActivity(i);
-        }));
+            loadRides();
+        });
+
+        loadRides();
     }
 
-    private String formatDate(long millis) {
+    private void loadRides() {
+        repo.getRides(fromIso, toIso, new DriverRideRepository.ListCb() {
+            @Override
+            public void onSuccess(java.util.List<DriverRideHistoryResponseDto> items) {
+                runOnUiThread(() -> {
+                    rides.clear();
+
+                    for (DriverRideHistoryResponseDto d : items) {
+                        String route = safe(d.getStartAddress()) + " → " + safe(d.getEndAddress());
+
+                        String status = d.isCanceled()
+                                ? "Cancelled"
+                                : safe(d.getStatus());
+
+                        Ride r = new Ride(
+                                safe(d.getStartedAt()),
+                                "",
+                                route,
+                                (int) Math.round(d.getPrice()),
+                                status,
+                                false
+                        );
+
+                        r.setRideId(d.getRideId() != null ? d.getRideId() : 0L);
+                        rides.add(r);
+                    }
+
+                    adapter.notifyDataSetChanged();
+                });
+            }
+
+            @Override
+            public void onError(String msg) {
+                runOnUiThread(() -> {
+                    // show error if you have a view for it
+                });
+            }
+        });
+    }
+
+    private String safe(String s) {
+        return s != null ? s : "";
+    }
+
+    private String formatUiDate(long millis) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
         sdf.setTimeZone(TimeZone.getDefault());
         return sdf.format(new Date(millis));
+    }
+
+    private String formatIsoDate(long millis) {
+        SimpleDateFormat iso = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        iso.setTimeZone(TimeZone.getDefault());
+        return iso.format(new Date(millis));
     }
 }
