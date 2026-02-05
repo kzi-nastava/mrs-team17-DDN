@@ -60,7 +60,6 @@ export class UserOrderRide implements OnInit, AfterViewInit, OnDestroy {
   private startMarker?: L.CircleMarker;
   private destMarker?: L.CircleMarker;
   private checkpointMarkers: L.CircleMarker[] = [];
-  private checkpointCounter = 1;
 
   private previewTrigger$ = new Subject<void>();
   private destroy$ = new Subject<void>();
@@ -217,7 +216,6 @@ export class UserOrderRide implements OnInit, AfterViewInit, OnDestroy {
   private resetCheckpointMarkers(): void {
     this.checkpointMarkers.forEach(m => m.remove());
     this.checkpointMarkers = [];
-    this.checkpointCounter = 1;
   }
 
   private async reverseGeocode(lat: number, lng: number): Promise<string> {
@@ -295,6 +293,18 @@ export class UserOrderRide implements OnInit, AfterViewInit, OnDestroy {
     this.drawCheckpointMarker(lat, lng);
 
     this.checkpointInput = '';
+
+    this.previewTrigger$.next();
+  }
+
+  removeCheckpoint(index: number): void {
+    if (index < 0 || index >= this.checkpoints.length) return;
+    this.checkpoints.splice(index, 1);
+    const m = this.checkpointMarkers[index];
+    if (m) {
+      try { m.remove(); } catch {}
+    }
+    this.checkpointMarkers.splice(index, 1);
 
     this.previewTrigger$.next();
   }

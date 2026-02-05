@@ -1,8 +1,10 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin, of, switchMap } from 'rxjs';
+
+import { API_BASE_URL } from '../../../app.config';
 
 import {
   AdminProfileChangeRequestsHttpDataSource,
@@ -21,7 +23,6 @@ type ChangeRow = {
   requestedUrl?: string;
 };
 
-
 @Component({
   selector: 'app-admin-update-request-details',
   standalone: true,
@@ -30,6 +31,9 @@ type ChangeRow = {
   styleUrl: './admin-update-request-details.css',
 })
 export class AdminUpdateRequestDetails implements OnInit {
+  private readonly apiBaseUrl = inject(API_BASE_URL);
+  private readonly backendOrigin = this.apiBaseUrl.replace(/\/api\/?$/, '');
+
   requestId: number;
 
   isLoading = false;
@@ -139,6 +143,24 @@ export class AdminUpdateRequestDetails implements OnInit {
         this.errorMsg = this.extractMsg(err, 'Failed to reject the request.');
       }
     });
+  }
+
+  resolveImageUrl(url: string | null | undefined): string {
+    const u = (url ?? '').trim();
+    if (!u) return 'avatar.svg';
+
+    if (/^https?:\/\//i.test(u)) return u;
+
+    if (u.startsWith(this.backendOrigin)) return u;
+
+    if (u.startsWith('/')) return `${this.backendOrigin}${u}`;
+
+    return u;
+  }
+
+  onImgError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'avatar.svg';
   }
 
   private buildChanges(req: AdminProfileChangeRequestDto, cur?: UserProfileResponseDto): ChangeRow[] {

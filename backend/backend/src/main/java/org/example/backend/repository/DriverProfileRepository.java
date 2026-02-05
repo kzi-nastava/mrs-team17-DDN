@@ -2,6 +2,7 @@ package org.example.backend.repository;
 
 import org.example.backend.dto.request.UpdateDriverProfileRequestDto;
 import org.example.backend.dto.response.UserProfileResponseDto;
+import org.example.backend.dto.response.VehicleInfoResponseDto;
 
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -9,6 +10,8 @@ import java.util.Optional;
 public interface DriverProfileRepository {
 
     Optional<UserProfileResponseDto> findDriverUserProfile(Long driverId);
+
+    Optional<VehicleInfoResponseDto> findDriverVehicleInfo(Long driverId);
 
     int calcActiveMinutesLast24h(Long driverId);
 

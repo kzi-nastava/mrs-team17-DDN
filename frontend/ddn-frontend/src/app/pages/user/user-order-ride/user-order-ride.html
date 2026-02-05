@@ -68,8 +68,17 @@
             </div>
 
             <div class="list" *ngIf="checkpoints.length > 0">
-              <div class="list-item" *ngFor="let c of checkpoints; let i = index">
-                {{ i + 1 }}. {{ c.address }}
+              <div class="list-item checkpoint-item" *ngFor="let c of checkpoints; let i = index">
+                <span class="checkpoint-text">{{ i + 1 }}. {{ c.address }}</span>
+                <button
+                  type="button"
+                  class="remove-btn"
+                  (click)="removeCheckpoint(i)"
+                  title="Remove checkpoint"
+                  aria-label="Remove checkpoint"
+                >
+                  ×
+                </button>
               </div>
             </div>
           </div>
