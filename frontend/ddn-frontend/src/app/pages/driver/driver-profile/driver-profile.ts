@@ -28,7 +28,6 @@ export class DriverProfile implements OnInit {
   private readonly router = inject(Router);
 
   driverId!: number;
-
   profile: DriverProfileResponseDto | null = null;
 
   loading = false;
@@ -44,8 +43,10 @@ export class DriverProfile implements OnInit {
   };
 
   maxActiveMinutes = 8 * 60;
+
   activeFillPct = 0;
-  activeLabel = '0h 0min';
+
+  activeRightLabel = `0min/8h`;
 
   private imageBust = 0;
 
@@ -83,6 +84,35 @@ export class DriverProfile implements OnInit {
     return resolved;
   }
 
+  get vehicleModel(): string {
+    return this.profile?.vehicle?.model ?? '';
+  }
+  get vehicleTypeLabel(): string {
+    return this.formatVehicleType(this.profile?.vehicle?.type);
+  }
+  get vehicleTypeIcon(): string {
+  const t = (this.profile?.vehicle?.type ?? '').toLowerCase().trim();
+
+  if (t === 'luxury') return '/luxury_car.svg';
+  if (t === 'van') return '/van.svg';
+
+  return '/standard_car.svg';
+}
+
+  get vehiclePlate(): string {
+    return this.profile?.vehicle?.licensePlate ?? '';
+  }
+  get vehicleSeats(): string {
+    const v = this.profile?.vehicle?.seats;
+    return (v === 0 || v) ? String(v) : '';
+  }
+  get vehicleBaby(): string {
+    return this.toYesNo(this.profile?.vehicle?.babyTransport);
+  }
+  get vehiclePet(): string {
+    return this.toYesNo(this.profile?.vehicle?.petTransport);
+  }
+
   loadProfile(): void {
     this.loading = true;
     this.errorMsg = null;
@@ -96,7 +126,6 @@ export class DriverProfile implements OnInit {
         this.form.lastName = res.driver.lastName ?? '';
         this.form.address = res.driver.address ?? '';
         this.form.phoneNumber = res.driver.phoneNumber ?? '';
-
         this.form.profileImageUrl = res.driver.profileImageUrl ?? '';
 
         this.setActiveTime(res.activeMinutesLast24h ?? 0);
@@ -119,14 +148,13 @@ export class DriverProfile implements OnInit {
       lastName: this.form.lastName?.trim(),
       address: this.form.address?.trim(),
       phoneNumber: this.form.phoneNumber?.trim(),
-
       profileImageUrl: this.normalizeStoredUrl(this.form.profileImageUrl),
     };
 
     this.api.requestProfileChange(this.driverId, payload).subscribe({
       next: (res) => {
         this.loading = false;
-        this.successMsg = `Request sent to admins for review (status: ${res.status}).`;
+        this.successMsg = `Request sent to admins for review.`;
       },
       error: () => {
         this.loading = false;
@@ -148,9 +176,7 @@ export class DriverProfile implements OnInit {
     this.api.uploadProfileImage(this.driverId, file).subscribe({
       next: (res) => {
         this.form.profileImageUrl = res.profileImageUrl || '';
-
         this.imageBust = Date.now();
-
         this.loading = false;
         this.successMsg = 'Image uploaded. Don’t forget to send profile update request.';
       },
@@ -187,13 +213,38 @@ export class DriverProfile implements OnInit {
 
   private setActiveTime(activeMinutes: number): void {
     const safe = Math.max(0, activeMinutes);
-    const h = Math.floor(safe / 60);
-    const m = safe % 60;
 
-    this.activeLabel = `${h}h ${m}min`;
-    if (h === 0 && m === 0) this.activeLabel = '';
+    const shown = Math.min(safe, this.maxActiveMinutes);
 
-    const pct = (safe / this.maxActiveMinutes) * 100;
+    const pct = (shown / this.maxActiveMinutes) * 100;
     this.activeFillPct = Math.max(0, Math.min(100, Math.round(pct)));
+
+    const left = this.formatActiveMinutes(shown);
+    this.activeRightLabel = `${left}/8h`;
+  }
+
+  private formatActiveMinutes(minutes: number): string {
+    const m = Math.max(0, Math.floor(minutes));
+    const h = Math.floor(m / 60);
+    const mm = m % 60;
+
+    if (h <= 0) return `${mm}min`;
+    if (mm <= 0) return `${h}h`;
+    return `${h}h${mm}min`;
+  }
+
+  private toYesNo(v: boolean | null | undefined): string {
+    if (v === true) return 'Yes';
+    if (v === false) return 'No';
+    return '';
+  }
+
+  private formatVehicleType(type: string | null | undefined): string {
+    const t = (type ?? '').toLowerCase().trim();
+    if (!t) return '';
+    if (t === 'standard') return 'Standard';
+    if (t === 'luxury') return 'Luxury';
+    if (t === 'van') return 'Van';
+    return type ?? '';
   }
 }

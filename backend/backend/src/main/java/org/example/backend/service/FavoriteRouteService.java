@@ -33,6 +33,15 @@ public class FavoriteRouteService {
         return result;
     }
 
+    @Transactional(readOnly = true)
+    public FavoriteRouteResponseDto getFavorite(Long userId, Long favoriteRouteId) {
+        FavoriteRouteRepository.FavoriteRouteRow route = favoriteRepo.findByIdAndUserId(favoriteRouteId, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Favorite route not found"));
+
+        List<FavoriteRouteRepository.FavoriteStopRow> stops = favoriteRepo.findStopsByFavoriteRouteId(route.id());
+        return mapToDto(route, stops);
+    }
+
     @Transactional
     public AddFavoriteFromRideResponseDto addFromRide(Long userId, Long rideId) {
 

@@ -30,6 +30,18 @@ public class FavoriteRouteController {
         return ResponseEntity.ok(favoriteRouteService.listFavorites(currentUserId));
     }
 
+    @GetMapping("/{favoriteRouteId}")
+    public ResponseEntity<FavoriteRouteResponseDto> get(
+            @PathVariable Long userId,
+            @PathVariable Long favoriteRouteId
+    ) {
+        long currentUserId = requirePassengerUserId();
+        enforceSameUser(userId, currentUserId);
+
+        FavoriteRouteResponseDto dto = favoriteRouteService.getFavorite(currentUserId, favoriteRouteId);
+        return ResponseEntity.ok(dto);
+    }
+
     @PostMapping("/from-ride/{rideId}")
     public ResponseEntity<AddFavoriteFromRideResponseDto> addFromRide(
             @PathVariable Long userId,

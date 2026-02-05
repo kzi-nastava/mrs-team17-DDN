@@ -2,6 +2,7 @@ package org.example.backend.repository;
 
 import org.example.backend.dto.request.UpdateDriverProfileRequestDto;
 import org.example.backend.dto.response.UserProfileResponseDto;
+import org.example.backend.dto.response.VehicleInfoResponseDto;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +18,7 @@ public class JdbcDriverProfileRepository implements DriverProfileRepository{
         this.jdbc = jdbc;
     }
 
+    @Override
     public Optional<UserProfileResponseDto> findDriverUserProfile(Long driverId) {
         String sql = """
             select
@@ -45,12 +47,44 @@ public class JdbcDriverProfileRepository implements DriverProfileRepository{
                     dto.setAddress(rs.getString("address"));
                     dto.setPhoneNumber(rs.getString("phone"));
                     dto.setRole(rs.getString("role"));
-                    dto.setProfileImageUrl(rs.getString("profile_image_url")); // može biti null
+                    dto.setProfileImageUrl(rs.getString("profile_image_url"));
                     return dto;
                 })
                 .optional();
     }
 
+    @Override
+    public Optional<VehicleInfoResponseDto> findDriverVehicleInfo(Long driverId) {
+        String sql = """
+            select
+                v.model,
+                v.type,
+                v.license_plate,
+                v.seats,
+                v.baby_transport,
+                v.pet_transport
+            from vehicles v
+            where v.driver_id = :driverId
+            order by v.id
+            limit 1
+        """;
+
+        return jdbc.sql(sql)
+                .param("driverId", driverId)
+                .query((rs, rowNum) -> {
+                    VehicleInfoResponseDto dto = new VehicleInfoResponseDto();
+                    dto.setModel(rs.getString("model"));
+                    dto.setType(rs.getString("type"));
+                    dto.setLicensePlate(rs.getString("license_plate"));
+                    dto.setSeats(rs.getInt("seats"));
+                    dto.setBabyTransport(rs.getBoolean("baby_transport"));
+                    dto.setPetTransport(rs.getBoolean("pet_transport"));
+                    return dto;
+                })
+                .optional();
+    }
+
+    @Override
     public int calcActiveMinutesLast24h(Long driverId) {
         String sql = """
             select coalesce(
@@ -74,6 +108,7 @@ public class JdbcDriverProfileRepository implements DriverProfileRepository{
         return Math.max(0, minutes);
     }
 
+    @Override
     public Long insertProfileChangeRequest(Long driverId, UpdateDriverProfileRequestDto req, OffsetDateTime now) {
         String sql = """
             insert into driver_profile_change_requests

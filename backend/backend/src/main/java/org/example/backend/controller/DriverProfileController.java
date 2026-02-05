@@ -1,12 +1,11 @@
 package org.example.backend.controller;
 
 import org.example.backend.dto.request.UpdateDriverProfileRequestDto;
+import org.example.backend.dto.response.DriverProfileResponseDto;
 import org.example.backend.dto.response.ProfileChangeRequestResponseDto;
 import org.example.backend.dto.response.ProfileImageUploadResponseDto;
-import org.example.backend.dto.response.DriverProfileResponseDto;
-import org.example.backend.dto.response.UserProfileResponseDto;
-import org.example.backend.repository.DriverProfileRepository;
 import org.example.backend.repository.DriverRepository;
+import org.example.backend.service.DriverProfileService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,11 +24,11 @@ import java.util.Locale;
 @RequestMapping("/api/drivers")
 public class DriverProfileController {
 
-    private final DriverProfileRepository repo;
+    private final DriverProfileService service;
     private final DriverRepository driverRepository;
 
-    public DriverProfileController(DriverProfileRepository repo, DriverRepository driverRepository) {
-        this.repo = repo;
+    public DriverProfileController(DriverProfileService service, DriverRepository driverRepository) {
+        this.service = service;
         this.driverRepository = driverRepository;
     }
 
@@ -49,18 +48,9 @@ public class DriverProfileController {
             enforceSameDriver(driverId, currentDriverId);
         }
 
-        UserProfileResponseDto driver = repo.findDriverUserProfile(driverId).orElse(null);
-        if (driver == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        int activeMinutes = repo.calcActiveMinutesLast24h(driverId);
-
-        DriverProfileResponseDto response = new DriverProfileResponseDto();
-        response.setDriver(driver);
-        response.setActiveMinutesLast24h(activeMinutes);
-
-        return ResponseEntity.ok(response);
+        return service.getProfile(driverId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping("/{driverId}/profile-change-requests")
@@ -71,20 +61,9 @@ public class DriverProfileController {
         long currentDriverId = requireCurrentDriverId();
         enforceSameDriver(driverId, currentDriverId);
 
-        if (!repo.findDriverUserProfile(currentDriverId).isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        var now = java.time.OffsetDateTime.now();
-        Long requestId = repo.insertProfileChangeRequest(currentDriverId, request, now);
-
-        ProfileChangeRequestResponseDto response = new ProfileChangeRequestResponseDto();
-        response.setRequestId(requestId);
-        response.setDriverId(currentDriverId);
-        response.setStatus("PENDING");
-        response.setCreatedAt(now.toLocalDateTime());
-
-        return ResponseEntity.accepted().body(response);
+        return service.createProfileChangeRequest(currentDriverId, request)
+                .map(resp -> ResponseEntity.accepted().body(resp))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping(value = "/{driverId}/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
