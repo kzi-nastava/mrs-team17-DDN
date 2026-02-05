@@ -1,4 +1,4 @@
-package com.example.taximobile;
+package com.example.taximobile.feature.driver.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,9 +7,10 @@ import android.view.View;
 import androidx.core.util.Pair;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.example.taximobile.adapters.RideAdapter;
+import com.example.taximobile.R;
+import com.example.taximobile.feature.driver.adapter.RideAdapter;
 import com.example.taximobile.databinding.ActivityDriverRideHistoryBinding;
-import com.example.taximobile.models.Ride;
+import com.example.taximobile.feature.driver.model.Ride;
 import com.google.android.material.datepicker.MaterialDatePicker;
 
 import java.text.SimpleDateFormat;

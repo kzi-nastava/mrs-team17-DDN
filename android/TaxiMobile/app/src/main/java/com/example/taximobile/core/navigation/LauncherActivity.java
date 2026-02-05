@@ -1,4 +1,4 @@
-package com.example.taximobile;
+package com.example.taximobile.core.navigation;
 
 import android.os.Bundle;
 
@@ -7,7 +7,9 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-public class MainActivity extends AppCompatActivity {
+import com.example.taximobile.R;
+
+public class LauncherActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

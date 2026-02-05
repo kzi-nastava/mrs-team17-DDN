@@ -1,9 +1,11 @@
-package com.example.taximobile;
+package com.example.taximobile.feature.auth.ui;
 
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.taximobile.feature.driver.ui.DriverBaseActivity;
+import com.example.taximobile.R;
 import com.example.taximobile.databinding.ActivityChangePasswordBinding;
 
 public class ChangePasswordActivity extends DriverBaseActivity {
