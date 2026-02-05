@@ -32,7 +32,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        if (path.startsWith("/api/auth/") || path.startsWith("/public/")) {
+        if (
+                path.equals("/api/vehicles/active") ||
+                        path.startsWith("/api/auth/") ||
+                        path.startsWith("/public/")
+        ) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -60,9 +64,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            SecurityContextHolder.clearContext();
+            filterChain.doFilter(request, response);
             return;
         }
+
 
         filterChain.doFilter(request, response);
     }

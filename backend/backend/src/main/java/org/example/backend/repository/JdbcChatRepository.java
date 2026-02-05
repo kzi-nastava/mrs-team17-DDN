@@ -70,25 +70,43 @@ public class JdbcChatRepository implements ChatRepository {
         String q = (query == null) ? "" : query.trim().toLowerCase();
 
         return jdbc.sql("""
-            select ct.id, ct.user_id, ct.last_message_at
-            from chat_threads ct
-            join users u on u.id = ct.user_id
-            where (:q = '' or
-                   lower(u.email) like ('%' || :q || '%') or
-                   lower(u.first_name) like ('%' || :q || '%') or
-                   lower(u.last_name) like ('%' || :q || '%'))
-            order by ct.last_message_at desc nulls last, ct.id desc
-            limit :limit
-        """)
+        select
+          ct.id,
+          ct.user_id,
+          ct.last_message_at,
+          u.first_name,
+          u.last_name,
+          u.email
+        from chat_threads ct
+        join users u on u.id = ct.user_id
+        where (:q = '' or
+               lower(u.email) like ('%' || :q || '%') or
+               lower(u.first_name) like ('%' || :q || '%') or
+               lower(u.last_name) like ('%' || :q || '%') or
+               lower(u.first_name || ' ' || u.last_name) like ('%' || :q || '%'))
+        order by ct.last_message_at desc nulls last, ct.id desc
+        limit :limit
+    """)
                 .param("q", q)
                 .param("limit", limit)
-                .query((rs, rn) -> new ChatThreadResponseDto(
-                        rs.getLong("id"),
-                        rs.getLong("user_id"),
-                        rs.getObject("last_message_at", OffsetDateTime.class)
-                ))
+                .query((rs, rn) -> {
+                    String first = rs.getString("first_name");
+                    String last = rs.getString("last_name");
+                    String name = ((first == null) ? "" : first) + " " + ((last == null) ? "" : last);
+                    name = name.trim();
+                    if (name.isEmpty()) name = rs.getString("email"); // fallback
+
+                    return new ChatThreadResponseDto(
+                            rs.getLong("id"),
+                            rs.getLong("user_id"),
+                            name,
+                            rs.getString("email"),
+                            rs.getObject("last_message_at", OffsetDateTime.class)
+                    );
+                })
                 .list();
     }
+
 
     @Override
     public List<ChatMessageResponseDto> findMessages(long threadId, Long afterId, int limit) {
