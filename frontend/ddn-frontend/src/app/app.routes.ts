@@ -147,6 +147,7 @@ export const routes: Routes = [
       { path: 'password-change', component: DriverPasswordChangeComponent },
       { path: 'profile', component: DriverProfile },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
+      {path: 'reports',loadComponent: () =>import('./pages/driver/driver-reports/driver-reports').then(m => m.DriverReports),},
     ],
   },
 
@@ -166,6 +167,11 @@ export const routes: Routes = [
   path: 'pricing',
   loadComponent: () =>
     import('./pages/admin/admin-pricing/admin-pricing').then(m => m.AdminPricing),
+},
+{
+  path: 'reports',
+  loadComponent: () =>
+    import('./pages/admin/admin-reports/admin-reports').then(m => m.AdminReports),
 },
 
       {

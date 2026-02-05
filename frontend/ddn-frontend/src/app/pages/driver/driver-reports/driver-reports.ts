@@ -8,21 +8,21 @@ import { RideStatsReportResponseDto, RideStatsPointDto } from '../../../api/user
 type MetricKey = 'rides' | 'kilometers' | 'money';
 
 type ChartBar = {
-  date: string;     
-  label: string;  
+  date: string;
+  label: string;
   value: number;
   pct: number;      
   tooltip: string;
 };
 
 @Component({
-  selector: 'app-user-reports',
+  selector: 'app-driver-reports',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './user-reports.html',
-  styleUrl: './user-reports.css',
+  templateUrl: './driver-reports.html',
+  styleUrl: './driver-reports.css',
 })
-export class UserReports implements OnInit {
+export class DriverReports implements OnInit {
   private readonly ds = inject(UserReportsHttpDataSource);
 
   fromDate = '';
@@ -40,7 +40,6 @@ export class UserReports implements OnInit {
     const today = new Date();
     this.toDate = this.toDateInput(today);
     this.fromDate = this.toDateInput(this.addDays(today, -6));
-
     this.load();
   }
 
@@ -49,7 +48,6 @@ export class UserReports implements OnInit {
       this.errorMsg = 'Please choose both dates.';
       return;
     }
-
     if (this.fromDate > this.toDate) {
       this.errorMsg = 'From date must be before To date.';
       return;

@@ -61,15 +61,9 @@
           <div class="chart-title">{{ chartTitle }}</div>
 
           <div class="tabs">
-            <button type="button" class="tab" [class.active]="metric === 'rides'" (click)="setMetric('rides')">
-              Rides
-            </button>
-            <button type="button" class="tab" [class.active]="metric === 'kilometers'" (click)="setMetric('kilometers')">
-              Km
-            </button>
-            <button type="button" class="tab" [class.active]="metric === 'money'" (click)="setMetric('money')">
-              Money
-            </button>
+            <button type="button" class="tab" [class.active]="metric === 'rides'" (click)="setMetric('rides')">Rides</button>
+            <button type="button" class="tab" [class.active]="metric === 'kilometers'" (click)="setMetric('kilometers')">Km</button>
+            <button type="button" class="tab" [class.active]="metric === 'money'" (click)="setMetric('money')">Money</button>
           </div>
         </div>
 

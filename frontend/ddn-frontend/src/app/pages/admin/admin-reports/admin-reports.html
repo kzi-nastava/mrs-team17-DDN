@@ -5,6 +5,25 @@
       <h1 class="title">Reports</h1>
 
       <div class="filter-section">
+        <label class="label" for="role">Role:</label>
+        <select id="role" class="select-input" [(ngModel)]="role" (change)="onRoleChange()">
+          <option value="DRIVER">DRIVER</option>
+          <option value="PASSENGER">PASSENGER</option>
+        </select>
+
+        <label class="label" for="scope">Scope:</label>
+        <select id="scope" class="select-input" [(ngModel)]="scope" (change)="onScopeChange()">
+          <option value="ALL">ALL</option>
+          <option value="USER">Single user</option>
+        </select>
+
+        <ng-container *ngIf="scope === 'USER'">
+          <select class="select-input select-user" [(ngModel)]="selectedUserId" [disabled]="usersLoading">
+            <option [ngValue]="null">{{ usersLoading ? 'Loading users...' : 'Select user' }}</option>
+            <option *ngFor="let u of users" [ngValue]="u.id">{{ userLabel(u) }}</option>
+          </select>
+        </ng-container>
+
         <label class="label" for="fromDate">From:</label>
         <input id="fromDate" type="date" class="date-input" [(ngModel)]="fromDate" />
 
@@ -46,10 +65,12 @@
           <span class="avg-k">Avg km/ride:</span>
           <span class="avg-v">{{ formatNumber(r.averages.kilometersPerRide, 2) }} km</span>
         </div>
+
         <div class="avg-item">
           <span class="avg-k">{{ moneyPerRideLabel }}:</span>
           <span class="avg-v">{{ formatNumber(r.averages.moneyPerRide, 2) }} RSD</span>
         </div>
+
         <div class="avg-item">
           <span class="avg-k">Days in range:</span>
           <span class="avg-v">{{ r.days }}</span>
@@ -61,15 +82,9 @@
           <div class="chart-title">{{ chartTitle }}</div>
 
           <div class="tabs">
-            <button type="button" class="tab" [class.active]="metric === 'rides'" (click)="setMetric('rides')">
-              Rides
-            </button>
-            <button type="button" class="tab" [class.active]="metric === 'kilometers'" (click)="setMetric('kilometers')">
-              Km
-            </button>
-            <button type="button" class="tab" [class.active]="metric === 'money'" (click)="setMetric('money')">
-              Money
-            </button>
+            <button type="button" class="tab" [class.active]="metric === 'rides'" (click)="setMetric('rides')">Rides</button>
+            <button type="button" class="tab" [class.active]="metric === 'kilometers'" (click)="setMetric('kilometers')">Km</button>
+            <button type="button" class="tab" [class.active]="metric === 'money'" (click)="setMetric('money')">Money</button>
           </div>
         </div>
 
@@ -112,6 +127,5 @@
     </ng-container>
 
     <div *ngIf="isLoading && !report" class="state">Loading...</div>
-
   </div>
 </div>
