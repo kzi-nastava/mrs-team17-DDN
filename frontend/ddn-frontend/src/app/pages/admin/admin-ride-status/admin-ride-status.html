@@ -55,43 +55,44 @@
           <div *ngIf="!detailsLoading && detailsError" class="hint">{{ detailsError }}</div>
 
           <div class="details-body" *ngIf="!detailsLoading && !detailsError">
-            <div class="mini-map-wrap">
-              <div class="mini-map" [id]="'mini-map-' + r.rideId"></div>
-              <div class="map-caption">
-                Car position:
-                {{ (details?.car?.lat ?? r.carLat).toFixed(5) }},
-                {{ (details?.car?.lng ?? r.carLng).toFixed(5) }}
-              </div>
-            </div>
+  <div class="mini-map-wrap">
+    <div class="mini-map" [id]="'mini-map-' + r.rideId"></div>
+    <div class="map-caption">
+      Car position:
+      {{ r.carLat.toFixed(5) }},
+      {{ r.carLng.toFixed(5) }}
+    </div>
+  </div>
 
-            <div class="grid">
-              <div class="kv">
-                <div class="k">Pickup</div>
-                <div class="v">
-                  {{ details?.pickup?.lat?.toFixed(5) }}, {{ details?.pickup?.lng?.toFixed(5) }}
-                </div>
-              </div>
+  <div class="grid">
+    <div class="kv">
+      <div class="k">Pickup</div>
+      <div class="v">
+        {{ details?.pickup?.lat?.toFixed(5) }}, {{ details?.pickup?.lng?.toFixed(5) }}
+      </div>
+    </div>
 
-              <div class="kv">
-                <div class="k">Destination</div>
-                <div class="v">
-                  {{ details?.destination?.lat?.toFixed(5) }}, {{ details?.destination?.lng?.toFixed(5) }}
-                </div>
-              </div>
+    <div class="kv">
+      <div class="k">Destination</div>
+      <div class="v">
+        {{ details?.destination?.lat?.toFixed(5) }}, {{ details?.destination?.lng?.toFixed(5) }}
+      </div>
+    </div>
 
-              <div class="kv full">
-                <div class="k">Checkpoints</div>
-                <div class="v">
-                  <div *ngIf="(details?.checkpoints?.length || 0) === 0" class="muted">—</div>
-                  <div class="cp" *ngFor="let cp of (details?.checkpoints || [])">
-                    <span class="cp-ord">#{{ cp.order }}</span>
-                    <span class="cp-addr">{{ cp.address }}</span>
-                    <span class="cp-coord">({{ cp.lat.toFixed(5) }}, {{ cp.lng.toFixed(5) }})</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div class="kv full">
+      <div class="k">Checkpoints</div>
+      <div class="v">
+        <div *ngIf="(details?.checkpoints?.length || 0) === 0" class="muted">—</div>
+        <div class="cp" *ngFor="let cp of (details?.checkpoints || [])">
+          <span class="cp-ord">#{{ cp.order }}</span>
+          <span class="cp-addr">{{ cp.address }}</span>
+          <span class="cp-coord">({{ cp.lat.toFixed(5) }}, {{ cp.lng.toFixed(5) }})</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
         </div>
       </div>
 
