@@ -1,4 +1,4 @@
-package com.example.taximobile;
+package com.example.taximobile.feature.driver.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,8 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.example.taximobile.R;
+import com.example.taximobile.core.auth.LogoutManager;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
 
@@ -44,15 +46,19 @@ public abstract class DriverBaseActivity extends AppCompatActivity {
         toggle.syncState();
 
         navView.setNavigationItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.nav_home) {
-                startActivity(new Intent(this, HomeActivity.class));
-            }
-            if (item.getItemId() == R.id.nav_history) {
+            int id = item.getItemId();
+
+            if (id == R.id.nav_home) {
+                startActivity(new Intent(this, DriverHomeActivity.class));
+            } else if (id == R.id.nav_history) {
                 startActivity(new Intent(this, DriverRideHistoryActivity.class));
-            }
-            if (item.getItemId() == R.id.nav_profile) {
+            } else if (id == R.id.nav_profile) {
                 startActivity(new Intent(this, DriverProfileActivity.class));
+            } else if (id == R.id.nav_logout) {
+                LogoutManager.logout(this);
+                return true; // ne zatvaraj drawer ručno, već izlazi
             }
+
             drawerLayout.closeDrawers();
             return true;
         });

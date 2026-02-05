@@ -1,4 +1,4 @@
-package com.example.taximobile.adapters;
+package com.example.taximobile.feature.driver.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.taximobile.R;
-import com.example.taximobile.models.Ride;
+import com.example.taximobile.feature.driver.model.Ride;
 
 import java.util.List;
 

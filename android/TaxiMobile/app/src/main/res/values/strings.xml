@@ -16,10 +16,30 @@
     <string name="home_title">Taxi Mobile</string>
     <string name="home_welcome">Home Screen</string>
 
+    <string name="loading_dots">...</string>
+    <string name="login_error_missing_token">Missing token.</string>
+    <string name="login_error_invalid_token">Invalid token.</string>
+    <string name="login_error_only_driver_ui">Only driver UI is implemented for now.</string>
+
+
     <!-- Filter -->
     <string name="filter_from">From:</string>
     <string name="filter_to">To:</string>
     <string name="filter_btn">Filter</string>
+    <string name="login_title">Login</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="btn_login">Log in</string>
+    <string name="login_error_invalid_email">Enter a valid email.</string>
+    <string name="login_error_invalid_password">Password must be at least 4 characters.</string>
+    <string name="login_error_wrong_credentials">Wrong email or password.</string>
+    <string name="login_go_register">No account? Register</string>
+    <string name="login_error_register_not_implemented">
+    Register screen not implemented yet.
+</string>
+
+
+
 
     <!-- Ride History -->
     <string name="title_ride_history">Driver – Ride History</string>

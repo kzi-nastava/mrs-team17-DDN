@@ -1,16 +1,14 @@
-package com.example.taximobile;
+package com.example.taximobile.feature.driver.ui;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 import android.content.Intent;
 
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-
+import com.example.taximobile.R;
 import com.example.taximobile.databinding.ActivityDriverProfileBinding;
+import com.example.taximobile.feature.auth.ui.ChangePasswordActivity;
 
 public class DriverProfileActivity extends DriverBaseActivity {
 

@@ -1,8 +1,9 @@
-package com.example.taximobile;
+package com.example.taximobile.feature.driver.ui;
 
 import android.os.Bundle;
 import android.view.View;
 
+import com.example.taximobile.R;
 import com.example.taximobile.databinding.ActivityDriverRideDetailsBinding;
 
 public class DriverRideDetailsActivity extends DriverBaseActivity {

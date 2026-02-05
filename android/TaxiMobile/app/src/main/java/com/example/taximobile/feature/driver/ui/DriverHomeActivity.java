@@ -1,11 +1,12 @@
-package com.example.taximobile;
+package com.example.taximobile.feature.driver.ui;
 
 import android.os.Bundle;
 import android.view.View;
 
+import com.example.taximobile.R;
 import com.example.taximobile.databinding.ActivityHomeBinding;
 
-public class HomeActivity extends DriverBaseActivity {
+public class DriverHomeActivity extends DriverBaseActivity {
 
     private ActivityHomeBinding binding;
 

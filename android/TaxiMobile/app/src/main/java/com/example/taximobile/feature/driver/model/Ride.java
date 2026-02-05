@@ -1,4 +1,4 @@
-package com.example.taximobile.models;
+package com.example.taximobile.feature.driver.model;
 
 public class Ride {
 
