@@ -9,45 +9,34 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView android:id="@+id/tvDriver"
+        <TextView
+            android:id="@+id/tvDriver"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
-        <TextView android:id="@+id/tvType"
+        <TextView
+            android:id="@+id/tvStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="10dp" />
 
-        <TextView android:id="@+id/tvStatus"
+        <TextView
+            android:id="@+id/tvStart"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="10dp" />
 
-        <TextView android:id="@+id/tvStart"
+        <TextView
+            android:id="@+id/tvLoc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"/>
-
-        <TextView android:id="@+id/tvEta"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"/>
-
-        <TextView android:id="@+id/tvEnd"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"/>
-
-        <TextView android:id="@+id/tvLoc"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"/>
+            android:layout_marginTop="12dp" />
 
         <Button
             android:id="@+id/btnMaps"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Open in Maps"
-            android:layout_marginTop="12dp"/>
+            android:layout_marginTop="14dp" />
     </LinearLayout>
 </ScrollView>
