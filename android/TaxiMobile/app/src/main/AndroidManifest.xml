@@ -68,7 +68,6 @@
             android:name=".feature.support.ui.SupportChatActivity"
             android:exported="false" />
 
-
         <activity
             android:name=".feature.admin.ui.AdminSupportThreadsActivity"
             android:exported="false" />
@@ -81,7 +80,13 @@
             android:name=".feature.admin.ui.AdminPricingActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".feature.admin.ui.AdminProfileActivity"
+            android:exported="false" />
 
+        <activity
+            android:name=".feature.admin.ui.AdminChangePasswordActivity"
+            android:exported="false" />
 
     </application>
 

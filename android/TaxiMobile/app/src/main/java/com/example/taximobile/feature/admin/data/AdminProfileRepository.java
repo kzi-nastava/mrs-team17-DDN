@@ -1,4 +1,4 @@
-package com.example.taximobile.feature.driver.data;
+package com.example.taximobile.feature.admin.data;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -7,9 +7,8 @@ import android.net.Uri;
 import android.provider.OpenableColumns;
 
 import com.example.taximobile.core.network.ApiClient;
-import com.example.taximobile.feature.driver.data.dto.request.UpdateDriverProfileRequestDto;
-import com.example.taximobile.feature.driver.data.dto.response.DriverProfileResponseDto;
-import com.example.taximobile.feature.driver.data.dto.response.ProfileChangeRequestResponseDto;
+import com.example.taximobile.feature.admin.data.dto.request.UpdateAdminProfileRequestDto;
+import com.example.taximobile.feature.admin.data.dto.response.AdminProfileResponseDto;
 import com.example.taximobile.feature.common.data.dto.response.ProfileImageUploadResponseDto;
 
 import java.io.ByteArrayOutputStream;
@@ -23,23 +22,23 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class DriverProfileRepository {
+public class AdminProfileRepository {
 
     private final Context appCtx;
-    private final DriverApi api;
+    private final AdminProfileApi api;
 
-    public DriverProfileRepository(Context ctx) {
+    public AdminProfileRepository(Context ctx) {
         this.appCtx = ctx.getApplicationContext();
-        this.api = ApiClient.get(appCtx).create(DriverApi.class);
+        this.api = ApiClient.get(appCtx).create(AdminProfileApi.class);
     }
 
     public interface ProfileCb {
-        void onSuccess(DriverProfileResponseDto dto);
+        void onSuccess(AdminProfileResponseDto dto);
         void onError(String msg, int httpCode);
     }
 
-    public interface ChangeRequestCb {
-        void onSuccess(ProfileChangeRequestResponseDto dto);
+    public interface UpdateCb {
+        void onSuccess();
         void onError(String msg, int httpCode);
     }
 
@@ -48,15 +47,15 @@ public class DriverProfileRepository {
         void onError(String msg, int httpCode);
     }
 
-    public void getProfile(long driverId, ProfileCb cb) {
-        api.getDriverProfile(driverId).enqueue(new Callback<DriverProfileResponseDto>() {
+    public void getProfile(long adminId, ProfileCb cb) {
+        api.getAdminProfile(adminId).enqueue(new Callback<AdminProfileResponseDto>() {
             @Override
-            public void onResponse(Call<DriverProfileResponseDto> call, Response<DriverProfileResponseDto> res) {
+            public void onResponse(Call<AdminProfileResponseDto> call, Response<AdminProfileResponseDto> res) {
                 if (!res.isSuccessful()) {
                     cb.onError("HTTP " + res.code(), res.code());
                     return;
                 }
-                DriverProfileResponseDto body = res.body();
+                AdminProfileResponseDto body = res.body();
                 if (body == null) {
                     cb.onError("Empty body", res.code());
                     return;
@@ -65,44 +64,38 @@ public class DriverProfileRepository {
             }
 
             @Override
-            public void onFailure(Call<DriverProfileResponseDto> call, Throwable t) {
-                cb.onError(t.getMessage() != null ? t.getMessage() : "Network error", -1);
+            public void onFailure(Call<AdminProfileResponseDto> call, Throwable t) {
+                cb.onError(t != null ? t.getMessage() : "Network error", -1);
             }
         });
     }
 
-    public void requestProfileChange(long driverId, UpdateDriverProfileRequestDto req, ChangeRequestCb cb) {
-        api.requestProfileChange(driverId, req).enqueue(new Callback<ProfileChangeRequestResponseDto>() {
+    public void updateProfile(long adminId, UpdateAdminProfileRequestDto req, UpdateCb cb) {
+        api.updateAdminProfile(adminId, req).enqueue(new Callback<Void>() {
             @Override
-            public void onResponse(Call<ProfileChangeRequestResponseDto> call, Response<ProfileChangeRequestResponseDto> res) {
+            public void onResponse(Call<Void> call, Response<Void> res) {
                 if (!res.isSuccessful()) {
                     cb.onError("HTTP " + res.code(), res.code());
                     return;
                 }
-                ProfileChangeRequestResponseDto body = res.body();
-                if (body == null) {
-                    body = new ProfileChangeRequestResponseDto();
-                }
-                cb.onSuccess(body);
+                cb.onSuccess();
             }
 
             @Override
-            public void onFailure(Call<ProfileChangeRequestResponseDto> call, Throwable t) {
-                cb.onError(t.getMessage() != null ? t.getMessage() : "Network error", -1);
+            public void onFailure(Call<Void> call, Throwable t) {
+                cb.onError(t != null ? t.getMessage() : "Network error", -1);
             }
         });
     }
 
-    public void uploadProfileImage(long driverId, Uri contentUri, UploadCb cb) {
+    public void uploadProfileImage(long adminId, Uri contentUri, UploadCb cb) {
         if (contentUri == null) {
             cb.onError("No file selected", -1);
             return;
         }
 
         String mime = null;
-        try {
-            mime = appCtx.getContentResolver().getType(contentUri);
-        } catch (Exception ignored) {}
+        try { mime = appCtx.getContentResolver().getType(contentUri); } catch (Exception ignored) {}
         if (mime == null || mime.isBlank()) mime = "image/*";
 
         String filename = getDisplayName(appCtx.getContentResolver(), contentUri);
@@ -119,7 +112,7 @@ public class DriverProfileRepository {
         RequestBody rb = RequestBody.create(MediaType.parse(mime), bytes);
         MultipartBody.Part part = MultipartBody.Part.createFormData("file", filename, rb);
 
-        api.uploadProfileImage(driverId, part).enqueue(new Callback<ProfileImageUploadResponseDto>() {
+        api.uploadProfileImage(adminId, part).enqueue(new Callback<ProfileImageUploadResponseDto>() {
             @Override
             public void onResponse(Call<ProfileImageUploadResponseDto> call, Response<ProfileImageUploadResponseDto> res) {
                 if (!res.isSuccessful()) {
@@ -136,7 +129,7 @@ public class DriverProfileRepository {
 
             @Override
             public void onFailure(Call<ProfileImageUploadResponseDto> call, Throwable t) {
-                cb.onError(t.getMessage() != null ? t.getMessage() : "Network error", -1);
+                cb.onError(t != null ? t.getMessage() : "Network error", -1);
             }
         });
     }

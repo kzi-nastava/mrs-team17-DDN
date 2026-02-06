@@ -5,7 +5,7 @@ import com.example.taximobile.feature.driver.data.dto.response.DriverRideHistory
 import com.example.taximobile.feature.driver.data.dto.request.UpdateDriverProfileRequestDto;
 import com.example.taximobile.feature.driver.data.dto.response.DriverProfileResponseDto;
 import com.example.taximobile.feature.driver.data.dto.response.ProfileChangeRequestResponseDto;
-import com.example.taximobile.feature.driver.data.dto.response.ProfileImageUploadResponseDto;
+import com.example.taximobile.feature.common.data.dto.response.ProfileImageUploadResponseDto;
 
 import java.util.List;
 
