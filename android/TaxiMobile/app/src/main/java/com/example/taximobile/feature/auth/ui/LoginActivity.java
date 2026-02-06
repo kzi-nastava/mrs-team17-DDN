@@ -15,8 +15,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.taximobile.R;
 import com.example.taximobile.core.auth.JwtUtils;
 import com.example.taximobile.core.network.TokenStorage;
+import com.example.taximobile.feature.admin.ui.AdminHomeActivity;
 import com.example.taximobile.feature.auth.data.AuthRepository;
 import com.example.taximobile.feature.driver.ui.DriverHomeActivity;
+import com.example.taximobile.feature.user.ui.UserHomeActivity;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -111,9 +113,20 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // For now only driver UI exists
+        if ("PASSENGER".equalsIgnoreCase(role) || "USER".equalsIgnoreCase(role)) {
+            startActivity(new Intent(LoginActivity.this, UserHomeActivity.class));
+            finish();
+            return;
+        }
+
+        if ("ADMIN".equalsIgnoreCase(role)) {
+            startActivity(new Intent(LoginActivity.this, AdminHomeActivity.class));
+            finish();
+            return;
+        }
+
         new TokenStorage(getApplicationContext()).clear();
-        showError(getString(R.string.login_error_only_driver_ui));
+        showError(getString(R.string.login_error_role_not_supported));
     }
 
     private void setLoading(boolean loading) {
