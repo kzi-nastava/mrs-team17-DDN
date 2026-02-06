@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_home"
+        android:title="@string/menu_home" />
+
+    <item
+        android:id="@+id/nav_update_requests"
+        android:title="@string/menu_update_requests" />
+
+    <item
+        android:id="@+id/nav_create_drivers"
+        android:title="@string/menu_create_drivers" />
+
+    <item
+        android:id="@+id/nav_chats"
+        android:title="@string/menu_chats" />
+
+    <item
+        android:id="@+id/nav_ride_status"
+        android:title="@string/menu_ride_status" />
+
+    <item
+        android:id="@+id/nav_pricing"
+        android:title="@string/menu_pricing" />
+
+    <item
+        android:id="@+id/nav_reports"
+        android:title="@string/menu_reports" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:title="@string/menu_profile" />
+
+    <item
+        android:id="@+id/nav_logout"
+        android:title="@string/menu_logout" />
+
+</menu>

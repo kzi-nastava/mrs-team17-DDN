@@ -5,16 +5,31 @@
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
 
-    <!-- Drawer menu items -->
+    <!-- Drawer menu items (shared) -->
     <string name="menu_home">Home</string>
     <string name="menu_history">Ride history</string>
-    <string name="menu_profile">Profile</string>
+    <string name="menu_live_tracking">Live Tracking</string>
     <string name="menu_support">Support</string>
+    <string name="menu_profile">Profile</string>
     <string name="menu_logout">Log out</string>
+
+    <!-- Admin drawer items -->
+    <string name="menu_update_requests">Update Requests</string>
+    <string name="menu_create_drivers">Create Drivers</string>
+    <string name="menu_chats">Chats</string>
+    <string name="menu_ride_status">Ride Status</string>
+    <string name="menu_pricing">Pricing</string>
+    <string name="menu_reports">Reports</string>
 
     <!-- Home screen -->
     <string name="home_title">Taxi Mobile</string>
     <string name="home_welcome">Home Screen</string>
+    <string name="user_home_welcome">User Home</string>
+    <string name="admin_home_welcome">Admin Home</string>
+
+    <!-- Placeholder pages -->
+    <string name="placeholder_title">Coming soon</string>
+    <string name="placeholder_not_implemented">This page is not implemented yet.</string>
 
     <string name="select_date_range">Select date range</string>
     <string name="title_public_home">Active vehicles</string>
@@ -27,12 +42,14 @@
     <string name="loading_dots">...</string>
     <string name="login_error_missing_token">Missing token.</string>
     <string name="login_error_invalid_token">Invalid token.</string>
-    <string name="login_error_only_driver_ui">Only driver UI is implemented for now.</string>
+    <string name="login_error_role_not_supported">Role not supported.</string>
 
     <!-- Filter -->
     <string name="filter_from">From:</string>
     <string name="filter_to">To:</string>
     <string name="filter_btn">Filter</string>
+
+    <!-- Login -->
     <string name="login_title">Login</string>
     <string name="hint_email">Email</string>
     <string name="hint_password">Password</string>
@@ -41,9 +58,7 @@
     <string name="login_error_invalid_password">Password must be at least 4 characters.</string>
     <string name="login_error_wrong_credentials">Wrong email or password.</string>
     <string name="login_go_register">No account? Register</string>
-    <string name="login_error_register_not_implemented">
-    Register screen not implemented yet.
-</string>
+    <string name="login_error_register_not_implemented">Register screen not implemented yet.</string>
 
     <!-- Ride History -->
     <string name="title_ride_history">Driver – Ride History</string>
@@ -71,6 +86,7 @@
     <string name="panic_yes">Yes</string>
     <string name="panic_no">No</string>
 
+    <!-- Legacy/compat -->
     <string name="ride_information">Ride information</string>
     <string name="date_start">DATE START</string>
     <string name="date_end">DATE END</string>
@@ -113,13 +129,14 @@
     <string name="profile_update_request_sent">Request sent to admins for review.</string>
     <string name="profile_update_request_failed">Cannot send request.</string>
 
-    <string name="profile_image_uploaded">Image uploaded. Do not forget to send profile update request.</string>
+    <string name="profile_image_uploaded">Image uploaded. Do not forget to send the profile update request.</string>
     <string name="profile_image_upload_failed">Image upload failed.</string>
 
     <string name="blocked_title">ACCOUNT BLOCKED</string>
     <string name="blocked_reason_prefix">Reason:</string>
     <string name="blocked_no_reason">Reason not provided.</string>
 
+    <!-- Change Password -->
     <string name="change_password_title">Change Password</string>
     <string name="old_password_text">Old password</string>
     <string name="new_password_text">New password</string>

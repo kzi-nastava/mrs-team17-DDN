@@ -48,6 +48,22 @@
             android:name=".feature.driver.ui.DriverRideDetailsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".feature.user.ui.UserHomeActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".feature.user.ui.UserPlaceholderActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".feature.admin.ui.AdminHomeActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".feature.admin.ui.AdminPlaceholderActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
