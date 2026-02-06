@@ -20,6 +20,7 @@ import com.example.taximobile.databinding.ActivityAdminProfileBinding;
 import com.example.taximobile.feature.admin.data.AdminProfileRepository;
 import com.example.taximobile.feature.admin.data.dto.request.UpdateAdminProfileRequestDto;
 import com.example.taximobile.feature.admin.data.dto.response.AdminProfileResponseDto;
+import com.example.taximobile.feature.auth.ui.ChangePasswordActivity;
 import com.example.taximobile.feature.common.data.dto.response.ProfileImageUploadResponseDto;
 
 import java.io.InputStream;
@@ -67,7 +68,7 @@ public class AdminProfileActivity extends AdminBaseActivity {
         binding.btnUploadPicture.setOnClickListener(view -> pickImageLauncher.launch("image/*"));
         binding.btnUpdateProfile.setOnClickListener(view -> updateProfile());
         binding.btnRequestPasswordChange.setOnClickListener(view ->
-                startActivity(new Intent(this, AdminChangePasswordActivity.class))
+                startActivity(new Intent(this, ChangePasswordActivity.class))
         );
 
         loadProfile();

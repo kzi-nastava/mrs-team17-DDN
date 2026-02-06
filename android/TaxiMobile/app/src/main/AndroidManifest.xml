@@ -84,10 +84,6 @@
             android:name=".feature.admin.ui.AdminProfileActivity"
             android:exported="false" />
 
-        <activity
-            android:name=".feature.admin.ui.AdminChangePasswordActivity"
-            android:exported="false" />
-
     </application>
 
 </manifest>
