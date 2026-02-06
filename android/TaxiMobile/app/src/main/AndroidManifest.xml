@@ -77,6 +77,11 @@
             android:name=".feature.admin.ui.AdminSupportChatActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".feature.admin.ui.AdminPricingActivity"
+            android:exported="false" />
+
+
 
     </application>
 
