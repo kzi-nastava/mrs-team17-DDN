@@ -38,6 +38,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/public/profile-images/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/registration/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/drivers/activation").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/vehicles/active").permitAll()
                         .requestMatchers("/error").permitAll()
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

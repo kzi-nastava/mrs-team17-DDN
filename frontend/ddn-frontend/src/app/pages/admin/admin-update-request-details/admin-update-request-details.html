@@ -51,22 +51,32 @@
 
         <ng-container [ngSwitch]="c.kind">
 
-            <ng-container *ngSwitchCase="'text'">
+          <ng-container *ngSwitchCase="'text'">
             <div class="col-cur">{{ c.current ?? '—' }}</div>
             <div class="col-req">{{ c.requested ?? '—' }}</div>
-            </ng-container>
+          </ng-container>
 
-            <ng-container *ngSwitchCase="'image'">
+          <ng-container *ngSwitchCase="'image'">
             <div class="col-cur">
-                <img class="img" [src]="(c.currentUrl ?? '') || '/default-user.png'" alt="Current image" />
+              <img
+                class="img"
+                [src]="resolveImageUrl(c.currentUrl)"
+                (error)="onImgError($event)"
+                alt="Current image"
+              />
             </div>
             <div class="col-req">
-                <img class="img" [src]="(c.requestedUrl ?? '') || '/default-user.png'" alt="Requested image" />
+              <img
+                class="img"
+                [src]="resolveImageUrl(c.requestedUrl)"
+                (error)="onImgError($event)"
+                alt="Requested image"
+              />
             </div>
-            </ng-container>
+          </ng-container>
 
         </ng-container>
-        </div>
+      </div>
     </div>
 
     <div class="actions" *ngIf="request">

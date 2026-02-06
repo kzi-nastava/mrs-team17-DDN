@@ -19,7 +19,6 @@ type RideTrackingResponseDto = {
   status?: string;
   pickup?: LatLngDto;
   destination?: LatLngDto;
-  car?: LatLngDto;
   checkpoints?: RideCheckpointDto[];
   etaMinutes?: number;
   distanceKm?: number;
@@ -49,7 +48,7 @@ export class AdminRideStatus implements OnInit {
   details: RideTrackingResponseDto | null = null;
 
   private miniMap: L.Map | null = null;
-  private miniMarker: L.Marker | null = null;
+  private carMarker: L.CircleMarker | null = null;
   private miniPolyline: L.Polyline | null = null;
 
   ngOnInit(): void {
@@ -93,10 +92,8 @@ export class AdminRideStatus implements OnInit {
           this.details = res ?? null;
           this.detailsLoading = false;
 
-          // nacrtaj mapu nakon rendera DOM-a
           setTimeout(() => {
-            const fallback = { lat: r.carLat, lng: r.carLng };
-            const pos = this.details?.car ?? fallback;
+            const pos = { lat: r.carLat, lng: r.carLng };
             this.renderMiniMap(r.rideId, pos, this.details?.route ?? []);
           }, 0);
         },
@@ -104,9 +101,12 @@ export class AdminRideStatus implements OnInit {
           this.detailsError = 'Failed to load ride details';
           this.detailsLoading = false;
 
-          // i dalje nacrtaj mapu sa fallback koordinatama iz liste
           setTimeout(() => {
-            this.renderMiniMap(r.rideId, { lat: r.carLat, lng: r.carLng }, []);
+            this.renderMiniMap(
+              r.rideId,
+              { lat: r.carLat, lng: r.carLng },
+              []
+            );
           }, 0);
         },
       });
@@ -120,12 +120,14 @@ export class AdminRideStatus implements OnInit {
     this.destroyMiniMap();
   }
 
-  private renderMiniMap(rideId: number, car: LatLngDto, route: LatLngDto[]): void {
-    const elId = `mini-map-${rideId}`;
-    const el = document.getElementById(elId);
+  private renderMiniMap(
+    rideId: number,
+    car: LatLngDto,
+    route: LatLngDto[]
+  ): void {
+    const el = document.getElementById(`mini-map-${rideId}`);
     if (!el) return;
 
-    // reset u slucaju da je ostalo nesto u containeru
     el.innerHTML = '';
 
     this.miniMap = L.map(el, {
@@ -138,21 +140,30 @@ export class AdminRideStatus implements OnInit {
       keyboard: false,
     });
 
-    // tile layer (OSM)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
     }).addTo(this.miniMap);
 
-    // marker (trenutna tacka)
-    this.miniMarker = L.marker([car.lat, car.lng]).addTo(this.miniMap);
+    // 🚗 auto kao mala tačkica
+    this.carMarker = L.circleMarker([car.lat, car.lng], {
+      radius: 6,
+      color: '#2ecc71',
+      fillColor: '#2ecc71',
+      fillOpacity: 0.9,
+      weight: 2,
+    }).addTo(this.miniMap);
 
-    // opcionalno: ako hoces i malu rutu (ako postoji)
+    // ruta ako postoji
     if (route && route.length >= 2) {
       const latlngs = route.map(p => [p.lat, p.lng] as [number, number]);
-      this.miniPolyline = L.polyline(latlngs, { weight: 3 }).addTo(this.miniMap);
+      this.miniPolyline = L.polyline(latlngs, {
+        weight: 3,
+        color: '#3498db',
+      }).addTo(this.miniMap);
 
       const bounds = this.miniPolyline.getBounds();
-      this.miniMap.fitBounds(bounds, { padding: [10, 10] });
+      bounds.extend([car.lat, car.lng]);
+      this.miniMap.fitBounds(bounds, { padding: [12, 12] });
     } else {
       this.miniMap.setView([car.lat, car.lng], 15);
     }
@@ -167,7 +178,7 @@ export class AdminRideStatus implements OnInit {
       // ignore
     }
     this.miniMap = null;
-    this.miniMarker = null;
+    this.carMarker = null;
     this.miniPolyline = null;
   }
 }

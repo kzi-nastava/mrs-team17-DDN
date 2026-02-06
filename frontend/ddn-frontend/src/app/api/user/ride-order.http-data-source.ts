@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../../app.config';
 
 export interface RidePointRequestDto {
   address: string;
@@ -33,11 +34,10 @@ export interface CreateRideResponseDto {
 
 @Injectable({ providedIn: 'root' })
 export class RideOrderApiService {
-  private readonly baseUrl = 'http://localhost:8080';
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
+  private baseUrl = inject(API_BASE_URL);
 
   createRide(payload: CreateRideRequestDto): Observable<CreateRideResponseDto> {
-    return this.http.post<CreateRideResponseDto>(`${this.baseUrl}/api/rides`, payload);
+    return this.http.post<CreateRideResponseDto>(`${this.baseUrl}/rides`, payload);
   }
 }

@@ -55,9 +55,6 @@ public class AuthService {
         if (!user.isActive()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is not active");
         }
-        if (user.blocked()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is blocked");
-        }
 
         // 2) password check
         boolean matches = passwordEncoder.matches(rawPassword, user.passwordHash());
@@ -73,7 +70,7 @@ public class AuthService {
             driverIdClaim = drivers.findDriverIdByUserId(user.id()).orElse(null);
             if (driverIdClaim != null) {
                 boolean hasActiveRide = driverRides.findActiveRideDetails(driverIdClaim).isPresent();
-                drivers.setAvailable(driverIdClaim, !hasActiveRide);
+                drivers.setAvailable(driverIdClaim, !user.blocked() && !hasActiveRide);
             }
         }
 

@@ -9,6 +9,8 @@ public class UserProfileResponseDto {
     private String phoneNumber;
     private String profileImageUrl;
     private String role;
+    private boolean blocked;
+    private String blockReason;
 
     public UserProfileResponseDto() {}
 
@@ -35,4 +37,10 @@ public class UserProfileResponseDto {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public boolean isBlocked() { return blocked; }
+    public void setBlocked(boolean blocked) { this.blocked = blocked; }
+
+    public String getBlockReason() { return blockReason; }
+    public void setBlockReason(String blockReason) { this.blockReason = blockReason; }
 }

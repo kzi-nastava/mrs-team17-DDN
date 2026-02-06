@@ -1,0 +1,111 @@
+<div class="page">
+  <div class="card-fixed">
+
+    <div class="header">
+      <h1 class="title">Reports</h1>
+
+      <div class="filter-section">
+        <label class="label" for="fromDate">From:</label>
+        <input id="fromDate" type="date" class="date-input" [(ngModel)]="fromDate" />
+
+        <label class="label" for="toDate">To:</label>
+        <input id="toDate" type="date" class="date-input" [(ngModel)]="toDate" />
+
+        <button class="filter-btn" type="button" (click)="load()" [disabled]="isLoading">
+          {{ isLoading ? 'Generating...' : 'Generate' }}
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="errorMsg" class="state err">{{ errorMsg }}</div>
+
+    <ng-container *ngIf="report as r">
+
+      <div class="summary">
+        <div class="sum-card">
+          <div class="sum-label">Total rides</div>
+          <div class="sum-value">{{ r.totals.rides }}</div>
+          <div class="sum-sub">Avg/day: {{ formatNumber(r.averages.ridesPerDay, 2) }}</div>
+        </div>
+
+        <div class="sum-card">
+          <div class="sum-label">Total kilometers</div>
+          <div class="sum-value">{{ formatNumber(r.totals.kilometers, 2) }} km</div>
+          <div class="sum-sub">Avg/day: {{ formatNumber(r.averages.kilometersPerDay, 2) }} km</div>
+        </div>
+
+        <div class="sum-card">
+          <div class="sum-label">{{ moneyLabel }}</div>
+          <div class="sum-value">{{ formatNumber(r.totals.money, 2) }} RSD</div>
+          <div class="sum-sub">{{ moneyPerDayLabel }}: {{ formatNumber(r.averages.moneyPerDay, 2) }} RSD</div>
+        </div>
+      </div>
+
+      <div class="avg-row">
+        <div class="avg-item">
+          <span class="avg-k">Avg km/ride:</span>
+          <span class="avg-v">{{ formatNumber(r.averages.kilometersPerRide, 2) }} km</span>
+        </div>
+        <div class="avg-item">
+          <span class="avg-k">{{ moneyPerRideLabel }}:</span>
+          <span class="avg-v">{{ formatNumber(r.averages.moneyPerRide, 2) }} RSD</span>
+        </div>
+        <div class="avg-item">
+          <span class="avg-k">Days in range:</span>
+          <span class="avg-v">{{ r.days }}</span>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-top">
+          <div class="chart-title">{{ chartTitle }}</div>
+
+          <div class="tabs">
+            <button type="button" class="tab" [class.active]="metric === 'rides'" (click)="setMetric('rides')">Rides</button>
+            <button type="button" class="tab" [class.active]="metric === 'kilometers'" (click)="setMetric('kilometers')">Km</button>
+            <button type="button" class="tab" [class.active]="metric === 'money'" (click)="setMetric('money')">Money</button>
+          </div>
+        </div>
+
+        <div class="chart-scroll">
+          <div class="chart" *ngIf="bars.length > 0; else empty">
+            <div class="bars">
+              <div class="bar-col" *ngFor="let b of bars">
+                <div class="bar-area" [title]="b.tooltip">
+                  <div class="bar" [style.height.%]="b.pct"></div>
+                </div>
+                <div class="bar-label">{{ b.label }}</div>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #empty>
+            <div class="state">No completed rides in this period.</div>
+          </ng-template>
+        </div>
+
+        <div class="chart-foot" *ngIf="bars.length > 0">
+          <div class="foot-item">
+            <span class="foot-k">Cumulative:</span>
+            <span class="foot-v" *ngIf="metric === 'rides'">{{ r.totals.rides }}</span>
+            <span class="foot-v" *ngIf="metric === 'kilometers'">{{ formatNumber(r.totals.kilometers, 2) }} km</span>
+            <span class="foot-v" *ngIf="metric === 'money'">{{ formatNumber(r.totals.money, 2) }} RSD</span>
+          </div>
+
+          <div class="foot-item">
+            <span class="foot-k">Average/day:</span>
+            <span class="foot-v" *ngIf="metric === 'rides'">{{ formatNumber(r.averages.ridesPerDay, 2) }}</span>
+            <span class="foot-v" *ngIf="metric === 'kilometers'">{{ formatNumber(r.averages.kilometersPerDay, 2) }} km</span>
+            <span class="foot-v" *ngIf="metric === 'money'">{{ formatNumber(r.averages.moneyPerDay, 2) }} RSD</span>
+          </div>
+
+          <div class="foot-note" *ngIf="chartUnit">Unit: {{ chartUnit }}</div>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <div *ngIf="isLoading && !report" class="state">Loading...</div>
+
+  </div>
+</div>

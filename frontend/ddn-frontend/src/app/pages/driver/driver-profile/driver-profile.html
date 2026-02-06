@@ -1,5 +1,17 @@
 <div class="profile-page">
   <div class="profile-card">
+
+    <div class="top-row">
+      <div class="top-label">Active in the last 24h</div>
+
+      <div class="active-time">
+        <div class="active-bar">
+          <div class="active-fill" [style.width.%]="activeFillPct"></div>
+        </div>
+        <div class="active-max">{{ activeRightLabel }}</div>
+      </div>
+    </div>
+
     <div class="left-col">
       <div class="mini-logo">
         <img class="mini-logo-img" src="logo.svg" alt="Taxi logo" />
@@ -26,46 +38,103 @@
     </div>
 
     <div class="right-col">
-      <div class="active-time">
-        <div class="active-bar">
-          <div class="active-fill" [style.width.%]="activeFillPct">
-            <span class="active-label">{{ activeLabel }}</span>
+
+      <div class="section-card">
+        <div class="section-title">Driver</div>
+
+        <div class="grid-2">
+          <div class="field">
+            <img class="field-icon-img" src="person.svg" alt="" />
+            <input type="text" [(ngModel)]="form.firstName" placeholder="First name" />
+          </div>
+
+          <div class="field">
+            <img class="field-icon-img" src="person.svg" alt="" />
+            <input type="text" [(ngModel)]="form.lastName" placeholder="Last name" />
           </div>
         </div>
-        <div class="active-max">8h</div>
+
+        <div class="grid-2">
+          <div class="field">
+            <img class="field-icon-img" src="house.svg" alt="" />
+            <input type="text" [(ngModel)]="form.address" placeholder="Address" />
+          </div>
+
+          <div class="field">
+            <img class="field-icon-img" src="phone.svg" alt="" />
+            <input type="text" [(ngModel)]="form.phoneNumber" placeholder="Phone number" />
+          </div>
+        </div>
       </div>
 
-      <div class="field">
-        <img class="field-icon-img" src="person.svg" alt="" />
-        <input type="text" [(ngModel)]="form.firstName" />
+      <div class="section-card">
+        <div class="section-title">Vehicle</div>
+
+        <div class="grid-2">
+          <div class="field">
+            <img class="field-icon-img" src="/car.svg" alt="" />
+            <input type="text" [value]="vehicleModel" disabled />
+          </div>
+
+          <div class="field">
+            <img class="field-icon-img" [src]="vehicleTypeIcon" alt="" />
+            <input type="text" [value]="vehicleTypeLabel" disabled />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <img class="field-icon-img" src="/plate.svg" alt="" />
+            <input type="text" [value]="vehiclePlate" disabled />
+          </div>
+
+          <div class="field">
+            <img class="field-icon-img" src="/capacity.svg" alt="" />
+            <input type="text" [value]="vehicleSeats" disabled />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <img class="field-icon-img" src="/baby_seat.svg" alt="" />
+            <input type="text" [value]="vehicleBaby" disabled />
+          </div>
+
+          <div class="field">
+            <img class="field-icon-img" src="/pet_friendly.svg" alt="" />
+            <input type="text" [value]="vehiclePet" disabled />
+          </div>
+        </div>
       </div>
 
-      <div class="field">
-        <img class="field-icon-img" src="person.svg" alt="" />
-        <input type="text" [(ngModel)]="form.lastName" />
-      </div>
-
-      <div class="field">
-        <img class="field-icon-img" src="house.svg" alt="" />
-        <input type="text" [(ngModel)]="form.address" />
-      </div>
-
-      <div class="field">
-        <img class="field-icon-img" src="phone.svg" alt="" />
-        <input type="text" [(ngModel)]="form.phoneNumber" />
-      </div>
     </div>
 
     <div class="actions">
+
+      <div *ngIf="profile?.driver?.blocked" class="notice blocked block-notice">
+        <div class="block-head">ACCOUNT BLOCKED</div>
+        <div class="block-body">
+          <div>You are currently blocked from getting new rides.</div>
+
+          <div class="block-reason" *ngIf="(profile?.driver?.blockReason || '').trim()">
+            Reason: {{ profile?.driver?.blockReason }}
+          </div>
+        </div>
+      </div>
+
       <div *ngIf="successMsg" class="notice success">{{ successMsg }}</div>
       <div *ngIf="errorMsg" class="notice error">{{ errorMsg }}</div>
-      <button type="button" class="primary-action-driver" (click)="onUpdateProfile()">
-        UPDATE PROFILE
-      </button>
 
-      <button type="button" class="secondary-action-driver" routerLink="/driver/password-change">
-        CHANGE PASSWORD
-      </button>
+      <div class="btn-row">
+        <button type="button" class="primary-action-driver" (click)="onUpdateProfile()">
+          UPDATE PROFILE
+        </button>
+
+        <button type="button" class="secondary-action-driver" routerLink="/driver/password-change">
+          CHANGE PASSWORD
+        </button>
+      </div>
     </div>
+
   </div>
 </div>

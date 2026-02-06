@@ -16,10 +16,34 @@
     <string name="home_title">Taxi Mobile</string>
     <string name="home_welcome">Home Screen</string>
 
+    <string name="select_date_range">Select date range</string>
+    <string name="title_public_home">Active vehicles</string>
+    <string name="vehicles_loading">Loading vehicles...</string>
+    <string name="vehicles_stats">Free: %1$d | Busy: %2$d</string>
+    <string name="vehicle_free">Free</string>
+    <string name="vehicle_busy">Busy</string>
+
+
+    <string name="loading_dots">...</string>
+    <string name="login_error_missing_token">Missing token.</string>
+    <string name="login_error_invalid_token">Invalid token.</string>
+    <string name="login_error_only_driver_ui">Only driver UI is implemented for now.</string>
+
     <!-- Filter -->
     <string name="filter_from">From:</string>
     <string name="filter_to">To:</string>
     <string name="filter_btn">Filter</string>
+    <string name="login_title">Login</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="btn_login">Log in</string>
+    <string name="login_error_invalid_email">Enter a valid email.</string>
+    <string name="login_error_invalid_password">Password must be at least 4 characters.</string>
+    <string name="login_error_wrong_credentials">Wrong email or password.</string>
+    <string name="login_go_register">No account? Register</string>
+    <string name="login_error_register_not_implemented">
+    Register screen not implemented yet.
+</string>
 
     <!-- Ride History -->
     <string name="title_ride_history">Driver – Ride History</string>
@@ -60,7 +84,6 @@
     <string name="map_placeholder">Map will be displayed here</string>
 
     <!-- Profile -->
-
     <string name="driver_profile_title">Profile</string>
     <string name="content_description">Avatar</string>
     <string name="picture_upload_text">Upload new picture</string>
@@ -72,13 +95,34 @@
     <string name="request_profile_update_text">UPDATE PROFILE</string>
     <string name="password_change_text">CHANGE PASSWORD</string>
 
-    <!-- Change Password -->
+    <string name="section_driver">Driver</string>
+    <string name="section_vehicle">Vehicle</string>
 
-    Change Password
+    <string name="vehicle_model">Model</string>
+    <string name="vehicle_type">Type</string>
+    <string name="vehicle_plate">Plate</string>
+    <string name="vehicle_seats">Seats</string>
+    <string name="vehicle_baby">Baby transport</string>
+    <string name="vehicle_pet">Pet transport</string>
+
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <string name="active_time_prefix">Active time (last 24h):</string>
+
+    <string name="profile_update_request_sent">Request sent to admins for review.</string>
+    <string name="profile_update_request_failed">Cannot send request.</string>
+
+    <string name="profile_image_uploaded">Image uploaded. Do not forget to send profile update request.</string>
+    <string name="profile_image_upload_failed">Image upload failed.</string>
+
+    <string name="blocked_title">ACCOUNT BLOCKED</string>
+    <string name="blocked_reason_prefix">Reason:</string>
+    <string name="blocked_no_reason">Reason not provided.</string>
+
     <string name="change_password_title">Change Password</string>
     <string name="old_password_text">Old password</string>
     <string name="new_password_text">New password</string>
     <string name="confirm_password_text">Confirm new password</string>
     <string name="confirm_password_button_text">CONFIRM PASSWORD</string>
-
 </resources>
