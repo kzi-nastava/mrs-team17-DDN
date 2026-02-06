@@ -11,6 +11,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.taximobile.R;
 import com.example.taximobile.core.auth.LogoutManager;
+import com.example.taximobile.feature.support.ui.SupportChatActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
 
@@ -50,19 +51,28 @@ public abstract class DriverBaseActivity extends AppCompatActivity {
 
             if (id == R.id.nav_home) {
                 startActivity(new Intent(this, DriverHomeActivity.class));
+
             } else if (id == R.id.nav_history) {
                 startActivity(new Intent(this, DriverRideHistoryActivity.class));
+
             } else if (id == R.id.nav_profile) {
                 startActivity(new Intent(this, DriverProfileActivity.class));
+
+            } else if (id == R.id.nav_support) {
+                // ISTI support chat kao passenger
+                startActivity(new Intent(this, SupportChatActivity.class));
+
             } else if (id == R.id.nav_logout) {
                 LogoutManager.logout(this);
-                return true; // ne zatvaraj drawer ručno, već izlazi
+                drawerLayout.closeDrawers();
+                return true;
             }
 
             drawerLayout.closeDrawers();
             return true;
         });
     }
+
     protected View inflateContent(int layoutResId) {
         View v = getLayoutInflater().inflate(layoutResId, baseContent, false);
         baseContent.addView(v);

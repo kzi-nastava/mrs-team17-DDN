@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Lista thread-ova -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp"/>
+
+    <!-- Empty state -->
+    <TextView
+        android:id="@+id/tvEmpty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No support chats"
+        android:visibility="gone"
+        android:layout_gravity="center"/>
+
+    <!-- Error state -->
+    <TextView
+        android:id="@+id/tvError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/holo_red_dark"
+        android:visibility="gone"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="16dp"/>
+</FrameLayout>

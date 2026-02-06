@@ -64,6 +64,20 @@
             android:name=".feature.admin.ui.AdminPlaceholderActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".feature.support.ui.SupportChatActivity"
+            android:exported="false" />
+
+
+        <activity
+            android:name=".feature.admin.ui.AdminSupportThreadsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".feature.admin.ui.AdminSupportChatActivity"
+            android:exported="false" />
+
+
     </application>
 
 </manifest>
