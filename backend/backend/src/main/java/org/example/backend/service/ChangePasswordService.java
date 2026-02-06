@@ -50,9 +50,6 @@ public class ChangePasswordService {
         if (!user.isActive()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is not active");
         }
-        if (user.blocked()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is blocked");
-        }
 
         if (!passwordEncoder.matches(current, user.passwordHash())) {
             throw new IllegalArgumentException("Current password is incorrect");

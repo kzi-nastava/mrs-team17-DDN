@@ -110,6 +110,18 @@
     </div>
 
     <div class="actions">
+
+      <div *ngIf="profile?.driver?.blocked" class="notice blocked block-notice">
+        <div class="block-head">ACCOUNT BLOCKED</div>
+        <div class="block-body">
+          <div>You are currently blocked from getting new rides.</div>
+
+          <div class="block-reason" *ngIf="(profile?.driver?.blockReason || '').trim()">
+            Reason: {{ profile?.driver?.blockReason }}
+          </div>
+        </div>
+      </div>
+
       <div *ngIf="successMsg" class="notice success">{{ successMsg }}</div>
       <div *ngIf="errorMsg" class="notice error">{{ errorMsg }}</div>
 

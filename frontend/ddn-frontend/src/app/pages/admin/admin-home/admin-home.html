@@ -1,1 +1,174 @@
-<p>admin-home works!</p>
+<div class="home-page">
+  <div class="home-card">
+
+    <div class="header">
+      <h2 class="title">User blocking</h2>
+
+      <button class="refresh-btn" type="button" (click)="reloadAll()"
+              [disabled]="loadingDrivers || loadingPassengers">
+        {{ (loadingDrivers || loadingPassengers) ? 'Loading...' : 'Refresh' }}
+      </button>
+    </div>
+
+    <div class="grid">
+
+      <div class="section">
+        <div class="section-top">
+          <div class="section-title">Drivers</div>
+        </div>
+
+        <div class="list">
+          <div class="head">
+            <div>User</div>
+            <div>Status</div>
+            <div class="head-actions">Actions</div>
+          </div>
+
+          <div class="row" *ngFor="let u of drivers">
+            <div class="col-user">
+              <div class="name">{{ fullName(u) || '—' }}</div>
+              <div class="email">{{ u.email || '—' }}</div>
+            </div>
+
+            <div class="col-status">
+              <span class="status" [ngClass]="u.blocked ? 'blocked' : 'active'">
+                {{ u.blocked ? 'BLOCKED' : 'ACTIVE' }}
+              </span>
+
+              <div class="note-text muted" *ngIf="!u.blocked">—</div>
+              <div class="note-text" *ngIf="u.blocked" [title]="u.blockReason || ''">
+                {{ reasonPreview(u) || '—' }}
+              </div>
+            </div>
+
+            <div class="col-actions">
+              <button *ngIf="!u.blocked" class="danger-btn" type="button" (click)="openBlockModal(u, true)">
+                Block
+              </button>
+
+              <ng-container *ngIf="u.blocked">
+                <button class="approve-btn" type="button" (click)="quickUnblock(u)">
+                  Unblock
+                </button>
+
+                <button class="details-btn" type="button" (click)="openBlockModal(u, true)">
+                  Edit note
+                </button>
+              </ng-container>
+            </div>
+          </div>
+
+          <div *ngIf="loadingDrivers" class="state">Loading...</div>
+          <div *ngIf="!loadingDrivers && drivers.length === 0 && !errorDrivers" class="state">
+            No drivers.
+          </div>
+          <div *ngIf="errorDrivers" class="state err">{{ errorDrivers }}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-top">
+          <div class="section-title">Passengers</div>
+        </div>
+
+        <div class="list">
+          <div class="head">
+            <div>User</div>
+            <div>Status</div>
+            <div class="head-actions">Actions</div>
+          </div>
+
+          <div class="row" *ngFor="let u of passengers">
+            <div class="col-user">
+              <div class="name">{{ fullName(u) || '—' }}</div>
+              <div class="email">{{ u.email || '—' }}</div>
+            </div>
+
+            <div class="col-status">
+              <span class="status" [ngClass]="u.blocked ? 'blocked' : 'active'">
+                {{ u.blocked ? 'BLOCKED' : 'ACTIVE' }}
+              </span>
+
+              <div class="note-text muted" *ngIf="!u.blocked">—</div>
+              <div class="note-text" *ngIf="u.blocked" [title]="u.blockReason || ''">
+                {{ reasonPreview(u) || '—' }}
+              </div>
+            </div>
+
+            <div class="col-actions">
+              <button *ngIf="!u.blocked" class="danger-btn" type="button" (click)="openBlockModal(u, true)">
+                Block
+              </button>
+
+              <ng-container *ngIf="u.blocked">
+                <button class="approve-btn" type="button" (click)="quickUnblock(u)">
+                  Unblock
+                </button>
+
+                <button class="details-btn" type="button" (click)="openBlockModal(u, true)">
+                  Edit note
+                </button>
+              </ng-container>
+            </div>
+          </div>
+
+          <div *ngIf="loadingPassengers" class="state">Loading...</div>
+          <div *ngIf="!loadingPassengers && passengers.length === 0 && !errorPassengers" class="state">
+            No passengers.
+          </div>
+          <div *ngIf="errorPassengers" class="state err">{{ errorPassengers }}</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="modalOpen" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">Block user</div>
+    </div>
+
+    <div class="modal-userbox">
+      <div class="mu-name">{{ modalUser ? (fullName(modalUser) || '—') : '—' }}</div>
+      <div class="mu-email">{{ modalUser?.email || '—' }}</div>
+    </div>
+
+    <div class="toggle-row">
+      <label class="toggle">
+        <input type="radio" name="blockToggle" [checked]="modalBlocked === true" (change)="modalBlocked = true" />
+        <span>Blocked</span>
+      </label>
+
+      <label class="toggle">
+        <input type="radio" name="blockToggle" [checked]="modalBlocked === false" (change)="modalBlocked = false" />
+        <span>Unblocked</span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label class="lbl">Note / reason</label>
+      <textarea
+        class="textarea"
+        [(ngModel)]="modalReason"
+        [disabled]="!modalBlocked"
+        placeholder="Explain why this user is blocked..."
+        rows="5"
+      ></textarea>
+      <div class="muted" *ngIf="!modalBlocked">Reason will be cleared on unblock.</div>
+    </div>
+
+    <div *ngIf="modalError" class="state err" style="margin-top: 10px;">{{ modalError }}</div>
+
+    <div class="modal-actions">
+      <button class="refresh-btn" type="button" (click)="closeModal()" [disabled]="modalSaving">
+        Cancel
+      </button>
+
+      <button class="danger-btn" type="button" (click)="saveModal()" [disabled]="modalSaving">
+        {{ modalSaving ? 'Saving...' : 'Save' }}
+      </button>
+    </div>
+  </div>
+</div>

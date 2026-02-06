@@ -19,7 +19,7 @@ public class JdbcUserProfileRepository implements UserProfileRepository {
     @Override
     public Optional<UserProfileResponseDto> findById(Long userId) {
         String sql = """
-            select id, email, first_name, last_name, address, phone, profile_image_url, role
+            select id, email, first_name, last_name, address, phone, profile_image_url, role, blocked, block_reason
             from users
             where id = :id and role = 'PASSENGER'
         """;
@@ -36,6 +36,8 @@ public class JdbcUserProfileRepository implements UserProfileRepository {
                     dto.setPhoneNumber(rs.getString("phone"));
                     dto.setProfileImageUrl(rs.getString("profile_image_url"));
                     dto.setRole(rs.getString("role"));
+                    dto.setBlocked(rs.getBoolean("blocked"));
+                    dto.setBlockReason(rs.getString("block_reason"));
                     return dto;
                 })
                 .optional();

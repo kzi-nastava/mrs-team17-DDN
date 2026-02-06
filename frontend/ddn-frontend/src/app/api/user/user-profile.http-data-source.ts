@@ -12,6 +12,8 @@ export interface UserProfileResponseDto {
   phoneNumber?: string;
   profileImageUrl?: string;
   role?: string;
+  blocked?: boolean;
+  blockReason?: string | null;
 }
 
 export interface UpdateUserProfileRequestDto {

@@ -30,7 +30,9 @@ public class JdbcDriverProfileRepository implements DriverProfileRepository{
                 u.address,
                 u.phone,
                 u.role,
-                u.profile_image_url
+                u.profile_image_url,
+                u.blocked,
+                u.block_reason
             from drivers d
             join users u on u.id = d.user_id
             where d.id = :driverId
@@ -48,6 +50,8 @@ public class JdbcDriverProfileRepository implements DriverProfileRepository{
                     dto.setPhoneNumber(rs.getString("phone"));
                     dto.setRole(rs.getString("role"));
                     dto.setProfileImageUrl(rs.getString("profile_image_url"));
+                    dto.setBlocked(rs.getBoolean("blocked"));
+                    dto.setBlockReason(rs.getString("block_reason"));
                     return dto;
                 })
                 .optional();
