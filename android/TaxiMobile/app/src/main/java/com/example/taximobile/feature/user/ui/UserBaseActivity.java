@@ -11,6 +11,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.taximobile.R;
 import com.example.taximobile.core.auth.LogoutManager;
+import com.example.taximobile.feature.support.ui.SupportChatActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
 
@@ -54,7 +55,11 @@ public abstract class UserBaseActivity extends AppCompatActivity {
             } else if (id == R.id.nav_logout) {
                 LogoutManager.logout(this);
                 return true;
-            } else {
+
+            } else if (id == R.id.nav_support) {
+                startActivity(new Intent(this, SupportChatActivity.class));
+            }
+            else{
                 Intent i = new Intent(this, UserPlaceholderActivity.class);
                 i.putExtra(UserPlaceholderActivity.EXTRA_TITLE, String.valueOf(item.getTitle()));
                 startActivity(i);

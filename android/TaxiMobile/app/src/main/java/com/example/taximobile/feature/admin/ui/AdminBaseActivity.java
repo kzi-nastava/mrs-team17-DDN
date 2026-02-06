@@ -51,9 +51,16 @@ public abstract class AdminBaseActivity extends AppCompatActivity {
                 if (!(this instanceof AdminHomeActivity)) {
                     startActivity(new Intent(this, AdminHomeActivity.class));
                 }
+
+            } else if (id == R.id.nav_chats) {
+                // Admin support live chat threads
+                startActivity(new Intent(this, AdminSupportThreadsActivity.class));
+
             } else if (id == R.id.nav_logout) {
                 LogoutManager.logout(this);
+                drawerLayout.closeDrawers();
                 return true;
+
             } else {
                 Intent i = new Intent(this, AdminPlaceholderActivity.class);
                 i.putExtra(AdminPlaceholderActivity.EXTRA_TITLE, String.valueOf(item.getTitle()));
