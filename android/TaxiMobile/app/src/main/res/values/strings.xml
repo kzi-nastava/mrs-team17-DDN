@@ -12,6 +12,10 @@
     <string name="menu_support">Support</string>
     <string name="menu_profile">Profile</string>
     <string name="menu_logout">Log out</string>
+    <string name="support_empty">No messages yet. Start the conversation.</string>
+    <string name="support_error">Could not load chat.</string>
+    <string name="support_hint">Type a message…</string>
+    <string name="support_send">Send</string>
 
     <!-- Admin drawer items -->
     <string name="menu_update_requests">Update Requests</string>
