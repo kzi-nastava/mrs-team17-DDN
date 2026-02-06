@@ -80,6 +80,9 @@
         <activity
             android:name=".feature.admin.ui.AdminPricingActivity"
             android:exported="false" />
+        <activity android:name=".feature.admin.ui.AdminRideStatusActivity" android:exported="false" />
+        <activity android:name=".feature.admin.ui.AdminRideStatusDetailsActivity" android:exported="false" />
+
 
 
 
