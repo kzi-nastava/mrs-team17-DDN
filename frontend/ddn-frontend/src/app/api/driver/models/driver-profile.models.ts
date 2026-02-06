@@ -9,6 +9,8 @@ export interface UserProfileResponseDto {
   phoneNumber: string;
   profileImageUrl: string;
   role: UserRole;
+  blocked?: boolean;
+  blockReason?: string | null;
 }
 
 export interface VehicleInfoResponseDto {

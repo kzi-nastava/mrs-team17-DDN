@@ -3,6 +3,7 @@ package org.example.backend.controller;
 import java.util.Map;
 
 import org.example.backend.exception.ActiveRideConflictException;
+import org.example.backend.exception.BlockedUserException;
 import org.example.backend.exception.NoAvailableDriverException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -14,6 +15,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(BlockedUserException.class)
+    public ResponseEntity<Map<String, Object>> handleBlockedUser(BlockedUserException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                "message", ex.getMessage(),
+                "blockReason", ex.getBlockReason()
+        ));
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {

@@ -4,6 +4,7 @@ import org.example.backend.dto.request.CreateRideRequestDto;
 import org.example.backend.dto.request.RidePointRequestDto;
 import org.example.backend.dto.response.CreateRideResponseDto;
 import org.example.backend.exception.ActiveRideConflictException;
+import org.example.backend.exception.BlockedUserException;
 import org.example.backend.exception.NoAvailableDriverException;
 import org.example.backend.osrm.OsrmClient;
 import org.example.backend.repository.*;
@@ -128,8 +129,13 @@ public class RideOrderService {
             throw new IllegalArgumentException("Requester account is not active");
         }
         if (requester.blocked()) {
-            String reason = requester.blockReason() == null ? "" : (" Reason: " + requester.blockReason());
-            throw new IllegalArgumentException("Requester is blocked." + reason);
+            String reason = requester.blockReason();
+            String msg = "You are blocked and cannot order a ride" +
+                    ((reason == null || reason.trim().isEmpty()) ? "" : (". Reason: " + reason));
+            throw new BlockedUserException(
+                    msg,
+                    reason
+            );
         }
 
         if (rideOrderRepo.userHasActiveRide(requester.email())) {
@@ -174,7 +180,10 @@ public class RideOrderService {
                     throw new IllegalArgumentException("Linked user is not active: " + e);
                 }
                 if (u.blocked()) {
-                    throw new IllegalArgumentException("Linked user is blocked: " + e);
+                    String reason = u.blockReason();
+                    String msg = "One of the linked users is blocked: " + e +
+                            ((reason == null || reason.trim().isEmpty()) ? "" : (". Reason: " + reason));
+                    throw new BlockedUserException(msg, reason);
                 }
 
                 if (rideOrderRepo.userHasActiveRide(u.email())) {
