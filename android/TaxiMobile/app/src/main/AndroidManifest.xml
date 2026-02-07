@@ -94,6 +94,10 @@
             android:name=".feature.admin.ui.AdminProfileActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".feature.admin.ui.AdminUpdateRequestsActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

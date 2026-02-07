@@ -146,4 +146,19 @@
     <string name="new_password_text">New password</string>
     <string name="confirm_password_text">Confirm new password</string>
     <string name="confirm_password_button_text">CONFIRM PASSWORD</string>
+
+    <!-- Admin: Update requests (driver profile change requests) -->
+    <string name="update_requests_refresh">Refresh</string>
+    <string name="update_requests_empty">No driver profile update requests.</string>
+    <string name="update_requests_load_failed">Failed to load update requests.</string>
+    <string name="update_requests_approve">Approve</string>
+    <string name="update_requests_reject">Reject</string>
+    <string name="update_requests_approved">Request approved.</string>
+    <string name="update_requests_rejected">Request rejected.</string>
+    <string name="update_requests_action_failed">Action failed.</string>
+    <string name="update_requests_reject_title">Reject request</string>
+    <string name="update_requests_reason_hint">Reason (optional)</string>
+    <string name="update_requests_cancel">Cancel</string>
+    <string name="update_requests_working">Working...</string>
+
 </resources>
