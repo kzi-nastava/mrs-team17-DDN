@@ -87,10 +87,19 @@
         <activity
             android:name=".feature.user.ui.PassengerActiveRideActivity"
             android:exported="false" />
+        <activity
+            android:name=".feature.user.ui.PassengerRateRideActivity"
+            android:exported="false" />
 
         <activity android:name=".feature.driver.ui.DriverActiveRideActivity" />
 
         <activity android:name=".feature.user.ui.UserNotificationsActivity" />
+        <activity
+            android:name=".feature.user.ui.UserRideHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".feature.user.ui.UserRideDetailsActivity"
+            android:exported="false" />
 
 
 
