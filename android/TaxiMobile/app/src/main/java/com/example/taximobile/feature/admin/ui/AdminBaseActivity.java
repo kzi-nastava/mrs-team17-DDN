@@ -68,7 +68,15 @@ public abstract class AdminBaseActivity extends AppCompatActivity {
                 drawerLayout.closeDrawers();
                 return true;
 
-            } else {
+            }
+            else if (id == R.id.nav_pricing) {
+                startActivity(new Intent(this, AdminPricingActivity.class));
+            }
+            else if (id == R.id.nav_ride_status) {
+                startActivity(new Intent(this, AdminRideStatusActivity.class));
+            }
+
+            else {
                 Intent i = new Intent(this, AdminPlaceholderActivity.class);
                 i.putExtra(AdminPlaceholderActivity.EXTRA_TITLE, String.valueOf(item.getTitle()));
                 startActivity(i);
