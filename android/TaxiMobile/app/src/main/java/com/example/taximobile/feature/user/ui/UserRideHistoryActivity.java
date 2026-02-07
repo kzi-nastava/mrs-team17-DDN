@@ -14,22 +14,30 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.taximobile.R;
 import com.example.taximobile.feature.user.adapter.UserRideHistoryAdapter;
+import com.example.taximobile.feature.user.data.FavoriteRouteKeyUtil;
+import com.example.taximobile.feature.user.data.FavoriteRouteRepository;
 import com.example.taximobile.feature.user.data.UserRideHistoryRepository;
+import com.example.taximobile.feature.user.data.dto.response.AddFavoriteFromRideResponseDto;
+import com.example.taximobile.feature.user.data.dto.response.FavoriteRouteResponseDto;
 import com.example.taximobile.feature.user.data.dto.response.PassengerRideHistoryResponseDto;
 import com.google.android.material.datepicker.MaterialDatePicker;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TimeZone;
 
 public class UserRideHistoryActivity extends UserBaseActivity {
 
     private final List<PassengerRideHistoryResponseDto> items = new ArrayList<>();
+    private final Set<String> favoriteRouteKeys = new HashSet<>();
     private UserRideHistoryAdapter adapter;
     private UserRideHistoryRepository repo;
+    private FavoriteRouteRepository favoriteRepo;
 
     private EditText etFrom;
     private EditText etTo;
@@ -39,6 +47,7 @@ public class UserRideHistoryActivity extends UserBaseActivity {
 
     private String fromIso = null;
     private String toIso = null;
+    private boolean initialDataLoaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +57,7 @@ public class UserRideHistoryActivity extends UserBaseActivity {
         toolbar.setTitle(getString(R.string.user_history_title));
 
         repo = new UserRideHistoryRepository(this);
+        favoriteRepo = new FavoriteRouteRepository(this);
 
         etFrom = v.findViewById(R.id.etFrom);
         etTo = v.findViewById(R.id.etTo);
@@ -77,7 +87,9 @@ public class UserRideHistoryActivity extends UserBaseActivity {
                         );
                     }
                     startActivity(i);
-                }
+                },
+                (rideId, position) -> addRideToFavorites(rideId, position),
+                favoriteRouteKeys
         );
         list.setLayoutManager(new LinearLayoutManager(this));
         list.setAdapter(adapter);
@@ -121,7 +133,107 @@ public class UserRideHistoryActivity extends UserBaseActivity {
             btnFilter.setOnClickListener(x -> loadRides());
         }
 
-        loadRides();
+        loadFavoriteStateThenRides();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!initialDataLoaded) return;
+
+        syncFavoriteState(() -> runOnUiThread(() -> adapter.notifyDataSetChanged()));
+    }
+
+    private void addRideToFavorites(long rideId, int position) {
+        if (rideId <= 0) return;
+
+        favoriteRepo.addFromRide(rideId, new FavoriteRouteRepository.AddCb() {
+            @Override
+            public void onSuccess(AddFavoriteFromRideResponseDto dto) {
+                runOnUiThread(() -> {
+                    addFavoriteKeyForRide(rideId, position);
+                    if (position >= 0 && position < items.size()) {
+                        adapter.notifyItemChanged(position);
+                    } else {
+                        adapter.notifyDataSetChanged();
+                    }
+                    Toast.makeText(
+                            UserRideHistoryActivity.this,
+                            getString(R.string.favorite_added_msg),
+                            Toast.LENGTH_SHORT
+                    ).show();
+                });
+            }
+
+            @Override
+            public void onError(String msg, int httpCode) {
+                runOnUiThread(() -> {
+                    if (httpCode == 409) {
+                        addFavoriteKeyForRide(rideId, position);
+                        if (position >= 0 && position < items.size()) {
+                            adapter.notifyItemChanged(position);
+                        } else {
+                            adapter.notifyDataSetChanged();
+                        }
+                        Toast.makeText(
+                                UserRideHistoryActivity.this,
+                                getString(R.string.favorite_exists_msg),
+                                Toast.LENGTH_SHORT
+                        ).show();
+                        return;
+                    }
+
+                    Toast.makeText(
+                            UserRideHistoryActivity.this,
+                            msg != null ? msg : "Request failed",
+                            Toast.LENGTH_LONG
+                    ).show();
+                });
+            }
+        });
+    }
+
+    private void loadFavoriteStateThenRides() {
+        setLoading(true);
+        syncFavoriteState(this::loadRides);
+    }
+
+    private void syncFavoriteState(Runnable onDone) {
+        favoriteRepo.listFavorites(new FavoriteRouteRepository.ListCb() {
+            @Override
+            public void onSuccess(List<FavoriteRouteResponseDto> favorites) {
+                favoriteRouteKeys.clear();
+                for (FavoriteRouteResponseDto f : favorites) {
+                    favoriteRouteKeys.add(FavoriteRouteKeyUtil.fromFavoriteDto(f));
+                }
+                if (onDone != null) onDone.run();
+            }
+
+            @Override
+            public void onError(String msg, int httpCode) {
+                if (onDone != null) onDone.run();
+            }
+        });
+    }
+
+    private void addFavoriteKeyForRide(long rideId, int position) {
+        PassengerRideHistoryResponseDto item = getRideItem(rideId, position);
+        if (item == null) return;
+        favoriteRouteKeys.add(FavoriteRouteKeyUtil.fromRideDto(item));
+    }
+
+    private PassengerRideHistoryResponseDto getRideItem(long rideId, int position) {
+        if (position >= 0 && position < items.size()) {
+            return items.get(position);
+        }
+
+        for (PassengerRideHistoryResponseDto d : items) {
+            if (d != null && d.getRideId() != null && d.getRideId() == rideId) {
+                return d;
+            }
+        }
+
+        return null;
     }
 
     private void loadRides() {
@@ -133,6 +245,7 @@ public class UserRideHistoryActivity extends UserBaseActivity {
                     items.clear();
                     items.addAll(listItems);
                     adapter.notifyDataSetChanged();
+                    initialDataLoaded = true;
                     setLoading(false);
                     empty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
                 });

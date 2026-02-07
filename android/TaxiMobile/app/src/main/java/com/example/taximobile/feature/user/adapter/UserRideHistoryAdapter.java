@@ -4,15 +4,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.taximobile.R;
+import com.example.taximobile.feature.user.data.FavoriteRouteKeyUtil;
 import com.example.taximobile.feature.user.data.dto.response.PassengerRideHistoryResponseDto;
 
 import java.util.List;
+import java.util.Set;
 
 public class UserRideHistoryAdapter extends RecyclerView.Adapter<UserRideHistoryAdapter.Holder> {
 
@@ -24,18 +27,28 @@ public class UserRideHistoryAdapter extends RecyclerView.Adapter<UserRideHistory
         void onItemClick(PassengerRideHistoryResponseDto item);
     }
 
+    public interface OnFavoriteClickListener {
+        void onFavoriteClick(long rideId, int position);
+    }
+
     private final List<PassengerRideHistoryResponseDto> items;
     private final OnRateClickListener rateListener;
     private final OnItemClickListener itemListener;
+    private final OnFavoriteClickListener favoriteListener;
+    private final Set<String> favoriteRouteKeys;
 
     public UserRideHistoryAdapter(
             List<PassengerRideHistoryResponseDto> items,
             OnRateClickListener rateListener,
-            OnItemClickListener itemListener
+            OnItemClickListener itemListener,
+            OnFavoriteClickListener favoriteListener,
+            Set<String> favoriteRouteKeys
     ) {
         this.items = items;
         this.rateListener = rateListener;
         this.itemListener = itemListener;
+        this.favoriteListener = favoriteListener;
+        this.favoriteRouteKeys = favoriteRouteKeys;
     }
 
     @NonNull
@@ -73,6 +86,25 @@ public class UserRideHistoryAdapter extends RecyclerView.Adapter<UserRideHistory
             if (rateListener != null && canRate) rateListener.onRateClick(rideId);
         });
 
+        String rideKey = FavoriteRouteKeyUtil.fromRideDto(d);
+        boolean alreadyFavorite = rideId > 0
+                && favoriteRouteKeys != null
+                && favoriteRouteKeys.contains(rideKey);
+        h.btnFavorite.setImageResource(alreadyFavorite
+                ? R.drawable.ic_star_filled_user
+                : R.drawable.ic_star_outline_user);
+        h.btnFavorite.setEnabled(!alreadyFavorite && rideId > 0);
+        h.btnFavorite.setContentDescription(
+                h.itemView.getContext().getString(
+                        alreadyFavorite ? R.string.favorite_added_cd : R.string.favorite_add_cd
+                )
+        );
+        h.btnFavorite.setOnClickListener(v -> {
+            if (favoriteListener != null && !alreadyFavorite && rideId > 0) {
+                favoriteListener.onFavoriteClick(rideId, h.getBindingAdapterPosition());
+            }
+        });
+
         h.itemView.setOnClickListener(v -> {
             if (itemListener != null) itemListener.onItemClick(d);
         });
@@ -88,6 +120,7 @@ public class UserRideHistoryAdapter extends RecyclerView.Adapter<UserRideHistory
         TextView tvDate;
         TextView tvRoute;
         TextView tvStops;
+        ImageButton btnFavorite;
         Button btnRate;
 
         Holder(@NonNull View itemView) {
@@ -96,6 +129,7 @@ public class UserRideHistoryAdapter extends RecyclerView.Adapter<UserRideHistory
             tvDate = itemView.findViewById(R.id.tvRideDate);
             tvRoute = itemView.findViewById(R.id.tvRideRoute);
             tvStops = itemView.findViewById(R.id.tvRideStops);
+            btnFavorite = itemView.findViewById(R.id.btnFavoriteRide);
             btnRate = itemView.findViewById(R.id.btnRateRide);
         }
     }

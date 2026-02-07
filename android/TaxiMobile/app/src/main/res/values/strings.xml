@@ -38,6 +38,7 @@
 
     <string name="select_date_range">Select date range</string>
     <string name="title_public_home">Active vehicles</string>
+    <string name="public_home_subtitle">Live city overview. Busy and free vehicles update every 2 seconds.</string>
     <string name="vehicles_loading">Loading vehicles...</string>
     <string name="vehicles_stats">Free: %1$d | Busy: %2$d</string>
     <string name="vehicle_free">Free</string>
@@ -56,6 +57,7 @@
 
     <!-- Login -->
     <string name="login_title">Login</string>
+    <string name="login_subtitle">Sign in to continue to your dashboard.</string>
     <string name="hint_email">Email</string>
     <string name="hint_password">Password</string>
     <string name="btn_login">Log in</string>
@@ -67,9 +69,20 @@
 
     <!-- Ride History -->
     <string name="title_ride_history">Driver – Ride History</string>
+    <string name="driver_history_subtitle">Track completed rides and inspect details.</string>
+    <string name="driver_history_filter_title">Filter by date range</string>
     <string name="user_history_title">Ride history</string>
     <string name="user_history_empty">No rides yet.</string>
+    <string name="user_history_subtitle">Review your completed rides and leave feedback.</string>
+    <string name="user_history_filter_title">Date range</string>
+    <string name="user_history_date_hint">yyyy-mm-dd</string>
+    <string name="ride_open_details_hint">Tap card to open details</string>
+    <string name="favorite_add_cd">Add to favorites</string>
+    <string name="favorite_added_cd">Added to favorites</string>
+    <string name="favorite_added_msg">Ride added to favorites.</string>
+    <string name="favorite_exists_msg">Route is already in favorites.</string>
     <string name="user_ride_details_title">Ride details</string>
+    <string name="user_ride_details_subtitle">Trip route and stops for this ride.</string>
     <string name="ride_date_label">Date</string>
     <string name="ride_start_label">Start</string>
     <string name="ride_destination_label">Destination</string>
@@ -81,6 +94,9 @@
     <string name="rate_ride_title">Rate ride</string>
     <string name="rate_ride_label">Ride #%1$d</string>
     <string name="rate_ride_none">No rides waiting for rating.</string>
+    <string name="rate_ride_subtitle">Your feedback helps us improve ride quality.</string>
+    <string name="rate_driver_hint">1 is poor, 5 is excellent.</string>
+    <string name="rate_vehicle_hint">Rate cleanliness and comfort.</string>
     <string name="rate_driver_label">Driver rating</string>
     <string name="rate_vehicle_label">Vehicle rating</string>
     <string name="rate_comment_label">Comment (optional)</string>

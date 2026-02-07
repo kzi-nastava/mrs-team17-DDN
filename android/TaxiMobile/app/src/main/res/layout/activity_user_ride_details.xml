@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@drawable/bg_screen_gradient_user">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,28 +16,62 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/user_ride_details_title"
-            android:textSize="26sp"
+            android:textSize="30sp"
+            android:letterSpacing="0.01"
             android:textColor="@color/white"
             android:textStyle="bold"
             android:paddingBottom="8dp" />
 
         <TextView
-            android:id="@+id/tvRideId"
+            android:id="@+id/tvSubtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="@string/user_ride_details_subtitle"
             android:textColor="@color/text_gray"
-            android:paddingBottom="8dp" />
+            android:textSize="14sp"
+            android:paddingBottom="10dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvRideId"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_pill_muted_user"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="8dp"
+                android:textColor="#D4C7BD"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btnFavoriteRide"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_button_outline_user"
+                android:backgroundTint="@null"
+                android:contentDescription="@string/favorite_add_cd"
+                android:padding="8dp"
+                android:src="@drawable/ic_star_outline_user"
+                app:backgroundTint="@null" />
+        </LinearLayout>
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            app:cardCornerRadius="16dp"
+            android:layout_marginTop="8dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="2dp"
             app:cardUseCompatPadding="true"
-            app:cardBackgroundColor="@color/bg_card"
+            app:cardBackgroundColor="#1F1D1E"
             app:strokeWidth="1dp"
-            app:strokeColor="@color/background">
+            app:strokeColor="#464143">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -49,57 +83,83 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/ride_date_label"
-                    android:textColor="@color/text_gray" />
+                    android:textColor="@color/text_gray"
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/tvRideDate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
                     android:textColor="@color/white"
                     android:textStyle="bold"
-                    android:layout_marginTop="2dp" />
+                    android:textSize="15sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="#3B3638" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/ride_start_label"
                     android:textColor="@color/text_gray"
-                    android:layout_marginTop="12dp" />
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/tvRideStart"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
                     android:textColor="@color/white"
-                    android:layout_marginTop="2dp" />
+                    android:textSize="14sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="#3B3638" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/ride_destination_label"
                     android:textColor="@color/text_gray"
-                    android:layout_marginTop="12dp" />
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/tvRideDestination"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
                     android:textColor="@color/white"
-                    android:layout_marginTop="2dp" />
+                    android:textSize="14sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="#3B3638" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/ride_stops_title"
                     android:textColor="@color/text_gray"
-                    android:layout_marginTop="12dp" />
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/tvRideStops"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/white"
-                    android:layout_marginTop="2dp" />
+                    android:layout_marginTop="3dp"
+                    android:textColor="#E3DEE1"
+                    android:textSize="14sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -108,9 +168,13 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginTop="14dp"
+            android:background="@drawable/bg_button_outline_user"
+            android:backgroundTint="@null"
+            app:backgroundTint="@null"
             android:text="@string/rate_action"
             android:textAllCaps="false"
-            android:backgroundTint="@color/bg_dark" />
+            android:textColor="@color/white"
+            android:textStyle="bold" />
 
     </LinearLayout>
 

@@ -4,16 +4,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
+    android:layout_marginBottom="14dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="1dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="2dp"
     app:cardUseCompatPadding="true"
-    app:cardBackgroundColor="@color/bg_card"
+    app:cardBackgroundColor="#1F1D1E"
     app:strokeWidth="1dp"
-    app:strokeColor="@color/background">
+    app:strokeColor="#464143">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -34,7 +34,7 @@
                 android:layout_weight="1"
                 android:textColor="@color/white"
                 android:textStyle="bold"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
@@ -42,8 +42,11 @@
                 android:id="@+id/tvRideDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_gray"
-                android:textSize="13sp" />
+                android:textColor="#D4C7BD"
+                android:textSize="12sp"
+                android:background="@drawable/bg_pill_muted_user"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp" />
         </LinearLayout>
 
         <TextView
@@ -51,26 +54,57 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:layout_marginTop="6dp" />
+            android:layout_marginTop="8dp"
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/tvRideStops"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_gray"
+            android:textColor="#C4BCBF"
             android:textSize="13sp"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="6dp"
             android:visibility="gone" />
 
-        <Button
-            android:id="@+id/btnRateRide"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_gravity="end"
+        <TextView
+            android:id="@+id/tvDetailsHint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="@string/rate_action"
-            android:textAllCaps="false"
-            android:backgroundTint="@color/bg_dark" />
+            android:text="@string/ride_open_details_hint"
+            android:textColor="#938B8F"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="end|center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btnFavoriteRide"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_button_outline_user"
+                android:backgroundTint="@null"
+                android:contentDescription="@string/favorite_add_cd"
+                android:padding="8dp"
+                android:src="@drawable/ic_star_outline_user"
+                app:backgroundTint="@null" />
+
+            <Button
+                android:id="@+id/btnRateRide"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_button_outline_user"
+                android:backgroundTint="@null"
+                app:backgroundTint="@null"
+                android:text="@string/rate_action"
+                android:textAllCaps="false"
+                android:textColor="@color/white" />
+        </LinearLayout>
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

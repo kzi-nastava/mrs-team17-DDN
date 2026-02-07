@@ -4,9 +4,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.taximobile.R;
+import com.example.taximobile.feature.user.data.FavoriteRouteKeyUtil;
+import com.example.taximobile.feature.user.data.FavoriteRouteRepository;
+import com.example.taximobile.feature.user.data.dto.response.AddFavoriteFromRideResponseDto;
+import com.example.taximobile.feature.user.data.dto.response.FavoriteRouteResponseDto;
 
 import java.util.ArrayList;
 
@@ -23,9 +29,13 @@ public class UserRideDetailsActivity extends UserBaseActivity {
     private TextView tvStart;
     private TextView tvDestination;
     private TextView tvStops;
+    private ImageButton btnFavorite;
     private Button btnRate;
 
     private long rideId;
+    private boolean isFavorited;
+    private FavoriteRouteRepository favoriteRepo;
+    private String rideRouteKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +49,9 @@ public class UserRideDetailsActivity extends UserBaseActivity {
         tvStart = v.findViewById(R.id.tvRideStart);
         tvDestination = v.findViewById(R.id.tvRideDestination);
         tvStops = v.findViewById(R.id.tvRideStops);
+        btnFavorite = v.findViewById(R.id.btnFavoriteRide);
         btnRate = v.findViewById(R.id.btnRateRide);
+        favoriteRepo = new FavoriteRouteRepository(this);
 
         Intent intent = getIntent();
         rideId = intent.getLongExtra(EXTRA_RIDE_ID, 0L);
@@ -47,6 +59,7 @@ public class UserRideDetailsActivity extends UserBaseActivity {
         String startAddress = intent.getStringExtra(EXTRA_START_ADDRESS);
         String destAddress = intent.getStringExtra(EXTRA_DEST_ADDRESS);
         ArrayList<String> stops = intent.getStringArrayListExtra(EXTRA_STOPS);
+        rideRouteKey = FavoriteRouteKeyUtil.fromRide(startAddress, destAddress, stops);
 
         tvRideId.setText(getString(R.string.ride_label, rideId));
         tvDate.setText(formatDateTime(startedAt));
@@ -60,12 +73,88 @@ public class UserRideDetailsActivity extends UserBaseActivity {
             tvStops.setText(joinStops(stops));
         }
 
+        setFavoriteUi(false);
+        btnFavorite.setOnClickListener(x -> addToFavorites());
+        loadFavoriteState();
+
         btnRate.setOnClickListener(x -> {
             if (rideId <= 0) return;
             Intent i = new Intent(this, PassengerRateRideActivity.class);
             i.putExtra(PassengerRateRideActivity.EXTRA_RIDE_ID, rideId);
             startActivity(i);
         });
+    }
+
+    private void addToFavorites() {
+        if (rideId <= 0 || isFavorited) return;
+
+        favoriteRepo.addFromRide(rideId, new FavoriteRouteRepository.AddCb() {
+            @Override
+            public void onSuccess(AddFavoriteFromRideResponseDto dto) {
+                runOnUiThread(() -> {
+                    setFavoriteUi(true);
+                    Toast.makeText(
+                            UserRideDetailsActivity.this,
+                            getString(R.string.favorite_added_msg),
+                            Toast.LENGTH_SHORT
+                    ).show();
+                });
+            }
+
+            @Override
+            public void onError(String msg, int httpCode) {
+                runOnUiThread(() -> {
+                    if (httpCode == 409) {
+                        setFavoriteUi(true);
+                        Toast.makeText(
+                                UserRideDetailsActivity.this,
+                                getString(R.string.favorite_exists_msg),
+                                Toast.LENGTH_SHORT
+                        ).show();
+                        return;
+                    }
+
+                    Toast.makeText(
+                            UserRideDetailsActivity.this,
+                            msg != null ? msg : "Request failed",
+                            Toast.LENGTH_LONG
+                    ).show();
+                });
+            }
+        });
+    }
+
+    private void loadFavoriteState() {
+        favoriteRepo.listFavorites(new FavoriteRouteRepository.ListCb() {
+            @Override
+            public void onSuccess(java.util.List<FavoriteRouteResponseDto> items) {
+                boolean found = false;
+                for (FavoriteRouteResponseDto f : items) {
+                    if (rideRouteKey.equals(FavoriteRouteKeyUtil.fromFavoriteDto(f))) {
+                        found = true;
+                        break;
+                    }
+                }
+                final boolean finalFound = found;
+                runOnUiThread(() -> setFavoriteUi(finalFound));
+            }
+
+            @Override
+            public void onError(String msg, int httpCode) {
+                // Keep default UI state when favorites cannot be loaded.
+            }
+        });
+    }
+
+    private void setFavoriteUi(boolean favorited) {
+        isFavorited = favorited;
+        btnFavorite.setEnabled(!favorited && rideId > 0);
+        btnFavorite.setImageResource(
+                favorited ? R.drawable.ic_star_filled_user : R.drawable.ic_star_outline_user
+        );
+        btnFavorite.setContentDescription(
+                getString(favorited ? R.string.favorite_added_cd : R.string.favorite_add_cd)
+        );
     }
 
     private static String safe(String s) {
