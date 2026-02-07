@@ -74,10 +74,10 @@ public class PublicHomeMapActivity extends AppCompatActivity {
         }
 
         View root = findViewById(R.id.root);
-        View toolbar = findViewById(R.id.toolbar);
+        View landingInfoCard = findViewById(R.id.landingInfoCard);
         View bottomBar = findViewById(R.id.bottomBar);
 
-        final int toolbarBaseTop = dp(12);
+        final int topBaseMargin = dp(12);
         final int bottomBaseMargin = dp(12);
 
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
@@ -89,9 +89,9 @@ public class PublicHomeMapActivity extends AppCompatActivity {
             mapLp.bottomMargin = navInsets.bottom;
             map.setLayoutParams(mapLp);
 
-            ViewGroup.MarginLayoutParams toolbarLp = (ViewGroup.MarginLayoutParams) toolbar.getLayoutParams();
-            toolbarLp.topMargin = toolbarBaseTop + statusInsets.top;
-            toolbar.setLayoutParams(toolbarLp);
+            ViewGroup.MarginLayoutParams infoLp = (ViewGroup.MarginLayoutParams) landingInfoCard.getLayoutParams();
+            infoLp.topMargin = topBaseMargin + statusInsets.top;
+            landingInfoCard.setLayoutParams(infoLp);
 
             ViewGroup.MarginLayoutParams bottomLp = (ViewGroup.MarginLayoutParams) bottomBar.getLayoutParams();
             bottomLp.bottomMargin = bottomBaseMargin + navInsets.bottom;
