@@ -30,6 +30,12 @@ public class RideRatingRepository {
         void onError(String msg);
     }
 
+    public interface GetCb {
+        void onFound(RideRatingResponseDto dto);
+        void onNotFound();
+        void onError(String msg);
+    }
+
     public void getPending(PendingCb cb) {
         api.getPendingRide().enqueue(new Callback<PendingRideRatingResponseDto>() {
             @Override
@@ -57,6 +63,30 @@ public class RideRatingRepository {
 
             @Override
             public void onFailure(Call<PendingRideRatingResponseDto> call, Throwable t) {
+                cb.onError(t != null ? t.getMessage() : "Network error");
+            }
+        });
+    }
+
+    public void getRating(long rideId, GetCb cb) {
+        api.getRating(rideId).enqueue(new Callback<RideRatingResponseDto>() {
+            @Override
+            public void onResponse(Call<RideRatingResponseDto> call, Response<RideRatingResponseDto> res) {
+                if (res.isSuccessful() && res.body() != null) {
+                    cb.onFound(res.body());
+                    return;
+                }
+
+                if (res.code() == 404) {
+                    cb.onNotFound();
+                    return;
+                }
+
+                cb.onError("HTTP " + res.code());
+            }
+
+            @Override
+            public void onFailure(Call<RideRatingResponseDto> call, Throwable t) {
                 cb.onError(t != null ? t.getMessage() : "Network error");
             }
         });

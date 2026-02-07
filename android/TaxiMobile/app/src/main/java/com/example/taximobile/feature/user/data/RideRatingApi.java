@@ -15,6 +15,9 @@ public interface RideRatingApi {
     @GET("api/rides/rate/pending")
     Call<PendingRideRatingResponseDto> getPendingRide();
 
+    @GET("api/rides/{rideId}/rating")
+    Call<RideRatingResponseDto> getRating(@Path("rideId") long rideId);
+
     @POST("api/rides/{rideId}/rating")
     Call<RideRatingResponseDto> submitRating(
             @Path("rideId") long rideId,

@@ -67,6 +67,15 @@
 
     <!-- Ride History -->
     <string name="title_ride_history">Driver – Ride History</string>
+    <string name="user_history_title">Ride history</string>
+    <string name="user_history_empty">No rides yet.</string>
+    <string name="user_ride_details_title">Ride details</string>
+    <string name="ride_date_label">Date</string>
+    <string name="ride_start_label">Start</string>
+    <string name="ride_destination_label">Destination</string>
+    <string name="ride_stops_title">Stops</string>
+    <string name="ride_label">Ride #%1$d</string>
+    <string name="ride_stops_label">Stops: %1$s</string>
 
     <!-- Ride Rating -->
     <string name="rate_ride_title">Rate ride</string>
@@ -79,6 +88,8 @@
     <string name="rate_submit">Submit rating</string>
     <string name="rate_ride_error_missing">Please rate the driver and vehicle.</string>
     <string name="rate_ride_success">Thanks for your feedback!</string>
+    <string name="rate_ride_already_rated">You already rated this ride.</string>
+    <string name="rate_action">Rate</string>
 
     <!-- Table headers -->
     <string name="header_date">Date</string>

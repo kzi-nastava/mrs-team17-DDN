@@ -52,10 +52,40 @@ public class PassengerRateRideActivity extends UserBaseActivity {
 
         long extraRideId = getIntent().getLongExtra(EXTRA_RIDE_ID, -1L);
         if (extraRideId > 0) {
-            setRideId(extraRideId);
+            checkExisting(extraRideId);
         } else {
             loadPending();
         }
+    }
+
+    private void checkExisting(long rideId) {
+        setLoading(true);
+        repo.getRating(rideId, new RideRatingRepository.GetCb() {
+            @Override
+            public void onFound(RideRatingResponseDto dto) {
+                runOnUiThread(() -> {
+                    setLoading(false);
+                    setAlreadyRated(rideId);
+                });
+            }
+
+            @Override
+            public void onNotFound() {
+                runOnUiThread(() -> {
+                    setLoading(false);
+                    setRideId(rideId);
+                });
+            }
+
+            @Override
+            public void onError(String msg) {
+                runOnUiThread(() -> {
+                    setLoading(false);
+                    showError(msg);
+                    setRideId(rideId);
+                });
+            }
+        });
     }
 
     private void loadPending() {
@@ -94,6 +124,13 @@ public class PassengerRateRideActivity extends UserBaseActivity {
         setFormEnabled(true);
         rbDriver.setRating(5f);
         rbVehicle.setRating(5f);
+    }
+
+    private void setAlreadyRated(long id) {
+        this.rideId = id;
+        tvRide.setText(getString(R.string.rate_ride_label, id));
+        setFormEnabled(false);
+        showSuccess(getString(R.string.rate_ride_already_rated));
     }
 
     private void setNoPending() {
