@@ -4,7 +4,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -53,6 +52,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".feature.user.ui.UserProfileActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".feature.user.ui.UserPlaceholderActivity"
             android:exported="false" />
 
@@ -67,7 +70,6 @@
         <activity
             android:name=".feature.support.ui.SupportChatActivity"
             android:exported="false" />
-
 
         <activity
             android:name=".feature.admin.ui.AdminSupportThreadsActivity"
@@ -84,7 +86,9 @@
         <activity android:name=".feature.admin.ui.AdminRideStatusDetailsActivity" android:exported="false" />
 
 
-
+        <activity
+            android:name=".feature.admin.ui.AdminProfileActivity"
+            android:exported="false" />
 
     </application>
 

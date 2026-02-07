@@ -207,7 +207,7 @@ public class DriverProfileActivity extends DriverBaseActivity {
 
         repo.uploadProfileImage(driverId, uri, new DriverProfileRepository.UploadCb() {
             @Override
-            public void onSuccess(com.example.taximobile.feature.driver.data.dto.response.ProfileImageUploadResponseDto dto) {
+            public void onSuccess(com.example.taximobile.feature.common.data.dto.response.ProfileImageUploadResponseDto dto) {
                 runOnUiThread(() -> {
                     setLoading(false);
 

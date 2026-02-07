@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="section_user">Passenger</string>
+
+    <string name="user_profile_load_failed">Cannot load user profile.</string>
+    <string name="user_profile_updated">Profile updated.</string>
+    <string name="user_profile_update_failed">Profile update failed.</string>
+
+    <string name="user_profile_image_uploaded">Image uploaded.</string>
+    <string name="user_profile_image_upload_failed">Image upload failed.</string>
+
+</resources>

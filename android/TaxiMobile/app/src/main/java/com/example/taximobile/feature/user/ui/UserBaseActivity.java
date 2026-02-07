@@ -52,14 +52,21 @@ public abstract class UserBaseActivity extends AppCompatActivity {
                 if (!(this instanceof UserHomeActivity)) {
                     startActivity(new Intent(this, UserHomeActivity.class));
                 }
-            } else if (id == R.id.nav_logout) {
-                LogoutManager.logout(this);
-                return true;
 
             } else if (id == R.id.nav_support) {
                 startActivity(new Intent(this, SupportChatActivity.class));
-            }
-            else{
+
+            } else if (id == R.id.nav_profile) {
+                if (!(this instanceof UserProfileActivity)) {
+                    startActivity(new Intent(this, UserProfileActivity.class));
+                }
+
+            } else if (id == R.id.nav_logout) {
+                LogoutManager.logout(this);
+                drawerLayout.closeDrawers();
+                return true;
+
+            } else {
                 Intent i = new Intent(this, UserPlaceholderActivity.class);
                 i.putExtra(UserPlaceholderActivity.EXTRA_TITLE, String.valueOf(item.getTitle()));
                 startActivity(i);

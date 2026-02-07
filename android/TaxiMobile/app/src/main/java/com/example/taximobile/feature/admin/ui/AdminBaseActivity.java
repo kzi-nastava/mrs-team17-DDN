@@ -53,8 +53,15 @@ public abstract class AdminBaseActivity extends AppCompatActivity {
                 }
 
             } else if (id == R.id.nav_chats) {
-                // Admin support live chat threads
                 startActivity(new Intent(this, AdminSupportThreadsActivity.class));
+
+            } else if (id == R.id.nav_pricing) {
+                startActivity(new Intent(this, AdminPricingActivity.class));
+
+            } else if (id == R.id.nav_profile) {
+                if (!(this instanceof AdminProfileActivity)) {
+                    startActivity(new Intent(this, AdminProfileActivity.class));
+                }
 
             } else if (id == R.id.nav_logout) {
                 LogoutManager.logout(this);
