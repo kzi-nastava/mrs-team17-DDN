@@ -8,6 +8,7 @@
     <!-- Drawer menu items (shared) -->
     <string name="menu_home">Home</string>
     <string name="menu_history">Ride history</string>
+    <string name="menu_rate_ride">Rate ride</string>
     <string name="menu_live_tracking">Live Tracking</string>
     <string name="menu_support">Support</string>
     <string name="menu_profile">Profile</string>
@@ -66,6 +67,18 @@
 
     <!-- Ride History -->
     <string name="title_ride_history">Driver – Ride History</string>
+
+    <!-- Ride Rating -->
+    <string name="rate_ride_title">Rate ride</string>
+    <string name="rate_ride_label">Ride #%1$d</string>
+    <string name="rate_ride_none">No rides waiting for rating.</string>
+    <string name="rate_driver_label">Driver rating</string>
+    <string name="rate_vehicle_label">Vehicle rating</string>
+    <string name="rate_comment_label">Comment (optional)</string>
+    <string name="rate_comment_hint">Share details (max 500 chars)</string>
+    <string name="rate_submit">Submit rating</string>
+    <string name="rate_ride_error_missing">Please rate the driver and vehicle.</string>
+    <string name="rate_ride_success">Thanks for your feedback!</string>
 
     <!-- Table headers -->
     <string name="header_date">Date</string>

@@ -53,6 +53,11 @@ public abstract class UserBaseActivity extends AppCompatActivity {
                     startActivity(new Intent(this, UserHomeActivity.class));
                 }
 
+            } else if (id == R.id.nav_rate_ride) {
+                if (!(this instanceof PassengerRateRideActivity)) {
+                    startActivity(new Intent(this, PassengerRateRideActivity.class));
+                }
+
             } else if (id == R.id.nav_live_tracking) {
                 if (!(this instanceof PassengerActiveRideActivity)) {
                     startActivity(new Intent(this, PassengerActiveRideActivity.class));

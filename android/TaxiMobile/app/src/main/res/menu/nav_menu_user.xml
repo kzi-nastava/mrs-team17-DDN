@@ -10,6 +10,10 @@
         android:title="@string/menu_history" />
 
     <item
+        android:id="@+id/nav_rate_ride"
+        android:title="@string/menu_rate_ride" />
+
+    <item
         android:id="@+id/nav_live_tracking"
         android:title="@string/menu_live_tracking" />
 
