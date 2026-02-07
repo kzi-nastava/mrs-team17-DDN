@@ -15,6 +15,7 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -46,4 +47,11 @@ public interface DriverApi {
             @Path("driverId") long driverId,
             @Part MultipartBody.Part file
     );
+
+    @GET("api/driver/active-ride")
+    Call<DriverRideDetailsResponseDto> getActiveRide();
+
+    @PUT("api/driver/rides/{rideId}/finish")
+    Call<Void> finishRide(@Path("rideId") long rideId);
+
 }

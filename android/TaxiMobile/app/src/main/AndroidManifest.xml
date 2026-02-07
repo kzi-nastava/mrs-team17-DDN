@@ -88,6 +88,9 @@
             android:name=".feature.user.ui.PassengerActiveRideActivity"
             android:exported="false" />
 
+        <activity android:name=".feature.driver.ui.DriverActiveRideActivity" />
+
+
 
 
         <activity

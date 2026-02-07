@@ -21,6 +21,51 @@ public class DriverRideRepository {
     public DriverRideRepository(Context ctx) {
         this.api = ApiClient.get(ctx).create(DriverApi.class);
     }
+    public interface ActiveRideCb {
+        void onSuccess(DriverRideDetailsResponseDto dto);
+        void onEmpty();
+        void onError(String msg);
+    }
+
+    public interface FinishCb {
+        void onSuccess();
+        void onError(String msg);
+    }
+
+    public void getActiveRide(ActiveRideCb cb) {
+        api.getActiveRide().enqueue(new Callback<DriverRideDetailsResponseDto>() {
+            @Override
+            public void onResponse(Call<DriverRideDetailsResponseDto> call, Response<DriverRideDetailsResponseDto> res) {
+                if (res.code() == 404 || res.code() == 204) { cb.onEmpty(); return; }
+                if (!res.isSuccessful()) { cb.onError("HTTP " + res.code()); return; }
+                DriverRideDetailsResponseDto body = res.body();
+                if (body == null || body.getRideId() == null) { cb.onEmpty(); return; }
+                cb.onSuccess(body);
+            }
+
+            @Override
+            public void onFailure(Call<DriverRideDetailsResponseDto> call, Throwable t) {
+                cb.onError(t.getMessage() != null ? t.getMessage() : "Network error");
+            }
+        });
+    }
+
+    public void finishRide(long rideId, FinishCb cb) {
+        api.finishRide(rideId).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> res) {
+                if (!res.isSuccessful()) { cb.onError("HTTP " + res.code()); return; }
+                cb.onSuccess();
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                cb.onError(t.getMessage() != null ? t.getMessage() : "Network error");
+            }
+        });
+    }
+
+
 
     public interface ListCb {
         void onSuccess(List<DriverRideHistoryResponseDto> items);
