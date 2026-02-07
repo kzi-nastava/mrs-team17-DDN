@@ -29,8 +29,14 @@
     <!-- Home screen -->
     <string name="home_title">Taxi Mobile</string>
     <string name="home_welcome">Home Screen</string>
+    <string name="home_subtitle_default">Open a section from the navigation menu to continue.</string>
+    <string name="home_card_hint">Use the navigation drawer to access ride history, profile, support, and other tools.</string>
+    <string name="driver_home_welcome">Driver Home</string>
     <string name="user_home_welcome">User Home</string>
     <string name="admin_home_welcome">Admin Home</string>
+    <string name="driver_home_subtitle">Review active rides, past rides, support, and your profile.</string>
+    <string name="user_home_subtitle">Track rides, review history, manage favorites, and update your profile.</string>
+    <string name="admin_home_subtitle">Manage users, pricing, ride status, update requests, and support chats.</string>
 
     <!-- Placeholder pages -->
     <string name="placeholder_title">Coming soon</string>

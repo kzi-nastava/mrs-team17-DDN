@@ -16,8 +16,12 @@ public class UserHomeActivity extends UserBaseActivity {
         toolbar.setTitle(getString(R.string.menu_home));
 
         TextView tv = contentView.findViewById(R.id.textHome);
+        TextView subtitle = contentView.findViewById(R.id.textHomeSubtitle);
         if (tv != null) {
             tv.setText(getString(R.string.user_home_welcome));
+        }
+        if (subtitle != null) {
+            subtitle.setText(getString(R.string.user_home_subtitle));
         }
     }
 }
