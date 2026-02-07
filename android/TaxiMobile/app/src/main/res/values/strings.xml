@@ -73,6 +73,10 @@
     <string name="user_history_filter_title">Date range</string>
     <string name="user_history_date_hint">yyyy-mm-dd</string>
     <string name="ride_open_details_hint">Tap card to open details</string>
+    <string name="favorite_add_cd">Add to favorites</string>
+    <string name="favorite_added_cd">Added to favorites</string>
+    <string name="favorite_added_msg">Ride added to favorites.</string>
+    <string name="favorite_exists_msg">Route is already in favorites.</string>
     <string name="user_ride_details_title">Ride details</string>
     <string name="user_ride_details_subtitle">Trip route and stops for this ride.</string>
     <string name="ride_date_label">Date</string>

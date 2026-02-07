@@ -75,18 +75,36 @@
             android:textColor="#938B8F"
             android:textSize="12sp" />
 
-        <Button
-            android:id="@+id/btnRateRide"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_gravity="end"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:background="@drawable/bg_button_outline_user"
-            android:backgroundTint="@null"
-            app:backgroundTint="@null"
-            android:text="@string/rate_action"
-            android:textAllCaps="false"
-            android:textColor="@color/white" />
+            android:gravity="end|center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btnFavoriteRide"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_button_outline_user"
+                android:backgroundTint="@null"
+                android:contentDescription="@string/favorite_add_cd"
+                android:padding="8dp"
+                android:src="@drawable/ic_star_outline_user"
+                app:backgroundTint="@null" />
+
+            <Button
+                android:id="@+id/btnRateRide"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_button_outline_user"
+                android:backgroundTint="@null"
+                app:backgroundTint="@null"
+                android:text="@string/rate_action"
+                android:textAllCaps="false"
+                android:textColor="@color/white" />
+        </LinearLayout>
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
