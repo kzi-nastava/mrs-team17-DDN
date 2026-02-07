@@ -12,6 +12,9 @@
     <item
         android:id="@+id/nav_profile"
         android:title="@string/menu_profile" />
+    <item
+        android:id="@+id/nav_active_ride"
+        android:title="Active ride" />
 
     <item
         android:id="@+id/nav_support"

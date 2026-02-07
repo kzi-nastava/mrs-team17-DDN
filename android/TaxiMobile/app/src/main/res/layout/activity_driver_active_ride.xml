@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <ProgressBar
+        android:id="@+id/arProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_gravity="center_horizontal"/>
+
+    <LinearLayout
+        android:id="@+id/arEmptyBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No active ride."
+            android:textSize="18sp"/>
+
+        <Button
+            android:id="@+id/arReload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Reload"
+            android:layout_marginTop="12dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/arContentBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:paddingTop="12dp">
+
+        <TextView
+            android:id="@+id/arTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ride #"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/arStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Status:"
+            android:layout_marginTop="8dp"/>
+
+        <TextView
+            android:id="@+id/arRoute"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Route:"
+            android:layout_marginTop="8dp"/>
+
+        <TextView
+            android:id="@+id/arPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Price:"
+            android:layout_marginTop="8dp"/>
+
+        <Button
+            android:id="@+id/arFinish"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Finish ride (paid)"
+            android:layout_marginTop="16dp"/>
+
+        <Button
+            android:id="@+id/arReload2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Reload"
+            android:layout_marginTop="8dp"/>
+    </LinearLayout>
+
+</LinearLayout>
