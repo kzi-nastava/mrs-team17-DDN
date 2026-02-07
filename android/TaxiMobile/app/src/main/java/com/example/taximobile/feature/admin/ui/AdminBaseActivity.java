@@ -75,6 +75,11 @@ public abstract class AdminBaseActivity extends AppCompatActivity {
             else if (id == R.id.nav_ride_status) {
                 startActivity(new Intent(this, AdminRideStatusActivity.class));
             }
+            else if (id == R.id.nav_update_requests) {
+                if (!(this instanceof AdminUpdateRequestsActivity)) {
+                    startActivity(new Intent(this, AdminUpdateRequestsActivity.class));
+                }
+            }
 
             else {
                 Intent i = new Intent(this, AdminPlaceholderActivity.class);
