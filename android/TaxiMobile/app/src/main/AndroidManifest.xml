@@ -90,6 +90,9 @@
 
         <activity android:name=".feature.driver.ui.DriverActiveRideActivity" />
 
+        <activity android:name=".feature.user.ui.UserNotificationsActivity" />
+
+
 
 
 

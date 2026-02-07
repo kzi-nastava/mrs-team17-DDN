@@ -14,6 +14,11 @@
         android:title="@string/menu_live_tracking" />
 
     <item
+        android:id="@+id/nav_notifications"
+        android:title="Notifications" />
+
+
+    <item
         android:id="@+id/nav_support"
         android:title="@string/menu_support" />
 

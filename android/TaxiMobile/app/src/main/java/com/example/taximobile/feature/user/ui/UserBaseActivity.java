@@ -66,6 +66,11 @@ public abstract class UserBaseActivity extends AppCompatActivity {
                     startActivity(new Intent(this, UserProfileActivity.class));
                 }
 
+            } else if (id == R.id.nav_notifications) {
+                if (!(this instanceof UserNotificationsActivity)) {
+                    startActivity(new Intent(this, UserNotificationsActivity.class));
+                }
+
             } else if (id == R.id.nav_logout) {
                 LogoutManager.logout(this);
                 drawerLayout.closeDrawers();
