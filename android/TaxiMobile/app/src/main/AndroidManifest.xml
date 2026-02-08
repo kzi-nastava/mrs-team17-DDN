@@ -117,6 +117,10 @@
             android:name=".feature.user.ui.UserFavoriteRoutesActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".feature.admin.ui.AdminCreateDriverActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
