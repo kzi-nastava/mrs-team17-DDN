@@ -212,6 +212,23 @@ public class JdbcDriverRideRepository implements DriverRideRepository {
         return updated > 0;
     }
 
+    @Override
+    public boolean hasUpcomingAssignedRide(Long driverId) {
+        Integer count = jdbc.sql("""
+            select count(1)
+            from rides
+            where driver_id = :driverId
+              and ended_at is null
+              and canceled = false
+              and status in ('SCHEDULED', 'ACCEPTED', 'ACTIVE')
+        """)
+                .param("driverId", driverId)
+                .query(Integer.class)
+                .single();
+
+        return count != null && count > 0;
+    }
+
     private List<String> findStops(Long rideId) {
         return jdbc.sql("""
             select address

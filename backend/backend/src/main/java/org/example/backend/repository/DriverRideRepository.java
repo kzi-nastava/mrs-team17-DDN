@@ -15,4 +15,5 @@ public interface DriverRideRepository {
     List<DriverRideDetailsResponseDto> findAcceptedRides(Long driverId);
     boolean startRide(Long driverId, Long rideId);
     boolean finishRide(Long driverId, Long rideId);
+    boolean hasUpcomingAssignedRide(Long driverId);
 }

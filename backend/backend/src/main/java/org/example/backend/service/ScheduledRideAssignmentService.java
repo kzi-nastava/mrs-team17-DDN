@@ -2,6 +2,7 @@ package org.example.backend.service;
 
 import org.example.backend.repository.DriverMatchingRepository;
 import org.example.backend.repository.ScheduledRideRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@ConditionalOnProperty(name = "app.scheduling.enabled", havingValue = "true", matchIfMissing = true)
 public class ScheduledRideAssignmentService {
 
     private static final int ASSIGN_AHEAD_MINUTES = 10;

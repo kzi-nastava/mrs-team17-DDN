@@ -74,7 +74,8 @@ public class DriverRideService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found or cannot be finished");
         }
 
-        driverRepository.setAvailable(driverId, true);
+        boolean hasUpcomingAssignedRide = repository.hasUpcomingAssignedRide(driverId);
+        driverRepository.setAvailable(driverId, !hasUpcomingAssignedRide);
 
         var emails = rideRepository.findPassengerEmails(rideId);
         var addresses = rideRepository.findRideAddresses(rideId)
