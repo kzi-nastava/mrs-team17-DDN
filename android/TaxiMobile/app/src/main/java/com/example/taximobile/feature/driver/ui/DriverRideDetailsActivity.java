@@ -61,6 +61,10 @@ public class DriverRideDetailsActivity extends DriverBaseActivity {
         binding.tvRoute.setText(route);
         binding.tvPrice.setText(((int) Math.round(d.getPrice())) + " RSD");
         binding.tvStatus.setText(safe(d.getStatus()));
+        binding.tvCanceled.setText(d.isCanceled()
+                ? getString(R.string.driver_ride_canceled_yes)
+                : getString(R.string.driver_ride_canceled_no));
+        binding.tvCanceledBy.setText(resolveCanceledBy(d.isCanceled(), d.getCanceledBy()));
         binding.tvPanic.setText(d.isPanicTriggered()
                 ? getString(R.string.panic_yes)
                 : getString(R.string.panic_no));
@@ -70,10 +74,42 @@ public class DriverRideDetailsActivity extends DriverBaseActivity {
             binding.cardPassengers.setVisibility(View.GONE);
         } else {
             binding.cardPassengers.setVisibility(View.VISIBLE);
-            PassengerInfoResponseDto p0 = passengers.get(0);
-            binding.tvPassengerName.setText(safe(p0.getName()));
-            binding.tvPassengerEmail.setText(safe(p0.getEmail()));
+            StringBuilder names = new StringBuilder();
+            StringBuilder emails = new StringBuilder();
+
+            for (PassengerInfoResponseDto p : passengers) {
+                if (p == null) continue;
+                appendLine(names, safe(p.getName()));
+                appendLine(emails, safe(p.getEmail()));
+            }
+
+            binding.tvPassengerName.setText(
+                    names.length() > 0
+                            ? names.toString()
+                            : getString(R.string.driver_ride_passenger_unknown)
+            );
+            binding.tvPassengerEmail.setText(
+                    emails.length() > 0
+                            ? emails.toString()
+                            : getString(R.string.driver_ride_passenger_unknown)
+            );
         }
+    }
+
+    private String resolveCanceledBy(boolean canceled, String canceledBy) {
+        if (!canceled) {
+            return getString(R.string.driver_ride_canceled_by_na);
+        }
+        if (canceledBy == null || canceledBy.isBlank()) {
+            return getString(R.string.driver_ride_canceled_by_unknown);
+        }
+        return canceledBy;
+    }
+
+    private void appendLine(StringBuilder out, String value) {
+        if (value == null || value.isBlank()) return;
+        if (out.length() > 0) out.append('\n');
+        out.append(value);
     }
 
     private String safe(String s) {
