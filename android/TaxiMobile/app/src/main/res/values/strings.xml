@@ -35,6 +35,13 @@
     <string name="user_home_welcome">User Home</string>
     <string name="admin_home_welcome">Admin Home</string>
     <string name="driver_home_subtitle">Review active rides, past rides, support, and your profile.</string>
+    <string name="driver_home_title">Driver</string>
+
+    <!-- Passenger Home -->
+    <string name="passenger_home_welcome">Passenger Home</string>
+    <string name="passenger_home_subtitle">Track active rides, history, support, and your profile.</string>
+
+    <!-- User Home -->
     <string name="user_home_subtitle">Track rides, review history, manage favorites, and update your profile.</string>
     <string name="admin_home_subtitle">Manage users, pricing, ride status, update requests, and support chats.</string>
 
@@ -206,5 +213,94 @@
     <string name="update_requests_reason_hint">Reason (optional)</string>
     <string name="update_requests_cancel">Cancel</string>
     <string name="update_requests_working">Working...</string>
+
+
+    <string name="login_email_hint">Email</string>
+    <string name="login_password_hint">Password</string>
+    <string name="login_button">Login</string>
+    <string name="logout_confirm_title">Logout?</string>
+    <string name="logout_confirm_msg">Are you sure you want to logout?</string>
+
+    <string name="user_home_card_hint">Quick action</string>
+    <string name="user_home_order_ride">Order ride</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="loading">Loading…</string>
+    <string name="error_generic">Something went wrong.</string>
+    <string name="add">Add</string>
+    <string name="remove">Remove</string>
+
+    <string name="title_order_ride">Order ride</string>
+    <string name="order_form_title">Ride details</string>
+
+    <string name="order_now">Now</string>
+    <string name="order_schedule">Schedule</string>
+
+    <string name="order_scheduled_at">Time</string>
+    <string name="order_pick_datetime">Select date &amp; time</string>
+
+    <string name="order_vehicle_type">Vehicle type</string>
+    <string name="vehicle_standard">Standard vehicle</string>
+    <string name="vehicle_luxury">Luxury vehicle</string>
+    <string name="vehicle_van">Van</string>
+    <string name="order_baby_transport">Baby transport</string>
+    <string name="order_pet_transport">Pet transport</string>
+
+    <string name="order_points_title">Route</string>
+    <string name="order_from_placeholder">Pickup (tap on map)</string>
+    <string name="order_to_placeholder">Destination (tap on map)</string>
+    <string name="order_from_prefix">Pickup:</string>
+    <string name="order_to_prefix">Destination:</string>
+
+    <string name="order_reset_points">Reset</string>
+    <string name="order_remove_last_checkpoint">Undo last checkpoint</string>
+
+    <string name="order_no_checkpoints">No checkpoints.</string>
+    <string name="order_checkpoints">Checkpoints</string>
+
+    <string name="order_linked_users">Linked users</string>
+    <string name="order_linked_email_hint">Email (empty = guest)</string>
+    <string name="order_duplicate_user">User is already added.</string>
+
+    <string name="order_create_ride">Create ride</string>
+
+    <string name="order_map_hint_pickup">Tap: Pickup</string>
+    <string name="order_map_hint_destination">Tap: Destination</string>
+    <string name="order_map_hint_checkpoint">Tap: Checkpoint (optional)</string>
+    <string name="order_map_hint_details">Note: First tap = pickup, second tap = destination, each next tap = checkpoint. You can reset the route anytime.</string>
+
+    <string name="order_preview_placeholder">Route preview</string>
+    <string name="order_preview_fmt">%1$d min • %2$.2f km</string>
+    <string name="order_selected_location">Selected location</string>
+
+    <string name="order_pickup">Pickup</string>
+    <string name="order_destination">Destination</string>
+    <string name="order_checkpoint">Checkpoint</string>
+
+    <string name="order_points_required">Please select pickup and destination on the map.</string>
+
+    <string name="order_you_are_blocked">Your account is blocked. You cannot order a ride.</string>
+    <string name="order_block_reason_prefix">Reason:</string>
+
+    <string name="order_checking">checking…</string>
+    <string name="order_checking_users">Checking linked users…</string>
+    <string name="order_not_found_guest">not found (treated as guest)</string>
+    <string name="order_guest">Guest</string>
+    <string name="order_inactive">inactive</string>
+    <string name="order_blocked_short">blocked</string>
+
+    <string name="order_linked_inactive">Linked user is not active: %1$s</string>
+    <string name="order_linked_blocked">Linked user is blocked: %1$s</string>
+    <string name="order_linked_blocked_reason">Linked user is blocked: %1$s\nReason: %2$s</string>
+
+    <string name="order_schedule_pick_required">For scheduled rides, please select date &amp; time.</string>
+    <string name="order_schedule_must_be_future">Scheduled time must be in the future.</string>
+    <string name="order_schedule_max_5h">Scheduled rides can be up to 5 hours in advance.</string>
+
+    <string name="order_failed">Failed to order ride.</string>
+    <string name="order_created_ok">Ride created. ID: %1$d</string>
+    <string name="order_created_price">Ride created. Price: %1$.2fRSD</string>
+    <string name="order_created_ok_no_id">Ride created.</string>
 
 </resources>
