@@ -31,7 +31,18 @@ public interface DriverApi {
     @GET("api/driver/rides/{rideId}")
     Call<DriverRideDetailsResponseDto> getDriverRideDetails(@Path("rideId") long rideId);
 
-    // Driver profile (Student1 - 2.3)
+    @GET("api/driver/active-ride")
+    Call<DriverRideDetailsResponseDto> getActiveRide();
+
+    @GET("api/driver/rides/accepted")
+    Call<List<DriverRideDetailsResponseDto>> getAcceptedRides();
+
+    @PUT("api/driver/rides/{rideId}/start")
+    Call<Void> startRide(@Path("rideId") long rideId);
+
+    @PUT("api/driver/rides/{rideId}/finish")
+    Call<Void> finishRide(@Path("rideId") long rideId);
+
     @GET("api/drivers/{driverId}/profile")
     Call<DriverProfileResponseDto> getDriverProfile(@Path("driverId") long driverId);
 
@@ -47,11 +58,4 @@ public interface DriverApi {
             @Path("driverId") long driverId,
             @Part MultipartBody.Part file
     );
-
-    @GET("api/driver/active-ride")
-    Call<DriverRideDetailsResponseDto> getActiveRide();
-
-    @PUT("api/driver/rides/{rideId}/finish")
-    Call<Void> finishRide(@Path("rideId") long rideId);
-
 }
