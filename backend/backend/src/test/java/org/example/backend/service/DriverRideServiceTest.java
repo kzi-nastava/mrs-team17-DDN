@@ -4,13 +4,14 @@ import org.example.backend.repository.DriverRepository;
 import org.example.backend.repository.DriverRideRepository;
 import org.example.backend.repository.RideRepository;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
-import org.springframework.http.HttpStatus;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
@@ -27,7 +28,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-@SpringJUnitConfig(DriverRideService.class)
+@ExtendWith(MockitoExtension.class)
 class DriverRideServiceTest {
 
     private static final Long DRIVER_ID = 10L;
@@ -35,25 +36,25 @@ class DriverRideServiceTest {
     private static final String START_ADDRESS = "A";
     private static final String DEST_ADDRESS = "B";
 
-    @MockitoBean
+    @Mock
     private DriverRideRepository repository;
 
-    @MockitoBean
+    @Mock
     private DriverRepository driverRepository;
 
-    @MockitoBean
+    @Mock
     private RideRepository rideRepository;
 
-    @MockitoBean
+    @Mock
     private MailService mailService;
 
-    @MockitoBean
+    @Mock
     private MailQueueService mailQueueService;
 
-    @MockitoBean
+    @Mock
     private NotificationService notificationService;
 
-    @Autowired
+    @InjectMocks
     private DriverRideService service;
 
     @Test
@@ -71,7 +72,7 @@ class DriverRideServiceTest {
 
     @Test
     void finishRide_shouldSetDriverAvailableTrue_whenFinishSucceeds() {
-        stubSuccess(List.of(), Optional.of(new RideRepository.RideAddresses(START_ADDRESS, DEST_ADDRESS)));
+        stubSuccess(List.of(), Optional.of(new RideRepository.RideAddresses(START_ADDRESS, DEST_ADDRESS)), false);
 
         service.finishRide(DRIVER_ID, RIDE_ID);
 
@@ -81,6 +82,7 @@ class DriverRideServiceTest {
                 repository, driverRepository, rideRepository, mailService, mailQueueService, notificationService
         );
         inOrder.verify(repository).finishRide(DRIVER_ID, RIDE_ID);
+        inOrder.verify(repository).hasUpcomingAssignedRide(DRIVER_ID);
         inOrder.verify(driverRepository).setAvailable(DRIVER_ID, true);
         inOrder.verify(rideRepository).findPassengerEmails(RIDE_ID);
         inOrder.verify(rideRepository).findRideAddresses(RIDE_ID);
@@ -94,13 +96,37 @@ class DriverRideServiceTest {
     }
 
     @Test
+    void finishRide_shouldKeepDriverUnavailable_whenUpcomingRideIsAssigned() {
+        stubSuccess(List.of(), Optional.of(new RideRepository.RideAddresses(START_ADDRESS, DEST_ADDRESS)), true);
+
+        service.finishRide(DRIVER_ID, RIDE_ID);
+
+        verify(driverRepository).setAvailable(DRIVER_ID, false);
+
+        InOrder inOrder = inOrder(
+                repository, driverRepository, rideRepository, mailService, mailQueueService, notificationService
+        );
+        inOrder.verify(repository).finishRide(DRIVER_ID, RIDE_ID);
+        inOrder.verify(repository).hasUpcomingAssignedRide(DRIVER_ID);
+        inOrder.verify(driverRepository).setAvailable(DRIVER_ID, false);
+        inOrder.verify(rideRepository).findPassengerEmails(RIDE_ID);
+        inOrder.verify(rideRepository).findRideAddresses(RIDE_ID);
+        ArgumentCaptor<List<SimpleMailMessage>> batchCaptor = batchCaptor();
+        inOrder.verify(mailQueueService).sendBatchWithin(batchCaptor.capture(), eq(20_000L));
+        inOrder.verify(notificationService).notifyRideFinished(RIDE_ID);
+        inOrder.verifyNoMoreInteractions();
+
+        assertEquals(0, batchCaptor.getValue().size());
+    }
+
+    @Test
     void finishRide_shouldBuildAndQueueEmails_forNonBlankPassengerEmails() {
         String email1 = "a@test.com";
         String email2 = "b@test.com";
         SimpleMailMessage msg1 = messageFor(email1);
         SimpleMailMessage msg2 = messageFor(email2);
 
-        stubSuccess(List.of(email1, email2), Optional.of(new RideRepository.RideAddresses(START_ADDRESS, DEST_ADDRESS)));
+        stubSuccess(List.of(email1, email2), Optional.of(new RideRepository.RideAddresses(START_ADDRESS, DEST_ADDRESS)), false);
         when(mailService.buildRideFinishedEmail(email1, RIDE_ID, START_ADDRESS, DEST_ADDRESS)).thenReturn(msg1);
         when(mailService.buildRideFinishedEmail(email2, RIDE_ID, START_ADDRESS, DEST_ADDRESS)).thenReturn(msg2);
 
@@ -110,6 +136,7 @@ class DriverRideServiceTest {
                 repository, driverRepository, rideRepository, mailService, mailQueueService, notificationService
         );
         inOrder.verify(repository).finishRide(DRIVER_ID, RIDE_ID);
+        inOrder.verify(repository).hasUpcomingAssignedRide(DRIVER_ID);
         inOrder.verify(driverRepository).setAvailable(DRIVER_ID, true);
         inOrder.verify(rideRepository).findPassengerEmails(RIDE_ID);
         inOrder.verify(rideRepository).findRideAddresses(RIDE_ID);
@@ -129,7 +156,7 @@ class DriverRideServiceTest {
         SimpleMailMessage validMessage = messageFor(validEmail);
         List<String> mixedEmails = Arrays.asList(validEmail, null, "", "   ");
 
-        stubSuccess(mixedEmails, Optional.of(new RideRepository.RideAddresses(START_ADDRESS, DEST_ADDRESS)));
+        stubSuccess(mixedEmails, Optional.of(new RideRepository.RideAddresses(START_ADDRESS, DEST_ADDRESS)), false);
         when(mailService.buildRideFinishedEmail(validEmail, RIDE_ID, START_ADDRESS, DEST_ADDRESS))
                 .thenReturn(validMessage);
 
@@ -139,6 +166,7 @@ class DriverRideServiceTest {
                 repository, driverRepository, rideRepository, mailService, mailQueueService, notificationService
         );
         inOrder.verify(repository).finishRide(DRIVER_ID, RIDE_ID);
+        inOrder.verify(repository).hasUpcomingAssignedRide(DRIVER_ID);
         inOrder.verify(driverRepository).setAvailable(DRIVER_ID, true);
         inOrder.verify(rideRepository).findPassengerEmails(RIDE_ID);
         inOrder.verify(rideRepository).findRideAddresses(RIDE_ID);
@@ -158,7 +186,7 @@ class DriverRideServiceTest {
         String email = "fallback@test.com";
         SimpleMailMessage msg = messageFor(email);
 
-        stubSuccess(List.of(email), Optional.empty());
+        stubSuccess(List.of(email), Optional.empty(), false);
         when(mailService.buildRideFinishedEmail(email, RIDE_ID, "", "")).thenReturn(msg);
 
         service.finishRide(DRIVER_ID, RIDE_ID);
@@ -167,6 +195,7 @@ class DriverRideServiceTest {
                 repository, driverRepository, rideRepository, mailService, mailQueueService, notificationService
         );
         inOrder.verify(repository).finishRide(DRIVER_ID, RIDE_ID);
+        inOrder.verify(repository).hasUpcomingAssignedRide(DRIVER_ID);
         inOrder.verify(driverRepository).setAvailable(DRIVER_ID, true);
         inOrder.verify(rideRepository).findPassengerEmails(RIDE_ID);
         inOrder.verify(rideRepository).findRideAddresses(RIDE_ID);
@@ -182,7 +211,7 @@ class DriverRideServiceTest {
 
     @Test
     void finishRide_shouldNotifyRideFinished_onSuccess() {
-        stubSuccess(List.of(), Optional.of(new RideRepository.RideAddresses(START_ADDRESS, DEST_ADDRESS)));
+        stubSuccess(List.of(), Optional.of(new RideRepository.RideAddresses(START_ADDRESS, DEST_ADDRESS)), false);
 
         service.finishRide(DRIVER_ID, RIDE_ID);
 
@@ -201,7 +230,7 @@ class DriverRideServiceTest {
 
     @Test
     void finishRide_shouldCallSendBatchWithin_withTimeout20000() {
-        stubSuccess(List.of(), Optional.of(new RideRepository.RideAddresses(START_ADDRESS, DEST_ADDRESS)));
+        stubSuccess(List.of(), Optional.of(new RideRepository.RideAddresses(START_ADDRESS, DEST_ADDRESS)), false);
 
         service.finishRide(DRIVER_ID, RIDE_ID);
 
@@ -214,7 +243,7 @@ class DriverRideServiceTest {
     void finishRide_shouldStillSendBatchCall_whenNoValidEmails() {
         List<String> invalidEmails = Arrays.asList(null, "", "   ");
 
-        stubSuccess(invalidEmails, Optional.of(new RideRepository.RideAddresses(START_ADDRESS, DEST_ADDRESS)));
+        stubSuccess(invalidEmails, Optional.of(new RideRepository.RideAddresses(START_ADDRESS, DEST_ADDRESS)), false);
 
         service.finishRide(DRIVER_ID, RIDE_ID);
 
@@ -222,6 +251,7 @@ class DriverRideServiceTest {
                 repository, driverRepository, rideRepository, mailService, mailQueueService, notificationService
         );
         inOrder.verify(repository).finishRide(DRIVER_ID, RIDE_ID);
+        inOrder.verify(repository).hasUpcomingAssignedRide(DRIVER_ID);
         inOrder.verify(driverRepository).setAvailable(DRIVER_ID, true);
         inOrder.verify(rideRepository).findPassengerEmails(RIDE_ID);
         inOrder.verify(rideRepository).findRideAddresses(RIDE_ID);
@@ -234,8 +264,13 @@ class DriverRideServiceTest {
         verifyNoInteractions(mailService);
     }
 
-    private void stubSuccess(List<String> emails, Optional<RideRepository.RideAddresses> addresses) {
+    private void stubSuccess(
+            List<String> emails,
+            Optional<RideRepository.RideAddresses> addresses,
+            boolean hasUpcomingAssignedRide
+    ) {
         when(repository.finishRide(DRIVER_ID, RIDE_ID)).thenReturn(true);
+        when(repository.hasUpcomingAssignedRide(DRIVER_ID)).thenReturn(hasUpcomingAssignedRide);
         when(rideRepository.findPassengerEmails(RIDE_ID)).thenReturn(emails);
         when(rideRepository.findRideAddresses(RIDE_ID)).thenReturn(addresses);
     }
