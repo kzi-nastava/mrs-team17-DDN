@@ -27,13 +27,45 @@
             android:textSize="16sp" />
 
         <TextView
+            android:id="@+id/dhEmptyState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/driver_home_no_accepted_ride"
+            android:textColor="@color/text_gray"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/dhRouteStart"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="10dp"
             android:text="@string/driver_start_ride_route_start_default"
             android:textColor="@color/text_gray"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/dhCheckpointsLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/driver_start_ride_checkpoints_label"
+            android:textColor="@color/text_gray"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/dhCheckpointsList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/text_gray"
+            android:textSize="13sp"
+            android:visibility="gone"
+            android:textStyle="bold"/>
 
         <TextView
             android:id="@+id/dhRouteEnd"
@@ -42,7 +74,8 @@
             android:layout_marginTop="4dp"
             android:text="@string/driver_start_ride_route_end_default"
             android:textColor="@color/text_gray"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            android:textStyle="bold"/>
 
         <TextView
             android:id="@+id/dhMeta"
@@ -51,7 +84,8 @@
             android:layout_marginTop="8dp"
             android:text="@string/driver_start_ride_meta_default"
             android:textColor="@color/white"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            android:textStyle="bold"/>
 
         <TextView
             android:id="@+id/dhError"
@@ -69,6 +103,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
         android:background="@drawable/bg_card_surface_user"
         app:layout_constraintTop_toBottomOf="@id/dhTopCard"
         app:layout_constraintBottom_toTopOf="@id/dhStartBtn"

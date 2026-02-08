@@ -35,9 +35,12 @@ public class DriverHomeActivity extends DriverBaseActivity {
 
     private ProgressBar progress;
     private TextView tvTitle;
+    private TextView tvEmptyState;
     private TextView tvStart;
     private TextView tvEnd;
     private TextView tvMeta;
+    private TextView tvCheckpointsLabel;
+    private TextView tvCheckpointsList;
     private TextView tvError;
     private Button btnStart;
 
@@ -70,9 +73,12 @@ public class DriverHomeActivity extends DriverBaseActivity {
 
         progress = contentView.findViewById(R.id.dhProgress);
         tvTitle = contentView.findViewById(R.id.dhTitle);
+        tvEmptyState = contentView.findViewById(R.id.dhEmptyState);
         tvStart = contentView.findViewById(R.id.dhRouteStart);
         tvEnd = contentView.findViewById(R.id.dhRouteEnd);
         tvMeta = contentView.findViewById(R.id.dhMeta);
+        tvCheckpointsLabel = contentView.findViewById(R.id.dhCheckpointsLabel);
+        tvCheckpointsList = contentView.findViewById(R.id.dhCheckpointsList);
         tvError = contentView.findViewById(R.id.dhError);
         btnStart = contentView.findViewById(R.id.dhStartBtn);
         map = contentView.findViewById(R.id.dhMap);
@@ -108,7 +114,7 @@ public class DriverHomeActivity extends DriverBaseActivity {
 
             @Override
             public void onEmpty() {
-                runOnUiThread(() -> loadAcceptedRide());
+                runOnUiThread(DriverHomeActivity.this::loadAcceptedRide);
             }
 
             @Override
@@ -139,6 +145,7 @@ public class DriverHomeActivity extends DriverBaseActivity {
                     }
 
                     assignedRide = rides.get(0);
+                    tracking = null;
                     renderRide(assignedRide);
 
                     Long rideId = assignedRide.getRideId();
@@ -168,6 +175,7 @@ public class DriverHomeActivity extends DriverBaseActivity {
                 runOnUiThread(() -> {
                     tracking = dto;
                     renderMeta();
+                    renderCheckpoints();
                     if (tracking != null) drawRouteOnMap(tracking);
                 });
             }
@@ -177,25 +185,38 @@ public class DriverHomeActivity extends DriverBaseActivity {
                 runOnUiThread(() -> {
                     tracking = null;
                     renderMeta();
+                    renderCheckpoints();
                 });
             }
         });
     }
 
     private void renderNoRide() {
-        tvTitle.setText(getString(R.string.driver_start_ride_title_default));
-        tvStart.setText(getString(R.string.driver_start_ride_route_start_default));
-        tvEnd.setText(getString(R.string.driver_start_ride_route_end_default));
-        tvMeta.setText(getString(R.string.driver_start_ride_meta_default));
+        tvTitle.setText(getString(R.string.menu_home));
+
+        tvEmptyState.setVisibility(View.VISIBLE);
+
+        tvStart.setVisibility(View.GONE);
+        tvEnd.setVisibility(View.GONE);
+        tvMeta.setVisibility(View.GONE);
+        tvCheckpointsLabel.setVisibility(View.GONE);
+        tvCheckpointsList.setVisibility(View.GONE);
 
         btnStart.setEnabled(false);
         btnStart.setText(getString(R.string.driver_start_ride_start_button));
 
         map.setVisibility(View.GONE);
+
+        showError(null);
     }
 
     private void renderRide(DriverRideDetailsResponseDto ride) {
         map.setVisibility(View.VISIBLE);
+
+        tvEmptyState.setVisibility(View.GONE);
+        tvStart.setVisibility(View.VISIBLE);
+        tvEnd.setVisibility(View.VISIBLE);
+        tvMeta.setVisibility(View.VISIBLE);
 
         Long rideId = ride != null ? ride.getRideId() : null;
         tvTitle.setText(rideId != null ? ("Ride #" + rideId) : getString(R.string.driver_start_ride_title_default));
@@ -207,6 +228,7 @@ public class DriverHomeActivity extends DriverBaseActivity {
         tvEnd.setText(getString(R.string.driver_start_ride_route_end, destAddr));
 
         renderMeta();
+        renderCheckpoints();
         showError(null);
 
         boolean canStart = ride != null && !loading && !starting;
@@ -240,6 +262,42 @@ public class DriverHomeActivity extends DriverBaseActivity {
                     price
             ));
         }
+    }
+
+    private void renderCheckpoints() {
+        if (tracking == null || tracking.getCheckpoints() == null || tracking.getCheckpoints().isEmpty()) {
+            tvCheckpointsLabel.setVisibility(View.GONE);
+            tvCheckpointsList.setVisibility(View.GONE);
+            tvCheckpointsList.setText("");
+            return;
+        }
+
+        List<RideCheckpointDto> cps = tracking.getCheckpoints();
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < cps.size(); i++) {
+            RideCheckpointDto c = cps.get(i);
+            if (c == null) continue;
+
+            String addr = c.getAddress();
+            if (addr == null || addr.trim().isEmpty()) {
+                addr = String.format(Locale.US, "%.6f, %.6f", c.getLat(), c.getLng());
+            }
+
+            sb.append("• ").append(addr.trim());
+            if (i != cps.size() - 1) sb.append("\n");
+        }
+
+        if (sb.length() == 0) {
+            tvCheckpointsLabel.setVisibility(View.GONE);
+            tvCheckpointsList.setVisibility(View.GONE);
+            tvCheckpointsList.setText("");
+            return;
+        }
+
+        tvCheckpointsLabel.setVisibility(View.VISIBLE);
+        tvCheckpointsList.setVisibility(View.VISIBLE);
+        tvCheckpointsList.setText(sb.toString());
     }
 
     private void onStartClicked() {

@@ -326,5 +326,7 @@
     <string name="driver_start_ride_error_load_assigned">Unable to load assigned rides (%1$s)</string>
     <string name="driver_start_ride_error_start">The ride start failed (%1$s)</string>
 
+    <string name="driver_start_ride_checkpoints_label">Checkpoints:</string>
+    <string name="driver_home_no_accepted_ride">You currently do not have any accepted rides.</string>
 
 </resources>
