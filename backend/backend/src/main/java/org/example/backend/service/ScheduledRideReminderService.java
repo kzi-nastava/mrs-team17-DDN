@@ -1,6 +1,7 @@
 package org.example.backend.service;
 
 import org.example.backend.repository.ScheduledRideReminderRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@ConditionalOnProperty(name = "app.scheduling.enabled", havingValue = "true", matchIfMissing = true)
 public class ScheduledRideReminderService {
 
     private static final int AHEAD_MINUTES = 16;

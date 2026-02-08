@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="4dp">
+
+    <TextView
+        android:id="@+id/tvRowText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Item"
+        android:textColor="@color/white"
+        android:textSize="13sp"
+        android:paddingEnd="10dp" />
+
+    <TextView
+        android:id="@+id/btnRemove"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="5dp"
+        android:text="@string/remove"
+        android:textColor="#FFB4AB"
+        android:textStyle="bold"
+        android:textSize="12sp"
+        android:background="@drawable/bg_pill_muted_user" />
+
+</LinearLayout>

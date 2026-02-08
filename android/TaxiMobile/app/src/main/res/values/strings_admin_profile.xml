@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="section_admin">Admin</string>
+
+    <string name="admin_profile_load_failed">Cannot load admin profile.</string>
+    <string name="admin_profile_updated">Profile updated.</string>
+    <string name="admin_profile_update_failed">Profile update failed.</string>
+
+    <string name="admin_profile_image_uploaded">Image uploaded.</string>
+    <string name="admin_profile_image_upload_failed">Image upload failed.</string>
+
+    <string name="session_expired">Session expired. Please login again.</string>
+
+</resources>

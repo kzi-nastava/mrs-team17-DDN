@@ -5,7 +5,7 @@ import com.example.taximobile.feature.driver.data.dto.response.DriverRideHistory
 import com.example.taximobile.feature.driver.data.dto.request.UpdateDriverProfileRequestDto;
 import com.example.taximobile.feature.driver.data.dto.response.DriverProfileResponseDto;
 import com.example.taximobile.feature.driver.data.dto.response.ProfileChangeRequestResponseDto;
-import com.example.taximobile.feature.driver.data.dto.response.ProfileImageUploadResponseDto;
+import com.example.taximobile.feature.common.data.dto.response.ProfileImageUploadResponseDto;
 
 import java.util.List;
 
@@ -15,6 +15,7 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -30,7 +31,18 @@ public interface DriverApi {
     @GET("api/driver/rides/{rideId}")
     Call<DriverRideDetailsResponseDto> getDriverRideDetails(@Path("rideId") long rideId);
 
-    // Driver profile (Student1 - 2.3)
+    @GET("api/driver/active-ride")
+    Call<DriverRideDetailsResponseDto> getActiveRide();
+
+    @GET("api/driver/rides/accepted")
+    Call<List<DriverRideDetailsResponseDto>> getAcceptedRides();
+
+    @PUT("api/driver/rides/{rideId}/start")
+    Call<Void> startRide(@Path("rideId") long rideId);
+
+    @PUT("api/driver/rides/{rideId}/finish")
+    Call<Void> finishRide(@Path("rideId") long rideId);
+
     @GET("api/drivers/{driverId}/profile")
     Call<DriverProfileResponseDto> getDriverProfile(@Path("driverId") long driverId);
 

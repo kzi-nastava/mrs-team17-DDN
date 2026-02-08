@@ -3,7 +3,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -26,7 +28,6 @@
         <activity
             android:name=".feature.auth.ui.LoginActivity"
             android:exported="false" />
-
 
         <activity
             android:name=".feature.driver.ui.DriverHomeActivity"
@@ -53,6 +54,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".feature.user.ui.UserProfileActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".feature.user.ui.UserPlaceholderActivity"
             android:exported="false" />
 
@@ -68,7 +73,6 @@
             android:name=".feature.support.ui.SupportChatActivity"
             android:exported="false" />
 
-
         <activity
             android:name=".feature.admin.ui.AdminSupportThreadsActivity"
             android:exported="false" />
@@ -77,6 +81,45 @@
             android:name=".feature.admin.ui.AdminSupportChatActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".feature.admin.ui.AdminPricingActivity"
+            android:exported="false" />
+        <activity android:name=".feature.admin.ui.AdminRideStatusActivity" android:exported="false" />
+        <activity android:name=".feature.admin.ui.AdminRideStatusDetailsActivity" android:exported="false" />
+        <activity
+            android:name=".feature.user.ui.PassengerActiveRideActivity"
+            android:exported="false" />
+        <activity
+            android:name=".feature.user.ui.PassengerRateRideActivity"
+            android:exported="false" />
+
+        <activity android:name=".feature.driver.ui.DriverActiveRideActivity" />
+
+        <activity android:name=".feature.user.ui.UserNotificationsActivity" />
+        <activity
+            android:name=".feature.user.ui.UserRideHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".feature.user.ui.UserRideDetailsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".feature.admin.ui.AdminProfileActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".feature.admin.ui.AdminUpdateRequestsActivity"
+            android:exported="false" />
+
+        <activity android:name=".feature.user.ui.UserOrderRideActivity" android:exported="false"/>
+
+        <activity
+            android:name=".feature.user.ui.UserFavoriteRoutesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".feature.admin.ui.AdminCreateDriverActivity"
+            android:exported="false" />
 
     </application>
 

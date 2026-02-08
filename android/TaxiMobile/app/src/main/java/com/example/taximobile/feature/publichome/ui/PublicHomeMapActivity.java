@@ -1,9 +1,17 @@
 package com.example.taximobile.feature.publichome.ui;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.taximobile.R;
 import com.example.taximobile.feature.auth.ui.LoginActivity;
@@ -43,8 +51,9 @@ public class PublicHomeMapActivity extends AppCompatActivity {
         Configuration.getInstance().setUserAgentValue(getPackageName());
 
         setContentView(R.layout.activity_public_home_map);
-
         map = findViewById(R.id.map);
+        applyEdgeToEdgeInsets();
+
         repo = new VehiclesRepository(this);
 
         findViewById(R.id.btnLogin).setOnClickListener(v ->
@@ -53,6 +62,49 @@ public class PublicHomeMapActivity extends AppCompatActivity {
 
         initMap();
         loadVehicles();
+    }
+
+    private void applyEdgeToEdgeInsets() {
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(Color.TRANSPARENT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            getWindow().setStatusBarContrastEnforced(false);
+            getWindow().setNavigationBarContrastEnforced(false);
+        }
+
+        View root = findViewById(R.id.root);
+        View landingInfoCard = findViewById(R.id.landingInfoCard);
+        View bottomBar = findViewById(R.id.bottomBar);
+
+        final int topBaseMargin = dp(12);
+        final int bottomBaseMargin = dp(12);
+
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+            Insets statusInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars());
+            Insets navInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+
+            ViewGroup.MarginLayoutParams mapLp = (ViewGroup.MarginLayoutParams) map.getLayoutParams();
+            mapLp.topMargin = statusInsets.top;
+            mapLp.bottomMargin = navInsets.bottom;
+            map.setLayoutParams(mapLp);
+
+            ViewGroup.MarginLayoutParams infoLp = (ViewGroup.MarginLayoutParams) landingInfoCard.getLayoutParams();
+            infoLp.topMargin = topBaseMargin + statusInsets.top;
+            landingInfoCard.setLayoutParams(infoLp);
+
+            ViewGroup.MarginLayoutParams bottomLp = (ViewGroup.MarginLayoutParams) bottomBar.getLayoutParams();
+            bottomLp.bottomMargin = bottomBaseMargin + navInsets.bottom;
+            bottomBar.setLayoutParams(bottomLp);
+
+            return insets;
+        });
+
+        ViewCompat.requestApplyInsets(root);
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     private void initMap() {

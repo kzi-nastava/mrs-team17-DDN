@@ -22,6 +22,91 @@ public class DriverRideRepository {
         this.api = ApiClient.get(ctx).create(DriverApi.class);
     }
 
+    public interface ActiveRideCb {
+        void onSuccess(DriverRideDetailsResponseDto dto);
+        void onEmpty();
+        void onError(String msg);
+    }
+
+    public interface AcceptedRidesCb {
+        void onSuccess(List<DriverRideDetailsResponseDto> rides);
+        void onError(String msg);
+    }
+
+    public interface StartCb {
+        void onSuccess();
+        void onError(String msg);
+    }
+
+    public interface FinishCb {
+        void onSuccess();
+        void onError(String msg);
+    }
+
+    public void getActiveRide(ActiveRideCb cb) {
+        api.getActiveRide().enqueue(new Callback<DriverRideDetailsResponseDto>() {
+            @Override
+            public void onResponse(Call<DriverRideDetailsResponseDto> call, Response<DriverRideDetailsResponseDto> res) {
+                if (res.code() == 404 || res.code() == 204) { cb.onEmpty(); return; }
+                if (!res.isSuccessful()) { cb.onError("HTTP " + res.code()); return; }
+                DriverRideDetailsResponseDto body = res.body();
+                if (body == null || body.getRideId() == null) { cb.onEmpty(); return; }
+                cb.onSuccess(body);
+            }
+
+            @Override
+            public void onFailure(Call<DriverRideDetailsResponseDto> call, Throwable t) {
+                cb.onError(t.getMessage() != null ? t.getMessage() : "Network error");
+            }
+        });
+    }
+
+    public void getAcceptedRides(AcceptedRidesCb cb) {
+        api.getAcceptedRides().enqueue(new Callback<List<DriverRideDetailsResponseDto>>() {
+            @Override
+            public void onResponse(Call<List<DriverRideDetailsResponseDto>> call, Response<List<DriverRideDetailsResponseDto>> res) {
+                if (!res.isSuccessful()) { cb.onError("HTTP " + res.code()); return; }
+                List<DriverRideDetailsResponseDto> body = res.body();
+                cb.onSuccess(body != null ? body : Collections.<DriverRideDetailsResponseDto>emptyList());
+            }
+
+            @Override
+            public void onFailure(Call<List<DriverRideDetailsResponseDto>> call, Throwable t) {
+                cb.onError(t.getMessage() != null ? t.getMessage() : "Network error");
+            }
+        });
+    }
+
+    public void startRide(long rideId, StartCb cb) {
+        api.startRide(rideId).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> res) {
+                if (!res.isSuccessful()) { cb.onError("HTTP " + res.code()); return; }
+                cb.onSuccess();
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                cb.onError(t.getMessage() != null ? t.getMessage() : "Network error");
+            }
+        });
+    }
+
+    public void finishRide(long rideId, FinishCb cb) {
+        api.finishRide(rideId).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> res) {
+                if (!res.isSuccessful()) { cb.onError("HTTP " + res.code()); return; }
+                cb.onSuccess();
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                cb.onError(t.getMessage() != null ? t.getMessage() : "Network error");
+            }
+        });
+    }
+
     public interface ListCb {
         void onSuccess(List<DriverRideHistoryResponseDto> items);
         void onError(String msg);
@@ -44,7 +129,7 @@ public class DriverRideRepository {
                     return;
                 }
                 List<DriverRideHistoryResponseDto> body = res.body();
-                cb.onSuccess(body != null ? body : Collections.emptyList());
+                cb.onSuccess(body != null ? body : Collections.<DriverRideHistoryResponseDto>emptyList());
             }
 
             @Override

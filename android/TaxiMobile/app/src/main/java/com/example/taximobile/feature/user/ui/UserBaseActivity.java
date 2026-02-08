@@ -52,14 +52,41 @@ public abstract class UserBaseActivity extends AppCompatActivity {
                 if (!(this instanceof UserHomeActivity)) {
                     startActivity(new Intent(this, UserHomeActivity.class));
                 }
-            } else if (id == R.id.nav_logout) {
-                LogoutManager.logout(this);
-                return true;
+
+            } else if (id == R.id.nav_history) {
+                if (!(this instanceof UserRideHistoryActivity)) {
+                    startActivity(new Intent(this, UserRideHistoryActivity.class));
+                }
+
+            } else if (id == R.id.nav_rate_ride) {
+                if (!(this instanceof PassengerRateRideActivity)) {
+                    startActivity(new Intent(this, PassengerRateRideActivity.class));
+                }
+
+            } else if (id == R.id.nav_live_tracking) {
+                if (!(this instanceof PassengerActiveRideActivity)) {
+                    startActivity(new Intent(this, PassengerActiveRideActivity.class));
+                }
 
             } else if (id == R.id.nav_support) {
                 startActivity(new Intent(this, SupportChatActivity.class));
-            }
-            else{
+
+            } else if (id == R.id.nav_profile) {
+                if (!(this instanceof UserProfileActivity)) {
+                    startActivity(new Intent(this, UserProfileActivity.class));
+                }
+
+            } else if (id == R.id.nav_notifications) {
+                if (!(this instanceof UserNotificationsActivity)) {
+                    startActivity(new Intent(this, UserNotificationsActivity.class));
+                }
+
+            } else if (id == R.id.nav_logout) {
+                LogoutManager.logout(this);
+                drawerLayout.closeDrawers();
+                return true;
+
+            } else {
                 Intent i = new Intent(this, UserPlaceholderActivity.class);
                 i.putExtra(UserPlaceholderActivity.EXTRA_TITLE, String.valueOf(item.getTitle()));
                 startActivity(i);

@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="12dp"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="2dp"
+        app:cardUseCompatPadding="true"
+        app:cardBackgroundColor="#1F1D1E"
+        app:strokeWidth="1dp"
+        app:strokeColor="#464143">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <org.osmdroid.views.MapView
+                android:id="@+id/orderMap"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:id="@+id/tvMapHint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_margin="10dp"
+                android:background="@drawable/bg_pill_muted_user"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="6dp"
+                android:text="@string/order_map_hint_pickup"
+                android:textColor="#D4C7BD"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvPreview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_margin="10dp"
+                android:background="@drawable/bg_pill_muted_user"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="6dp"
+                android:text="@string/order_preview_placeholder"
+                android:textColor="#C9C1C6"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+        </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_margin="10dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvFrom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_pill_muted_user"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="8dp"
+            android:text="@string/order_from_placeholder"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="#D4C7BD"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tvTo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_pill_muted_user"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="8dp"
+            android:text="@string/order_to_placeholder"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="#D4C7BD"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnResetPoints"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_button_outline_user_blue"
+            android:text="@string/order_reset_points"
+            android:textAllCaps="false"
+            android:backgroundTint="@null"
+            app:backgroundTint="@null"
+            android:textColor="@android:color/white"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btnRemoveLastCheckpoint"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:backgroundTint="@null"
+            app:backgroundTint="@null"
+            android:background="@drawable/bg_button_outline_user_blue"
+            android:text="@string/order_remove_last_checkpoint"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="14dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="2dp"
+                app:cardUseCompatPadding="true"
+                app:cardBackgroundColor="#1F1D1E"
+                app:strokeWidth="1dp"
+                app:strokeColor="#464143">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/order_form_title"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <RadioGroup
+                        android:id="@+id/rgOrderType"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rbNow"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:text="@string/order_now"
+                            android:buttonTint="@color/tint_control_blue"
+                            app:buttonTint="@color/tint_control_blue"
+                            android:textColor="@color/white" />
+
+                        <RadioButton
+                            android:id="@+id/rbSchedule"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:text="@string/order_schedule"
+                            android:buttonTint="@color/tint_control_blue"
+                            app:buttonTint="@color/tint_control_blue"
+                            android:textColor="@color/white" />
+                    </RadioGroup>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/order_scheduled_at"
+                            android:textColor="@color/text_gray"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvScheduledAt"
+                            android:layout_width="match_parent"
+                            android:layout_height="42dp"
+                            android:layout_marginTop="6dp"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="12dp"
+                            android:background="@drawable/bg_input_surface_user"
+                            android:text="@string/order_pick_datetime"
+                            android:textColor="@color/white"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="@string/order_vehicle_type"
+                            android:textColor="@color/text_gray"
+                            android:textSize="12sp" />
+
+                        <Spinner
+                            android:id="@+id/spVehicleType"
+                            android:layout_width="match_parent"
+                            android:layout_height="42dp"
+                            android:layout_marginTop="6dp"
+                            android:background="@drawable/bg_input_surface_user"
+                            android:paddingHorizontal="10dp" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <CheckBox
+                            android:id="@+id/cbBaby"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/order_baby_transport"
+                            android:textColor="@color/white"
+                            android:buttonTint="@color/tint_control_blue"
+                            app:buttonTint="@color/tint_control_blue"/>
+
+                        <CheckBox
+                            android:id="@+id/cbPet"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/order_pet_transport"
+                            android:textColor="@color/white"
+                            android:buttonTint="@color/tint_control_blue"
+                            app:buttonTint="@color/tint_control_blue"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/order_checkpoints"
+                        android:textColor="@color/text_gray"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:id="@+id/listCheckpoints"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:orientation="vertical" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/order_linked_users"
+                        android:textColor="@color/text_gray"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <EditText
+                            android:id="@+id/etLinkedUserEmail"
+                            android:layout_width="0dp"
+                            android:layout_height="42dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_input_surface_user"
+                            android:paddingHorizontal="12dp"
+                            android:hint="@string/order_linked_email_hint"
+                            android:textColor="@color/white"
+                            android:textColorHint="#9C9096"
+                            android:inputType="textEmailAddress"/>
+
+                        <Button
+                            android:id="@+id/btnAddLinkedUser"
+                            android:layout_width="wrap_content"
+                            android:layout_height="42dp"
+                            android:layout_marginStart="10dp"
+                            android:backgroundTint="@null"
+                            app:backgroundTint="@null"
+                            android:background="@drawable/bg_button_primary_user"
+                            android:text="@string/add"
+                            android:textAllCaps="false"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/listLinkedUsers"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:orientation="vertical" />
+
+                    <TextView
+                        android:id="@+id/tvBlocked"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_feedback_error_user"
+                        android:padding="10dp"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/tvError"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_feedback_error_user"
+                        android:padding="10dp"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/tvSuccess"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_feedback_success_user"
+                        android:padding="10dp"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
+
+                    <Button
+                        android:id="@+id/btnCreateRide"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="14dp"
+                        android:backgroundTint="@null"
+                        app:backgroundTint="@null"
+                        android:background="@drawable/bg_button_primary_user"
+                        android:text="@string/order_create_ride"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/white"
+                        android:textStyle="bold" />
+
+                    <ProgressBar
+                        android:id="@+id/progressCreateRide"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

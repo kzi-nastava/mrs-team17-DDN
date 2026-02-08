@@ -62,7 +62,10 @@ public abstract class DriverBaseActivity extends AppCompatActivity {
                 // ISTI support chat kao passenger
                 startActivity(new Intent(this, SupportChatActivity.class));
 
-            } else if (id == R.id.nav_logout) {
+            } else if (id == R.id.nav_active_ride) {
+                startActivity(new Intent(this, DriverActiveRideActivity.class));
+
+            }else if (id == R.id.nav_logout) {
                 LogoutManager.logout(this);
                 drawerLayout.closeDrawers();
                 return true;

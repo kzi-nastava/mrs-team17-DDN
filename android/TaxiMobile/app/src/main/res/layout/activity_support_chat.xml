@@ -3,48 +3,61 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_screen_gradient_user"
+    android:padding="10dp">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler"
+    <FrameLayout
+        android:id="@+id/messagesCard"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
+        android:background="@drawable/bg_card_surface_user"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/bottomBar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <TextView
-        android:id="@+id/tvEmpty"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/support_empty"
-        android:gravity="center"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="@id/recycler"
-        app:layout_constraintBottom_toBottomOf="@id/recycler"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
 
-    <TextView
-        android:id="@+id/tvError"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/support_error"
-        android:textColor="#B00020"
-        android:gravity="center"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="@id/recycler"
-        app:layout_constraintBottom_toBottomOf="@id/recycler"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <TextView
+            android:id="@+id/tvEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="16dp"
+            android:text="@string/support_empty"
+            android:textAlignment="center"
+            android:textColor="@color/text_gray"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_margin="10dp"
+            android:background="@drawable/bg_feedback_error_user"
+            android:padding="10dp"
+            android:text="@string/support_error"
+            android:textAlignment="center"
+            android:textColor="@android:color/holo_red_light"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_card_surface_user"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -54,16 +67,27 @@
         <EditText
             android:id="@+id/etMessage"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="44dp"
             android:layout_weight="1"
+            android:background="@drawable/bg_input_surface_user"
             android:hint="@string/support_hint"
-            android:minHeight="44dp"/>
+            android:minHeight="44dp"
+            android:paddingHorizontal="12dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_gray"/>
 
         <Button
             android:id="@+id/btnSend"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/support_send"/>
+            android:layout_height="44dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/bg_button_primary_user"
+            android:backgroundTint="@null"
+            app:backgroundTint="@null"
+            android:text="@string/support_send"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textStyle="bold"/>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

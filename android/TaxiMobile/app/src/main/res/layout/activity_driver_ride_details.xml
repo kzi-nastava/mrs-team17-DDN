@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="@drawable/bg_screen_gradient_user"
     android:padding="16dp">
 
     <LinearLayout
@@ -12,30 +12,29 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Ride info card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="16dp"
+            android:layout_marginBottom="14dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="2dp"
             app:cardUseCompatPadding="true"
-            app:cardBackgroundColor="@color/bg_card"
+            app:cardBackgroundColor="#1F1D1E"
             app:strokeWidth="1dp"
-            app:strokeColor="@color/background">
+            app:strokeColor="#464143">
 
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="20dp">
+                android:padding="18dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/ride_information"
                     android:textColor="@color/white"
-                    android:textSize="20sp"
+                    android:textSize="21sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="12dp"/>
 
@@ -51,8 +50,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="12dp"/>
+                    android:textSize="15sp"
+                    android:layout_marginBottom="10dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -66,8 +65,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="12dp"/>
+                    android:textSize="15sp"
+                    android:layout_marginBottom="10dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -81,8 +80,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="12dp"/>
+                    android:textSize="15sp"
+                    android:layout_marginBottom="10dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -95,9 +94,10 @@
                     android:id="@+id/tvPrice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/green"
+                    android:textColor="#D7E9D9"
                     android:textSize="16sp"
-                    android:layout_marginBottom="12dp"/>
+                    android:textStyle="bold"
+                    android:layout_marginBottom="10dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -106,17 +106,46 @@
                     android:textColor="@color/text_gray"
                     android:textSize="12sp"/>
 
-                <!-- status chip -->
                 <TextView
                     android:id="@+id/tvStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/green"
+                    android:textColor="#D9CDBA"
                     android:textSize="14sp"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="6dp"
-                    android:background="@drawable/bg_chip_success"
+                    android:background="@drawable/bg_pill_muted_user"
                     android:layout_marginTop="4dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ride_canceled"
+                    android:textColor="@color/text_gray"
+                    android:textSize="12sp"
+                    android:layout_marginTop="10dp"/>
+
+                <TextView
+                    android:id="@+id/tvCanceled"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="@color/white"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ride_canceled_by"
+                    android:textColor="@color/text_gray"
+                    android:textSize="12sp"
+                    android:layout_marginTop="10dp"/>
+
+                <TextView
+                    android:id="@+id/tvCanceledBy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="@color/white"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -124,7 +153,7 @@
                     android:text="@string/panic"
                     android:textColor="@color/text_gray"
                     android:textSize="12sp"
-                    android:layout_marginTop="12dp"/>
+                    android:layout_marginTop="10dp"/>
 
                 <TextView
                     android:id="@+id/tvPanic"
@@ -140,24 +169,24 @@
             android:id="@+id/cardPassengers"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="16dp"
+            android:layout_marginBottom="14dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="2dp"
             app:cardUseCompatPadding="true"
-            app:cardBackgroundColor="@color/bg_card"
+            app:cardBackgroundColor="#1F1D1E"
             app:strokeWidth="1dp"
-            app:strokeColor="@color/background">
+            app:strokeColor="#464143">
 
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="20dp">
+                android:padding="18dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/passenger"
+                    android:text="@string/passengers"
                     android:textColor="@color/white"
                     android:textSize="20sp"
                     android:textStyle="bold"
@@ -175,8 +204,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="12dp"/>
+                    android:textSize="15sp"
+                    android:layout_marginBottom="10dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -190,35 +219,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/white"
-                    android:textSize="16sp"/>
+                    android:textSize="15sp"/>
 
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Map card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:cardUseCompatPadding="true"
-            app:cardBackgroundColor="@color/bg_card"
-            app:strokeWidth="1dp"
-            app:strokeColor="@color/background">
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:foregroundGravity="center">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/map_placeholder"
-                    android:textColor="@color/text_gray"
-                    android:layout_gravity="center"/>
-            </FrameLayout>
-
         </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>

@@ -10,7 +10,7 @@ import com.example.taximobile.core.network.ApiClient;
 import com.example.taximobile.feature.driver.data.dto.request.UpdateDriverProfileRequestDto;
 import com.example.taximobile.feature.driver.data.dto.response.DriverProfileResponseDto;
 import com.example.taximobile.feature.driver.data.dto.response.ProfileChangeRequestResponseDto;
-import com.example.taximobile.feature.driver.data.dto.response.ProfileImageUploadResponseDto;
+import com.example.taximobile.feature.common.data.dto.response.ProfileImageUploadResponseDto;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
