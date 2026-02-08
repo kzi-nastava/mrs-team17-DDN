@@ -52,6 +52,11 @@ public abstract class AdminBaseActivity extends AppCompatActivity {
                     startActivity(new Intent(this, AdminHomeActivity.class));
                 }
 
+            } else if (id == R.id.nav_create_drivers) {
+                if (!(this instanceof AdminCreateDriverActivity)) {
+                    startActivity(new Intent(this, AdminCreateDriverActivity.class));
+                }
+
             } else if (id == R.id.nav_chats) {
                 startActivity(new Intent(this, AdminSupportThreadsActivity.class));
 
@@ -68,9 +73,6 @@ public abstract class AdminBaseActivity extends AppCompatActivity {
                 drawerLayout.closeDrawers();
                 return true;
 
-            }
-            else if (id == R.id.nav_pricing) {
-                startActivity(new Intent(this, AdminPricingActivity.class));
             }
             else if (id == R.id.nav_ride_status) {
                 startActivity(new Intent(this, AdminRideStatusActivity.class));

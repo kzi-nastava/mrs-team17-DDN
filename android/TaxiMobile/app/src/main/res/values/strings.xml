@@ -329,4 +329,14 @@
     <string name="driver_start_ride_checkpoints_label">Checkpoints:</string>
     <string name="driver_home_no_accepted_ride">You currently do not have any accepted rides.</string>
 
+    <string name="admin_create_driver_subtitle">Create a driver account and vehicle details. The driver will receive an activation email to set the password.</string>
+    <string name="admin_create_driver_create">Create driver</string>
+    <string name="admin_create_driver_creating">Creating...</string>
+
+    <string name="admin_create_driver_error_required_fields">Please fill in all required fields.</string>
+    <string name="admin_create_driver_error_invalid_seats">Seats must be a number between 1 and 9.</string>
+
+    <string name="admin_create_driver_success">Driver created. Activation email sent to %1$s. Link valid: %2$dh.</string>
+
+
 </resources>
