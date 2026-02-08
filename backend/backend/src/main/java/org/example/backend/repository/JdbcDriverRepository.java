@@ -1,31 +1,35 @@
 package org.example.backend.repository;
 
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
 public class JdbcDriverRepository implements DriverRepository {
 
     private final JdbcClient jdbc;
+    private final SimpleJdbcInsert driverInsert;
 
-    public JdbcDriverRepository(JdbcClient jdbc) {
+    public JdbcDriverRepository(JdbcClient jdbc, DataSource dataSource) {
         this.jdbc = jdbc;
+        this.driverInsert = new SimpleJdbcInsert(dataSource)
+                .withTableName("drivers")
+                .usingGeneratedKeyColumns("id");
     }
 
     @Override
     public Long insertDriverReturningId(Long userId) {
-        String sql = """
-            insert into drivers (user_id, available)
-            values (:userId, false)
-            returning id
-        """;
-
-        return jdbc.sql(sql)
-                .param("userId", userId)
-                .query(Long.class)
-                .single();
+        Number key = driverInsert.executeAndReturnKey(
+                Map.of(
+                        "user_id", userId,
+                        "available", false
+                )
+        );
+        return key.longValue();
     }
     @Override
     public Optional<Long> findDriverIdByUserId(long userId) {

@@ -31,6 +31,26 @@ class JdbcDriverRepositoryFinishTest {
     private JdbcClient jdbc;
 
     @Test
+    void insertDriverReturningId_shouldInsertAndReturnNewDriverId() {
+        insertUser(USER_ID, "driver.user@test.local");
+
+        Long insertedId = repository.insertDriverReturningId(USER_ID);
+
+        Long count = jdbc.sql("""
+                select count(1)
+                from drivers
+                where id = :id and user_id = :userId
+                """)
+                .param("id", insertedId)
+                .param("userId", USER_ID)
+                .query(Long.class)
+                .single();
+
+        assertTrue(insertedId > 0);
+        assertEquals(1L, count);
+    }
+
+    @Test
     void findDriverIdByUserId_shouldReturnDriverId_whenDriverExists() {
         insertDriver(DRIVER_ID, USER_ID, false);
 
@@ -81,6 +101,16 @@ class JdbcDriverRepositoryFinishTest {
                 .param("id", driverId)
                 .param("userId", userId)
                 .param("available", available)
+                .update();
+    }
+
+    private void insertUser(long userId, String email) {
+        jdbc.sql("""
+                insert into users (id, email, is_active, blocked)
+                values (:id, :email, true, false)
+                """)
+                .param("id", userId)
+                .param("email", email)
                 .update();
     }
 }
