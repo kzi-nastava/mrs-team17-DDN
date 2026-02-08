@@ -41,6 +41,7 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   private initializedFromState = false;
 
   ngAfterViewInit(): void {
+    console.log(this.ds.listInconsistenciesForMyActiveRide)
     this.initMap();
 
     this.sub = this.ds.watchMyActiveTracking().subscribe({
@@ -103,6 +104,8 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   }
 
   private applyState(s: TrackingState): void {
+    console.log(("OKINUTA FUNKCIJA ZA SETOVANJE PODATAKA TRACKINGA"))
+    console.log(s)
     this.etaMinutes = s.etaMinutes;
     this.distanceKm = s.distanceKm;
     this.rideStatus = s.status;

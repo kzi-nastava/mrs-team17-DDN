@@ -54,7 +54,8 @@ public class RideController {
     public ResponseEntity<RideTrackingResponseDto> getMyActiveRideTracking() {
         long userId = requirePassengerUserId();
         Long rideId = rideService.getActiveRideIdForPassenger(userId);
-        return ResponseEntity.ok(rideService.getRideTracking(rideId));
+        var rideTracking = rideService.getRideTracking(rideId);
+        return ResponseEntity.ok(rideTracking);
     }
 
     @PostMapping("/active/reports")

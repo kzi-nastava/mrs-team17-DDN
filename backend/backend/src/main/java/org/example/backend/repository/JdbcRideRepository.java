@@ -2,10 +2,7 @@
 package org.example.backend.repository;
 
 import org.example.backend.dto.request.RideReportRequestDto;
-import org.example.backend.dto.response.LatLngDto;
-import org.example.backend.dto.response.RideCheckpointDto;
-import org.example.backend.dto.response.RideReportResponseDto;
-import org.example.backend.dto.response.RideTrackingResponseDto;
+import org.example.backend.dto.response.*;
 import org.example.backend.osrm.OsrmClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -212,6 +209,27 @@ public class JdbcRideRepository implements RideRepository {
                                 "OSRM not available for ETA/distance"
                         );
                     }
+
+                    // 4) Učitaj report-e iz ride_reports
+                    java.util.List<RideReportDto> reports = jdbc.sql("""
+                    select description, created_at
+                    from ride_reports
+                    where ride_id = :rideId
+                    order by created_at asc
+                """)
+                            .param("rideId", rideId)
+                            .query((rs2, rn) -> new RideReportDto(
+                                    rs2.getString("description"),
+                                    rs2.getTimestamp("createdAt")
+                            ))
+                            .list();
+
+                    dto.setStatus(rs.getString("status"));
+                    dto.setPickup(pickup);
+                    dto.setDestination(destination);
+                    dto.setCar(car);
+                    dto.setCheckpoints(checkpoints);
+                    dto.setReports(reports);
 
                     return dto;
                 })

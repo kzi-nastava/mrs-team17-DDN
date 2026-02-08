@@ -11,6 +11,7 @@ public class RideTrackingResponseDto {
     private List<LatLngDto> route;
 
     private List<RideCheckpointDto> checkpoints;
+    private List<RideReportDto> reports;
 
     private int etaMinutes;
     private double distanceKm;
@@ -32,6 +33,9 @@ public class RideTrackingResponseDto {
 
     public List<RideCheckpointDto> getCheckpoints() { return checkpoints; }
     public void setCheckpoints(List<RideCheckpointDto> checkpoints) { this.checkpoints = checkpoints; }
+
+    public List<RideReportDto> getReports() { return reports; }
+    public void setReports(List<RideReportDto> reports) { this.reports = reports; }
 
     public int getEtaMinutes() { return etaMinutes; }
     public void setEtaMinutes(int etaMinutes) { this.etaMinutes = etaMinutes; }
