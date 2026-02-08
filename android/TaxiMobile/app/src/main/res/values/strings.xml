@@ -311,4 +311,22 @@
     <string name="favourite_route_title_fallback">Favourite route #%1$d</string>
     <string name="favourite_route_stops">Stops: %1$s</string>
 
+    <string name="driver_start_ride_title_default">Drive</string>
+    <string name="driver_start_ride_route_start_default">Route start: —</string>
+    <string name="driver_start_ride_route_end_default">Route end: —</string>
+    <string name="driver_start_ride_meta_default">Status: —</string>
+
+    <string name="driver_start_ride_route_start">Route start: %1$s</string>
+    <string name="driver_start_ride_route_end">Route end: %1$s</string>
+
+    <string name="driver_start_ride_start_button">Start ride</string>
+    <string name="driver_start_ride_starting_button">Starting...</string>
+
+    <string name="driver_start_ride_error_check_active">Unable to check active ride (%1$s)</string>
+    <string name="driver_start_ride_error_load_assigned">Unable to load assigned rides (%1$s)</string>
+    <string name="driver_start_ride_error_start">The ride start failed (%1$s)</string>
+
+    <string name="driver_start_ride_checkpoints_label">Checkpoints:</string>
+    <string name="driver_home_no_accepted_ride">You currently do not have any accepted rides.</string>
+
 </resources>
