@@ -37,6 +37,11 @@ public class FavoriteRouteRepository {
         void onError(String msg, int httpCode);
     }
 
+    public interface DeleteCb {
+        void onSuccess();
+        void onError(String msg, int httpCode);
+    }
+
     public void listFavorites(ListCb cb) {
         Long userId = getCurrentUserId();
         if (userId == null || userId <= 0) {
@@ -89,6 +94,31 @@ public class FavoriteRouteRepository {
 
             @Override
             public void onFailure(Call<AddFavoriteFromRideResponseDto> call, Throwable t) {
+                cb.onError(t != null && t.getMessage() != null ? t.getMessage() : "Network error", 0);
+            }
+        });
+    }
+
+    public void deleteFavorite(long favoriteRouteId, DeleteCb cb) {
+        Long userId = getCurrentUserId();
+        if (userId == null || userId <= 0) {
+            cb.onError("Session expired. Please login again.", 401);
+            return;
+        }
+
+        api.deleteFavorite(userId, favoriteRouteId).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> res) {
+                if (res.isSuccessful()) {
+                    cb.onSuccess();
+                    return;
+                }
+
+                cb.onError(readErrorMessage(res), res.code());
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
                 cb.onError(t != null && t.getMessage() != null ? t.getMessage() : "Network error", 0);
             }
         });

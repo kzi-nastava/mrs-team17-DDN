@@ -6,6 +6,7 @@ import com.example.taximobile.feature.user.data.dto.response.FavoriteRouteRespon
 import java.util.List;
 
 import retrofit2.Call;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
@@ -19,5 +20,11 @@ public interface FavoriteRouteApi {
     Call<AddFavoriteFromRideResponseDto> addFromRide(
             @Path("userId") long userId,
             @Path("rideId") long rideId
+    );
+
+    @DELETE("api/users/{userId}/favorite-routes/{favoriteRouteId}")
+    Call<Void> deleteFavorite(
+            @Path("userId") long userId,
+            @Path("favoriteRouteId") long favoriteRouteId
     );
 }
