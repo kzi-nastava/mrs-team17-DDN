@@ -56,6 +56,11 @@ public class UserHomeActivity extends UserBaseActivity {
                 startActivity(new Intent(UserHomeActivity.this, UserOrderRideActivity.class))
         );
 
+        Button btnFav = contentView.findViewById(R.id.btnFavouriteRoutes);
+        btnFav.setOnClickListener(v ->
+                startActivity(new Intent(UserHomeActivity.this, UserFavoriteRoutesActivity.class))
+        );
+
         repo = new VehiclesRepository(this);
 
         initMap();

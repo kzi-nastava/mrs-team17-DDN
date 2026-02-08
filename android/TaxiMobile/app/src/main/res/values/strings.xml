@@ -303,4 +303,12 @@
     <string name="order_created_price">Ride created. Price: %1$.2fRSD</string>
     <string name="order_created_ok_no_id">Ride created.</string>
 
+    <string name="order_again">Order again</string>
+    <string name="user_home_favourite_routes">Favourite routes</string>
+    <string name="title_favorite_routes">Favourite routes</string>
+    <string name="favourite_routes_empty">No favourite routes yet.</string>
+    <string name="favourite_route_removed_msg">Route removed from favourites.</string>
+    <string name="favourite_route_title_fallback">Favourite route #%1$d</string>
+    <string name="favourite_route_stops">Stops: %1$s</string>
+
 </resources>

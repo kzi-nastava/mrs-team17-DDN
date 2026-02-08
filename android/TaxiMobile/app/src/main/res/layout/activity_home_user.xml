@@ -59,21 +59,43 @@
             android:textSize="13sp" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btnOrderRide"
-        android:layout_width="140dp"
-        android:layout_height="44dp"
+    <LinearLayout
+        android:id="@+id/homeActions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="14dp"
         android:layout_marginBottom="30dp"
-        android:background="@drawable/bg_button_primary_user_green"
-        android:backgroundTint="@null"
-        app:backgroundTint="@null"
-        android:text="@string/user_home_order_ride"
-        android:textAllCaps="false"
-        android:textColor="@android:color/white"
-        android:textStyle="bold"
-        android:textSize="13sp"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/btnFavouriteRoutes"
+            android:layout_width="145dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/bg_button_primary_user_orange"
+            android:backgroundTint="@null"
+            app:backgroundTint="@null"
+            android:text="@string/user_home_favourite_routes"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btnOrderRide"
+            android:layout_width="140dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_button_primary_user_green"
+            android:backgroundTint="@null"
+            app:backgroundTint="@null"
+            android:text="@string/user_home_order_ride"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="13sp" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

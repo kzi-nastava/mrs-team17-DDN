@@ -29,7 +29,6 @@
             android:name=".feature.auth.ui.LoginActivity"
             android:exported="false" />
 
-
         <activity
             android:name=".feature.driver.ui.DriverHomeActivity"
             android:exported="false" />
@@ -112,16 +111,11 @@
             android:name=".feature.admin.ui.AdminUpdateRequestsActivity"
             android:exported="false" />
 
-        <activity
-            android:name=".feature.publichome.ui.PublicHomeMapActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
         <activity android:name=".feature.user.ui.UserOrderRideActivity" android:exported="false"/>
+
+        <activity
+            android:name=".feature.user.ui.UserFavoriteRoutesActivity"
+            android:exported="false" />
 
     </application>
 

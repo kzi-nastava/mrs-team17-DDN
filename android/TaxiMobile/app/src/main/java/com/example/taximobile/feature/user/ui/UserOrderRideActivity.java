@@ -52,8 +52,22 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import android.content.Intent;
 
 public class UserOrderRideActivity extends UserBaseActivity {
+
+    public static final String EXTRA_PREFILL_START_ADDRESS = "extra_prefill_start_address";
+    public static final String EXTRA_PREFILL_START_LAT = "extra_prefill_start_lat";
+    public static final String EXTRA_PREFILL_START_LNG = "extra_prefill_start_lng";
+
+    public static final String EXTRA_PREFILL_DEST_ADDRESS = "extra_prefill_dest_address";
+    public static final String EXTRA_PREFILL_DEST_LAT = "extra_prefill_dest_lat";
+    public static final String EXTRA_PREFILL_DEST_LNG = "extra_prefill_dest_lng";
+
+    public static final String EXTRA_PREFILL_STOP_ADDRESSES = "extra_prefill_stop_addresses";
+    public static final String EXTRA_PREFILL_STOP_LATS = "extra_prefill_stop_lats";
+    public static final String EXTRA_PREFILL_STOP_LNGS = "extra_prefill_stop_lngs";
+
 
     private MapView map;
 
@@ -150,12 +164,92 @@ public class UserOrderRideActivity extends UserBaseActivity {
         initMap();
         initListeners();
 
+        applyPrefillFromIntentIfPresent();
+
         loadRequesterBlockStatus();
         updateCreateButtonState();
         updatePointViews();
         renderCheckpoints();
         renderLinkedUsers();
     }
+
+    private void applyPrefillFromIntentIfPresent() {
+        Intent in = getIntent();
+        if (in == null) return;
+
+        boolean hasStart = in.hasExtra(EXTRA_PREFILL_START_LAT) && in.hasExtra(EXTRA_PREFILL_START_LNG);
+        boolean hasDest = in.hasExtra(EXTRA_PREFILL_DEST_LAT) && in.hasExtra(EXTRA_PREFILL_DEST_LNG);
+        if (!hasStart || !hasDest) return;
+
+        resetPoints();
+
+        String sAddr = in.getStringExtra(EXTRA_PREFILL_START_ADDRESS);
+        double sLat = in.getDoubleExtra(EXTRA_PREFILL_START_LAT, 0.0);
+        double sLng = in.getDoubleExtra(EXTRA_PREFILL_START_LNG, 0.0);
+
+        String dAddr = in.getStringExtra(EXTRA_PREFILL_DEST_ADDRESS);
+        double dLat = in.getDoubleExtra(EXTRA_PREFILL_DEST_LAT, 0.0);
+        double dLng = in.getDoubleExtra(EXTRA_PREFILL_DEST_LNG, 0.0);
+
+        setStartPrefilled(sAddr, sLat, sLng);
+        setDestinationPrefilled(dAddr, dLat, dLng);
+
+        ArrayList<String> stopAddrs = in.getStringArrayListExtra(EXTRA_PREFILL_STOP_ADDRESSES);
+        double[] stopLats = in.getDoubleArrayExtra(EXTRA_PREFILL_STOP_LATS);
+        double[] stopLngs = in.getDoubleArrayExtra(EXTRA_PREFILL_STOP_LNGS);
+        if (stopAddrs != null && stopLats != null && stopLngs != null) {
+            int n = Math.min(stopAddrs.size(), Math.min(stopLats.length, stopLngs.length));
+            for (int i = 0; i < n; i++) {
+                addCheckpointPrefilled(stopAddrs.get(i), stopLats[i], stopLngs[i]);
+            }
+        }
+
+        tvMapHint.setText(getString(R.string.order_map_hint_checkpoint));
+        updatePointViews();
+        renderCheckpoints();
+        triggerPreviewDebounced();
+        updateCreateButtonState();
+
+        try {
+            map.getController().setZoom(16.0);
+            map.getController().setCenter(new GeoPoint(sLat, sLng));
+        } catch (Exception ignore) {
+        }
+    }
+
+    private void setStartPrefilled(String address, double lat, double lng) {
+        String addr = (address != null && !address.trim().isEmpty())
+                ? address.trim()
+                : getString(R.string.order_selected_location);
+        startPoint = new RidePointRequestDto(addr, lat, lng);
+        startMarker = placeMarker(startMarker, new GeoPoint(lat, lng), R.drawable.ic_marker_pickup, getString(R.string.order_pickup));
+    }
+
+    private void setDestinationPrefilled(String address, double lat, double lng) {
+        String addr = (address != null && !address.trim().isEmpty())
+                ? address.trim()
+                : getString(R.string.order_selected_location);
+        destPoint = new RidePointRequestDto(addr, lat, lng);
+        destMarker = placeMarker(destMarker, new GeoPoint(lat, lng), R.drawable.ic_marker_destination, getString(R.string.order_destination));
+    }
+
+    private void addCheckpointPrefilled(String address, double lat, double lng) {
+        String addr = (address != null && !address.trim().isEmpty())
+                ? address.trim()
+                : getString(R.string.order_selected_location);
+        RidePointRequestDto cp = new RidePointRequestDto(addr, lat, lng);
+        checkpoints.add(cp);
+
+        Marker m = new Marker(map);
+        m.setPosition(new GeoPoint(lat, lng));
+        m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        m.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_marker_checkpoint));
+        m.setTitle(getString(R.string.order_checkpoint) + " " + checkpoints.size());
+        map.getOverlays().add(m);
+        checkpointMarkers.add(m);
+        map.invalidate();
+    }
+
 
     private void bindViews(View v) {
         map = v.findViewById(R.id.orderMap);
