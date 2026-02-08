@@ -15,7 +15,9 @@ import org.junit.platform.suite.api.SuiteDisplayName;
         ".*JdbcRideRepositoryFinishTest",
         ".*JdbcDriverRideRepositoryFinishTest",
         ".*RideControllerFinishWebMvcTest",
-        ".*DriverControllerFinishWebMvcTest"
+        ".*DriverControllerFinishWebMvcTest",
+        ".*RideControllerFinishIntegrationTest",
+        ".*DriverControllerFinishIntegrationTest"
 })
 @ExcludeClassNamePatterns(".*Suite")
 public class Student2FinishRideSuite {
