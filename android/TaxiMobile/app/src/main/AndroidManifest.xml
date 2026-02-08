@@ -3,6 +3,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -101,10 +104,6 @@
             android:name=".feature.user.ui.UserRideDetailsActivity"
             android:exported="false" />
 
-
-
-
-
         <activity
             android:name=".feature.admin.ui.AdminProfileActivity"
             android:exported="false" />
@@ -112,6 +111,17 @@
         <activity
             android:name=".feature.admin.ui.AdminUpdateRequestsActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".feature.publichome.ui.PublicHomeMapActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".feature.user.ui.UserOrderRideActivity" android:exported="false"/>
 
     </application>
 
