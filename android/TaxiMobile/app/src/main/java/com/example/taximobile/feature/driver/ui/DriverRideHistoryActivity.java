@@ -68,6 +68,7 @@ public class DriverRideHistoryActivity extends DriverBaseActivity {
 
         binding.etFrom.setOnClickListener(openPicker);
         binding.etTo.setOnClickListener(openPicker);
+        binding.btnFilter.setOnClickListener(vv -> loadRides());
 
         rangePicker.addOnPositiveButtonClickListener(selection -> {
             if (selection == null) return;
@@ -136,13 +137,13 @@ public class DriverRideHistoryActivity extends DriverBaseActivity {
 
     private String formatUiDate(long millis) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
-        sdf.setTimeZone(TimeZone.getDefault());
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         return sdf.format(new Date(millis));
     }
 
     private String formatIsoDate(long millis) {
         SimpleDateFormat iso = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-        iso.setTimeZone(TimeZone.getDefault());
+        iso.setTimeZone(TimeZone.getTimeZone("UTC"));
         return iso.format(new Date(millis));
     }
 }
