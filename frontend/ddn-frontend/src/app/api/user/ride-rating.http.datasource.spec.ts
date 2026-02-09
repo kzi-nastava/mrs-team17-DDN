@@ -51,7 +51,7 @@ describe('RideRatingHttpDataSource', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('should map getRating errors to null', () => {
+  it('should map 404 on getRating to null', () => {
     let actual: RideRatingResponse | null | undefined;
 
     ds.getRating(44).subscribe(value => {
@@ -63,6 +63,25 @@ describe('RideRatingHttpDataSource', () => {
     req.flush({ message: 'Not found' }, { status: 404, statusText: 'Not Found' });
 
     expect(actual).toBeNull();
+  });
+
+  it('should propagate non-404 errors on getRating', () => {
+    let status: number | null = null;
+
+    ds.getRating(55).subscribe({
+      next: () => {
+        status = -1;
+      },
+      error: (err) => {
+        status = err?.status ?? null;
+      },
+    });
+
+    const req = httpMock.expectOne(`${baseUrl}/rides/55/rating`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ message: 'Server error' }, { status: 500, statusText: 'Server Error' });
+
+    expect(status).toBe(500);
   });
 
   it('should submit rating payload to backend endpoint', () => {

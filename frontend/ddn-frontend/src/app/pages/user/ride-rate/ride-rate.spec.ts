@@ -9,6 +9,7 @@ import { RideRateComponent } from './ride-rate';
 
 type SetupOptions = {
   rideId?: string;
+  startedAtQuery?: string;
   getRating$?: Observable<RideRatingResponse | null>;
   submit$?: Observable<void>;
 };
@@ -30,10 +31,14 @@ describe('RideRateComponent', () => {
     createdAt: '2026-02-08T12:00:00Z',
   };
 
-  const buildRoute = (rideId: string | undefined) => {
+  const buildRoute = (rideId: string | undefined, startedAtQuery?: string) => {
     const params = rideId === undefined ? {} : { rideId };
+    const queryParams = startedAtQuery ? { startedAt: startedAtQuery } : {};
     return {
-      snapshot: { paramMap: convertToParamMap(params) },
+      snapshot: {
+        paramMap: convertToParamMap(params),
+        queryParamMap: convertToParamMap(queryParams),
+      },
     };
   };
 
@@ -48,7 +53,7 @@ describe('RideRateComponent', () => {
       imports: [RideRateComponent],
       providers: [
         { provide: RIDE_RATING_DS, useValue: dsMock as unknown as RideRatingDataSource },
-        { provide: ActivatedRoute, useValue: buildRoute(options.rideId ?? '12') },
+        { provide: ActivatedRoute, useValue: buildRoute(options.rideId ?? '12', options.startedAtQuery) },
         { provide: Router, useValue: { navigate: navigateMock } },
       ],
     }).compileComponents();
@@ -146,6 +151,32 @@ describe('RideRateComponent', () => {
     expect(component.error).toBe('Submit failed');
     expect(component.submitting).toBe(false);
     expect(dsMock.getRating).toHaveBeenCalledTimes(1);
+  });
+
+  it('should block submit when rating window is expired from query param', async () => {
+    const oldDate = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString();
+    await createComponent({ getRating$: of(null), startedAtQuery: oldDate });
+
+    component.driverRating = 5;
+    component.vehicleRating = 5;
+    component.submit();
+
+    expect(dsMock.submitRating).not.toHaveBeenCalled();
+    expect(component.error).toBe('Rating is available up to 3 days after ride completion.');
+  });
+
+  it('should map backend rating-window message on submit error', async () => {
+    const backendError = {
+      status: 400,
+      error: { message: 'Rating window expired' },
+    };
+    await createComponent({ getRating$: of(null), submit$: throwError(() => backendError as any) });
+
+    component.driverRating = 5;
+    component.vehicleRating = 4;
+    component.submit();
+
+    expect(component.error).toBe('Rating is available up to 3 days after ride completion.');
   });
 
   it('should navigate back to user root', async () => {

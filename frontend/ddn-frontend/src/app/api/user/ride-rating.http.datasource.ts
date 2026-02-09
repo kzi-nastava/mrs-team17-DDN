@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { API_BASE_URL } from '../../app.config';
@@ -16,7 +16,7 @@ export class RideRatingHttpDataSource implements RideRatingDataSource {
     return this.http
       .get<RideRatingResponse>(`${this.baseUrl}/rides/${rideId}/rating`)
       .pipe(
-        catchError(() => of(null)) // 404 -> null (kad nema ocene)
+        catchError((err) => (err?.status === 404 ? of(null) : throwError(() => err)))
       );
   }
 
