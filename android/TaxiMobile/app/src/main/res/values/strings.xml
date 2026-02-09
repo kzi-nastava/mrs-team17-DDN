@@ -444,4 +444,26 @@
 
     <string name="report_unit_fmt">Unit: %1$s</string>
 
+    <string name="report_admin_subtitle">Generate ride reports for all users (by role) or a single selected person.</string>
+
+    <string name="report_role">Role</string>
+    <string name="report_role_driver">Drivers</string>
+    <string name="report_role_passenger">Passengers</string>
+
+    <string name="report_scope">Scope</string>
+    <string name="report_scope_all">All</string>
+    <string name="report_scope_user">Single user</string>
+
+    <string name="report_user_pick">User</string>
+    <string name="report_user_query_hint">Search (name/email) optional</string>
+    <string name="report_load_users">Load</string>
+
+    <string name="report_select_user_placeholder">Select user...</string>
+    <string name="report_users_loading">Loading users...</string>
+    <string name="report_users_empty">No users found.</string>
+    <string name="report_users_failed">Failed to load users.</string>
+
+    <string name="report_error_select_user">Please select a user.</string>
+
+
 </resources>
