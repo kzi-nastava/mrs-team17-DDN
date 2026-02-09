@@ -32,4 +32,12 @@ describe('Navbar', () => {
 
     expect(links.filter((path) => path === '/driver/support').length).toBe(2);
   });
+
+  it('should point future rides link to /driver/future-rides', () => {
+    const links = fixture.debugElement
+      .queryAll(By.directive(RouterLink))
+      .map((el) => el.injector.get(RouterLink).urlTree?.toString());
+
+    expect(links).toContain('/driver/future-rides');
+  });
 });
