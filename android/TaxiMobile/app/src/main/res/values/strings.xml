@@ -465,5 +465,24 @@
 
     <string name="report_error_select_user">Please select a user.</string>
 
+    <string name="driver_activate_title">Driver account activation</string>
+    <string name="driver_activate_subtitle">Set a password to activate your account.</string>
+
+    <string name="driver_activate_password_label">New password</string>
+    <string name="driver_activate_password_hint">New password (min 8 characters)</string>
+
+    <string name="driver_activate_confirm_label">Confirm password</string>
+    <string name="driver_activate_confirm_hint">Confirm password</string>
+
+    <string name="driver_activate_button">Activate</string>
+    <string name="driver_activate_back_to_login">Back to login</string>
+
+    <string name="driver_activate_error_missing_token">Invalid link (missing token). Please request a new activation link.</string>
+    <string name="driver_activate_error_fill_all">Please fill in both password fields.</string>
+    <string name="driver_activate_error_min_len">Password must be at least 8 characters.</string>
+    <string name="driver_activate_error_mismatch">Passwords do not match.</string>
+
+    <string name="driver_activate_success">Your account has been activated successfully. Redirecting to login...</string>
+    <string name="driver_activate_failed">Activation failed. Please try again or request a new activation link.</string>
 
 </resources>
