@@ -16,6 +16,12 @@ describe('app routes', () => {
     expect(typeof route?.loadComponent).toBe('function');
   });
 
+  it('should register driver future rides route', () => {
+    const route = findChildRoute('driver', 'future-rides');
+    expect(route).toBeTruthy();
+    expect(typeof route?.loadComponent).toBe('function');
+  });
+
   it('should use chat datasource provider for driver support', () => {
     const route = findChildRoute('driver', 'support');
     const providers = (route?.providers ?? []) as Array<{ provide?: unknown; useClass?: unknown }>;

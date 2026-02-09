@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { finalize, take } from 'rxjs';
+import { Router } from '@angular/router';
 import { RIDE_LIFECYCLE_DS } from '../../../api/driver/ride-lifecycle.datasource';
 import { DriverStateService } from '../../../state/driver-state.service';
 import { DriverRidesHttpDataSource } from '../../../api/driver/driver-rides-http.datasource';
@@ -17,6 +18,7 @@ export class DriverActiveRideComponent implements OnInit {
   private lifecycle = inject(RIDE_LIFECYCLE_DS);
   private ridesApi = inject(DriverRidesHttpDataSource);
   private driverState = inject(DriverStateService);
+  private router = inject(Router);
 
   ride: DriverRideDetails | null = null;
 
@@ -52,7 +54,7 @@ export class DriverActiveRideComponent implements OnInit {
         error: () => {
           this.error = 'No active ride.';
           this.ride = null;
-          this.driverState.setAvailable(true);
+          this.syncAvailabilityFromAcceptedRides();
         },
       });
   }
@@ -69,13 +71,12 @@ export class DriverActiveRideComponent implements OnInit {
         take(1),
         finalize(() => {
           this.finishing = false;
-          this.loadActiveRide();
         })
       )
       .subscribe({
         next: () => {
           this.finished = true;
-          this.driverState.setAvailable(true);
+          this.redirectAfterFinish();
         },
         error: () => {
           this.error = 'Finish ride failed.';
@@ -87,5 +88,34 @@ export class DriverActiveRideComponent implements OnInit {
     if (!this.ride) return '';
     if (this.finished) return 'Finished';
     return this.ride.canceled ? 'Canceled' : 'In progress';
+  }
+
+  openFutureRides(): void {
+    this.router.navigate(['/driver/future-rides']);
+  }
+
+  private redirectAfterFinish(): void {
+    this.ridesApi.getAcceptedRides().pipe(take(1)).subscribe({
+      next: (rides) => {
+        const nextRideId = rides?.length ? rides[0].rideId : null;
+        if (nextRideId != null) {
+          this.driverState.setAvailable(false);
+          this.router.navigate(['/driver/future-rides'], { queryParams: { rideId: nextRideId } });
+          return;
+        }
+
+        this.driverState.setAvailable(true);
+        this.router.navigate(['/driver/future-rides']);
+      },
+      error: () => {
+        this.router.navigate(['/driver/future-rides']);
+      },
+    });
+  }
+
+  private syncAvailabilityFromAcceptedRides(): void {
+    this.ridesApi.getAcceptedRides().pipe(take(1)).subscribe({
+      next: (rides) => this.driverState.setAvailable(!(rides?.length ?? 0)),
+    });
   }
 }

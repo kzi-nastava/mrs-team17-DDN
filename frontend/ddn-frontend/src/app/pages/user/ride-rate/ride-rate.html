@@ -56,7 +56,7 @@
           />
         </div>
 
-        <button type="submit" [disabled]="submitting" data-testid="ride-rate-submit-button">Submit</button>
+        <button type="submit" [disabled]="submitting || ratingWindowExpired" data-testid="ride-rate-submit-button">Submit</button>
       </div>
 
       <div class="comment-box">

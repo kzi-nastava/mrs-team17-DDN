@@ -17,46 +17,49 @@
       <button (click)="applyFilter()">Filter</button>
     </div>
 
-    <div class="table header">
-      <span>Date</span>
-      <span>Route</span>
-      <span>Price</span>
-      <span>Status</span>
+    <div class="table-body">
+      <table class="history-table">
+        <colgroup>
+          <col class="col-date" />
+          <col class="col-route" />
+          <col class="col-price" />
+          <col class="col-status" />
+        </colgroup>
+
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Route</th>
+            <th>Price</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody *ngIf="!loading && !error">
+          <tr
+            class="clickable"
+            *ngFor="let ride of rides"
+            (click)="openRideDetails(ride.rideId)"
+          >
+            <td>{{ formatDateOnly(ride.startedAt) }}</td>
+            <td>{{ truncate(ride.startAddress + ' → ' + ride.endAddress) }}</td>
+            <td>{{ ride.price }} RSD</td>
+            <td
+              [class.completed]="isCompleted(ride.status, ride.canceled)"
+              [class.canceled]="isCanceled(ride.status, ride.canceled)"
+            >
+              {{ formatStatus(ride.status, ride.canceled) }}
+            </td>
+          </tr>
+
+          <tr *ngIf="rides.length === 0" class="empty-row">
+            <td colspan="4">No rides.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="loading" class="state-message">Loading...</div>
+      <div *ngIf="!loading && error" class="state-message">{{ error }}</div>
     </div>
-
-    <!-- LOADING -->
-    <div *ngIf="loading" style="padding: 14px;">Loading...</div>
-
-    <!-- ERROR -->
-    <div *ngIf="!loading && error" style="padding: 14px;">
-      {{ error }}
-    </div>
-
-    <!-- DATA -->
-    <ng-container *ngIf="!loading && !error">
-      <div
-        class="table row clickable"
-        *ngFor="let ride of rides"
-        (click)="openRideDetails(ride.rideId)"
-      >
-        <span>{{ formatDateOnly(ride.startedAt) }}</span>
-        <span>
-  {{ truncate(ride.startAddress + ' → ' + ride.endAddress) }}
-</span>
-
-        <span>{{ ride.price }} RSD</span>
-
-        <span
-          [class.completed]="isCompleted(ride.status, ride.canceled)"
-          [class.canceled]="isCanceled(ride.status, ride.canceled)"
-        >
-          {{ formatStatus(ride.status, ride.canceled) }}
-        </span>
-      </div>
-
-      <div *ngIf="rides.length === 0" style="padding: 14px;">
-        No rides.
-      </div>
-    </ng-container>
   </div>
 </div>

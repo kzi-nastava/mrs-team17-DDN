@@ -1,0 +1,79 @@
+<div class="future-rides-wrap">
+  <div class="future-rides-grid">
+    <div class="future-left">
+      <div class="assigned-list" *ngIf="acceptedRides.length > 0">
+        <div class="assigned-title">Future rides</div>
+        <button
+          class="assigned-item"
+          type="button"
+          *ngFor="let assignedRide of acceptedRides"
+          [class.active]="assignedRide.rideId === ride?.rideId"
+          (click)="selectRide(assignedRide.rideId)"
+        >
+          #{{ assignedRide.rideId }} · {{ assignedRide.startAddress }} → {{ assignedRide.destinationAddress }}
+        </button>
+      </div>
+
+      <div class="ride-title">
+        <ng-container *ngIf="ride; else noRideTitle">
+          Future Ride #{{ ride.rideId }}
+        </ng-container>
+        <ng-template #noRideTitle>
+          Future Rides
+        </ng-template>
+      </div>
+
+      <div class="ride-line" *ngIf="ride; else loadingLines">
+        Route start: {{ ride.startAddress }}
+      </div>
+      <div class="ride-line" *ngIf="ride; else loadingLines2">
+        Route end: {{ ride.destinationAddress }}
+      </div>
+
+      <div class="ride-line muted" *ngIf="tracking">
+        Estimated duration: {{ tracking.etaMinutes }}min
+      </div>
+      <div class="ride-line muted" *ngIf="ride && !tracking">
+        Estimated duration: —
+      </div>
+
+      <div class="ride-line error" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <button
+        *ngIf="ride"
+        class="start-btn"
+        type="button"
+        (click)="startRide()"
+        [disabled]="!canStart()"
+      >
+        {{ starting ? 'STARTING...' : 'START RIDE' }}
+      </button>
+
+      <button
+        *ngIf="!ride"
+        class="refresh-btn"
+        type="button"
+        (click)="refresh()"
+        [disabled]="loading || starting"
+      >
+        REFRESH FUTURE RIDES
+      </button>
+
+      <ng-template #loadingLines>
+        <div class="ride-line muted">{{ loading ? 'Loading...' : '' }}</div>
+      </ng-template>
+
+      <ng-template #loadingLines2>
+        <div class="ride-line muted">{{ loading ? 'Loading...' : '' }}</div>
+      </ng-template>
+    </div>
+
+    <div class="future-right">
+      <div class="future-map-wrap">
+        <div id="futureRideMap" class="future-map"></div>
+      </div>
+    </div>
+  </div>
+</div>

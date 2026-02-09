@@ -143,6 +143,11 @@ export const routes: Routes = [
       },
       { path: 'home', component: DriverHomeComponent },
       {
+        path: 'future-rides',
+        loadComponent: () =>
+          import('./pages/driver/driver-future-rides/driver-future-rides').then(m => m.DriverFutureRidesComponent),
+      },
+      {
         path: 'active-ride',
         component: DriverActiveRideComponent,
         providers: [{ provide: RIDE_LIFECYCLE_DS, useClass: RideLifecycleHttpDataSource }],

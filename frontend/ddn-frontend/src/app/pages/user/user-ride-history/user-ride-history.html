@@ -16,6 +16,10 @@
     </div>
 
     <div class="table">
+      <div class="rating-note">
+        Rating is available up to 3 days after ride completion.
+      </div>
+
       <div class="head">
         <div class="col-date">Date</div>
         <div class="col-route">Route</div>
@@ -59,8 +63,14 @@
             }}
           </button>
 
-          <button class="rate-btn" type="button" disabled title="Coming soon">
-            Rate
+          <button
+            class="rate-btn"
+            type="button"
+            [disabled]="isRatingExpired(r)"
+            [attr.title]="rateButtonTitle(r)"
+            (click)="openRate(r)"
+          >
+            {{ rateButtonLabel(r) }}
           </button>
         </div>
       </div>

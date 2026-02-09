@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AuthStore } from '../../api/auth/auth.store';
 import { NotificationApi } from '../../api/notifications/notification.api';
@@ -12,37 +12,95 @@ import { CommonModule } from '@angular/common';
   templateUrl: './user-navbar.html',
   styleUrl: './user-navbar.css',
 })
-export class UserNavbarComponent implements OnInit {
+export class UserNavbarComponent implements OnInit, OnDestroy {
   private auth = inject(AuthStore);
   private router = inject(Router);
   private notificationsApi = inject(NotificationApi);
+  private readonly pollMs = 5000;
+  private readonly notificationsLimit = 3;
+  private pollTimer: any = null;
 
   notifications: Notification[] = [];
   unreadCount = 0;
   open = false;
+  liveTrackingRideId: number | null = null;
 
   ngOnInit(): void {
-    this.load();
+    this.refreshNotifications();
+    this.startPolling();
   }
 
-  load(): void {
+  ngOnDestroy(): void {
+    if (this.pollTimer != null) {
+      clearInterval(this.pollTimer);
+      this.pollTimer = null;
+    }
+  }
+
+  private refreshNotifications(): void {
     this.notificationsApi.getUnreadCount()
       .subscribe(c => this.unreadCount = c);
 
-    this.notificationsApi.getMy()
-      .subscribe(n => this.notifications = n);
+    this.notificationsApi.getMy(this.notificationsLimit)
+      .subscribe(n => {
+        this.notifications = (n ?? []).slice(0, this.notificationsLimit);
+        this.liveTrackingRideId = this.resolveLatestTrackingRideId(this.notifications);
+      });
+  }
+
+  private startPolling(): void {
+    if (this.pollTimer != null) return;
+    this.pollTimer = setInterval(() => this.refreshNotifications(), this.pollMs);
   }
 
   toggle(): void {
     this.open = !this.open;
+    if (this.open) this.refreshNotifications();
   }
 
   clickNotification(n: Notification): void {
     if (!n.readAt) {
-      this.notificationsApi.markRead(n.id).subscribe();
+      this.markReadLocally(n.id);
+      this.notificationsApi.markRead(n.id).subscribe({
+        error: () => this.refreshNotifications(),
+      });
     }
     this.open = false;
     this.router.navigateByUrl(n.linkUrl);
+  }
+
+  private markReadLocally(notificationId: number): void {
+    let changed = false;
+    this.notifications = this.notifications.map((notification) => {
+      if (notification.id !== notificationId || notification.readAt) return notification;
+      changed = true;
+      return { ...notification, readAt: new Date().toISOString() };
+    });
+
+    if (changed) {
+      this.unreadCount = Math.max(0, this.unreadCount - 1);
+    }
+  }
+
+  private resolveLatestTrackingRideId(notifications: Notification[]): number | null {
+    for (const notification of notifications) {
+      const rideId = this.extractRideId(notification.linkUrl);
+      if (rideId != null) return rideId;
+    }
+    return null;
+  }
+
+  private extractRideId(linkUrl: string | null | undefined): number | null {
+    if (!linkUrl) return null;
+
+    try {
+      const parsed = new URL(linkUrl, 'http://localhost');
+      const raw = parsed.searchParams.get('rideId');
+      const rideId = Number(raw);
+      return Number.isFinite(rideId) && rideId > 0 ? rideId : null;
+    } catch {
+      return null;
+    }
   }
 
   logout(): void {

@@ -20,6 +20,7 @@ import { FavoriteRoutesApiService } from '../../../api/user/favorite-routes.http
 export class UserRideHistory implements OnInit {
   private readonly authStore = inject(AuthStore);
   private readonly router = inject(Router);
+  private readonly ratingWindowMs = 3 * 24 * 60 * 60 * 1000;
 
   userId!: number;
 
@@ -99,6 +100,33 @@ export class UserRideHistory implements OnInit {
       });
   }
 
+  openRate(ride: PassengerRideHistoryItem): void {
+    if (this.isRatingExpired(ride)) {
+      this.errorMsg = 'Rating is available up to 3 days after ride completion.';
+      return;
+    }
+
+    this.router.navigate(['/user/rides', ride.rideId, 'rate'], {
+      queryParams: { startedAt: ride.startedAt },
+    });
+  }
+
+  isRatingExpired(ride: PassengerRideHistoryItem): boolean {
+    const startedAtMs = this.toTimestamp(ride.startedAt);
+    if (startedAtMs == null) return false;
+
+    return Date.now() > startedAtMs + this.ratingWindowMs;
+  }
+
+  rateButtonLabel(ride: PassengerRideHistoryItem): string {
+    return this.isRatingExpired(ride) ? 'Expired' : 'Rate';
+  }
+
+  rateButtonTitle(ride: PassengerRideHistoryItem): string {
+    if (!this.isRatingExpired(ride)) return 'Rate this ride';
+    return 'Rating is available up to 3 days after ride completion';
+  }
+
   formatDate(value: string | null | undefined): string {
     if (!value) return '—';
 
@@ -126,5 +154,11 @@ export class UserRideHistory implements OnInit {
       (typeof (err as any)?.error === 'string' ? (err as any).error : '') ||
       fallback
     );
+  }
+
+  private toTimestamp(value: string | null | undefined): number | null {
+    if (!value) return null;
+    const ts = new Date(value).getTime();
+    return Number.isFinite(ts) ? ts : null;
   }
 }

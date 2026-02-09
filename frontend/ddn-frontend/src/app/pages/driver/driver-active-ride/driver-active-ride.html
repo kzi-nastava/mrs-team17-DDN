@@ -3,6 +3,13 @@
 
   <div *ngIf="loading" style="padding: 14px;">Loading...</div>
   <div *ngIf="!loading && error" style="padding: 14px;">{{ error }}</div>
+  <div *ngIf="!loading && !ride" class="wrap">
+    <div class="card">
+      <button class="btn" type="button" (click)="openFutureRides()">
+        Open Future Rides
+      </button>
+    </div>
+  </div>
 
   <div class="wrap" *ngIf="!loading && ride">
     <div class="card">

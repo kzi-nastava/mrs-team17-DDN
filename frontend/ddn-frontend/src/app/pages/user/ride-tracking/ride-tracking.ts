@@ -3,6 +3,7 @@ import * as L from 'leaflet';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 import { UserNavbarComponent } from '../../../components/user-navbar/user-navbar';
 import { RIDE_TRACKING_DS } from '../../../api/user/ride-tracking.datasource';
 import { RideCheckpoint, TrackingState } from '../../../api/user/models/ride-tracking.models';
@@ -18,9 +19,11 @@ type LatLng = { lat: number; lng: number };
 })
 export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   private ds = inject(RIDE_TRACKING_DS);
+  private route = inject(ActivatedRoute);
 
   private map!: L.Map;
   private sub: Subscription | null = null;
+  private routeParamsSub: Subscription | null = null;
 
   private pickupMarker: L.CircleMarker | null = null;
   private destinationMarker: L.CircleMarker | null = null;
@@ -39,22 +42,35 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   reportText = '';
 
   private initializedFromState = false;
+  private trackingRideId?: number;
 
   ngAfterViewInit(): void {
-    console.log(this.ds.listInconsistenciesForMyActiveRide)
     this.initMap();
+    this.routeParamsSub = this.route.queryParamMap.subscribe((params) => {
+      const nextRideId = this.parseRideId(params.get('rideId'));
+      const changed = this.trackingRideId !== nextRideId || this.sub == null;
+      if (!changed) return;
 
-    this.sub = this.ds.watchMyActiveTracking().subscribe({
-      next: (s) => this.applyState(s),
-      error: () => (this.rideStatus = 'Tracking not available'),
+      this.trackingRideId = nextRideId;
+      this.resetTrackingUi();
+      this.startTracking();
     });
 
-    setTimeout(() => this.map.invalidateSize(), 0);
+    // Fallback when route query stream is not immediately available in some test setups.
+    if (this.sub == null) {
+      this.trackingRideId = this.parseRideId(this.route.snapshot.queryParamMap.get('rideId'));
+      this.resetTrackingUi();
+      this.startTracking();
+    }
+
+    this.deferMapResize();
   }
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
     this.sub = null;
+    this.routeParamsSub?.unsubscribe();
+    this.routeParamsSub = null;
 
     if (this.carAnimFrame != null) {
       cancelAnimationFrame(this.carAnimFrame);
@@ -80,7 +96,7 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
     const text = this.reportText.trim();
     if (text.length < 5) return;
 
-    this.ds.submitInconsistencyForMyActiveRide(text).subscribe({
+    this.ds.submitInconsistencyForMyActiveRide(text, this.trackingRideId).subscribe({
       next: () => {
         this.reportOpen = false;
         this.reportText = '';
@@ -103,9 +119,55 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
     }).addTo(this.map);
   }
 
+  private startTracking(): void {
+    this.sub?.unsubscribe();
+    this.sub = this.ds.watchMyActiveTracking(this.trackingRideId).subscribe({
+      next: (s) => this.applyState(s),
+      error: () => (this.rideStatus = 'Tracking not available'),
+    });
+  }
+
+  private parseRideId(raw: string | null): number | undefined {
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+  }
+
+  private resetTrackingUi(): void {
+    this.etaMinutes = 0;
+    this.distanceKm = 0;
+    this.rideStatus = '';
+    this.reportOpen = false;
+    this.reportText = '';
+    this.initializedFromState = false;
+
+    if (this.carAnimFrame != null) {
+      cancelAnimationFrame(this.carAnimFrame);
+      this.carAnimFrame = null;
+    }
+    this.lastCar = null;
+
+    this.pickupMarker?.remove();
+    this.pickupMarker = null;
+    this.destinationMarker?.remove();
+    this.destinationMarker = null;
+    this.carMarker?.remove();
+    this.carMarker = null;
+    this.routeLine?.remove();
+    this.routeLine = null;
+
+    this.checkpointMarkers.forEach((m) => {
+      try { m.remove(); } catch {}
+    });
+    this.checkpointMarkers = [];
+
+    this.deferMapResize();
+  }
+
+  private deferMapResize(): void {
+    setTimeout(() => this.map.invalidateSize(), 0);
+  }
+
   private applyState(s: TrackingState): void {
-    console.log(("OKINUTA FUNKCIJA ZA SETOVANJE PODATAKA TRACKINGA"))
-    console.log(s)
     this.etaMinutes = s.etaMinutes;
     this.distanceKm = s.distanceKm;
     this.rideStatus = s.status;
