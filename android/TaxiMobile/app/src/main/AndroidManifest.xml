@@ -148,6 +148,20 @@
             android:name=".feature.admin.ui.AdminReportsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".feature.driver.ui.DriverActivateAccountActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="taximobile"
+                    android:host="driver"
+                    android:pathPrefix="/activate" />
+            </intent-filter>
+        </activity>
+
     </application>
 
 </manifest>

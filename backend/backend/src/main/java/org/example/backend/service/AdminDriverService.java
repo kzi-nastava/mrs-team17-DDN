@@ -29,9 +29,6 @@ public class AdminDriverService {
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    @Value("${app.frontendBaseUrl:http://localhost:4200}")
-    private String frontendBaseUrl;
-
     @Value("${app.driverActivation.validHours:24}")
     private int validHours;
 
@@ -102,8 +99,7 @@ public class AdminDriverService {
         OffsetDateTime expiresAt = OffsetDateTime.now().plusHours(validHours);
         tokenRepo.createToken(userId, token, expiresAt);
 
-        String activationLink = frontendBaseUrl + "/driver/activate?token=" + token;
-        mailService.sendDriverActivationEmail(email, activationLink);
+        mailService.sendDriverActivationEmail(email, token, validHours);
 
         AdminCreateDriverResponseDto resp = new AdminCreateDriverResponseDto();
         resp.setDriverId(driverId);

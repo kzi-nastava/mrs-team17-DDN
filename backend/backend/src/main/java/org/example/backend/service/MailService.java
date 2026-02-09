@@ -5,16 +5,17 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class MailService {
 
     private final JavaMailSender mailSender;
-    @Value("${app.frontend.base-url:http://localhost:4200}")
+    @Value("${app.frontend.base-url:${app.frontendBaseUrl:http://localhost:4200}}")
     private String frontendBaseUrl;
     @Value("${app.mobile.deep-link-base:taximobile://user/ride-tracking}")
     private String mobileDeepLinkBase;
 
+    @Value("${app.mobile.driver-activation-deep-link-base:taximobile://driver/activate}")
+    private String driverActivationDeepLinkBase;
 
     @Value("${spring.mail.from}")
     private String from;
@@ -23,19 +24,24 @@ public class MailService {
         this.mailSender = mailSender;
     }
 
-    public void sendDriverActivationEmail(String to, String activationLink) {
+    public void sendDriverActivationEmail(String to, String token, int validHours) {
+        String webLink = buildDriverActivationWebLink(token);
+        String mobileLink = buildDriverActivationMobileLink(token);
+
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setFrom(from);
         msg.setTo(to);
-        msg.setSubject("Driver Activation Email");
+        msg.setSubject("Driver account activation");
         msg.setText(
                 "Your driver account has been created.\n\n" +
-                "To set a password and activate your account, open the link (valid for 24 hours):\n" +
-                activationLink + "\n"
+                        "To set a password and activate your account, open one of the links below (valid for " + validHours + " hours):\n\n" +
+                        "Web: " + webLink + "\n" +
+                        "Open in Android app: " + mobileLink + "\n"
         );
 
         mailSender.send(msg);
     }
+
     public SimpleMailMessage buildRideFinishedEmail(
             String to,
             Long rideId,
@@ -132,23 +138,23 @@ public class MailService {
 
     public void sendRegistrationConfirmation(String to, String activationLink) {
 
-    System.out.println(">>> SENDING REGISTRATION MAIL TO: " + to);
-    System.out.println(">>> LINK: " + activationLink);
+        System.out.println(">>> SENDING REGISTRATION MAIL TO: " + to);
+        System.out.println(">>> LINK: " + activationLink);
 
-    SimpleMailMessage msg = new SimpleMailMessage();
-    msg.setFrom(from);
-    msg.setTo(to);
-    msg.setSubject("Account Activation");
-    msg.setText(
-            "Your passenger account has been created.\n\n" +
-            "To activate your account, click the link below (valid for 24 hours):\n" +
-            activationLink + "\n"
-    );
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(from);
+        msg.setTo(to);
+        msg.setSubject("Account Activation");
+        msg.setText(
+                "Your passenger account has been created.\n\n" +
+                        "To activate your account, click the link below (valid for 24 hours):\n" +
+                        activationLink + "\n"
+        );
 
-    mailSender.send(msg);
+        mailSender.send(msg);
 
-    System.out.println(">>> MAIL SENT SUCCESSFULLY");
-}
+        System.out.println(">>> MAIL SENT SUCCESSFULLY");
+    }
 
     private String buildWebTrackingLink(Long rideId) {
         return frontendBaseUrl + "/user/ride-tracking?rideId=" + rideId;
@@ -160,5 +166,21 @@ public class MailService {
             base = "taximobile://user/ride-tracking";
         }
         return base + (base.contains("?") ? "&" : "?") + "rideId=" + rideId;
+    }
+
+    private String buildDriverActivationWebLink(String token) {
+        String base = frontendBaseUrl == null ? "" : frontendBaseUrl.trim();
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        return base + "/driver/activate?token=" + token;
+    }
+
+    private String buildDriverActivationMobileLink(String token) {
+        String base = driverActivationDeepLinkBase == null ? "" : driverActivationDeepLinkBase.trim();
+        if (base.isEmpty()) {
+            base = "taximobile://driver/activate";
+        }
+        return base + (base.contains("?") ? "&" : "?") + "token=" + token;
     }
 }
