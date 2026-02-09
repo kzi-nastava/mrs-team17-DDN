@@ -8,7 +8,6 @@ import org.example.backend.exception.BlockedUserException;
 import org.example.backend.exception.NoAvailableDriverException;
 import org.example.backend.osrm.OsrmClient;
 import org.example.backend.repository.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
@@ -37,10 +36,6 @@ public class RideOrderService {
     private final NotificationService notificationService;
     private final MailQueueService mailQueueService;
     private final PricingService pricingService;
-
-
-    @Value("${app.frontend.base-url:http://localhost:4200}")
-    private String frontendBaseUrl;
 
     public RideOrderService(
             OsrmClient osrmClient,
@@ -302,7 +297,6 @@ public class RideOrderService {
 
         String startAddr = safeTrim(start.getAddress());
         String destAddr  = safeTrim(dest.getAddress());
-        String trackingLink = frontendBaseUrl + "/user/ride-tracking?rideId=" + rideId;
 
         List<SimpleMailMessage> out = new ArrayList<>();
         for (RidePassengerRepository.PassengerRow p : passengers) {
@@ -313,8 +307,7 @@ public class RideOrderService {
                                 email,
                                 rideId,
                                 startAddr,
-                                destAddr,
-                                trackingLink
+                                destAddr
                         )
                 );
             }

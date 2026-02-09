@@ -1,6 +1,9 @@
 package com.example.taximobile.feature.user.ui;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -11,6 +14,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.taximobile.R;
 import com.example.taximobile.core.auth.LogoutManager;
+import com.example.taximobile.feature.user.notifications.UserForegroundNotificationPoller;
 import com.example.taximobile.feature.support.ui.SupportChatActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
@@ -21,6 +25,10 @@ public abstract class UserBaseActivity extends AppCompatActivity {
     protected DrawerLayout drawerLayout;
     protected NavigationView navView;
     protected FrameLayout baseContent;
+    private UserForegroundNotificationPoller notificationPoller;
+
+    private static final int REQ_POST_NOTIFICATIONS = 8101;
+    private static boolean notificationPermissionRequestedThisSession = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +40,7 @@ public abstract class UserBaseActivity extends AppCompatActivity {
         drawerLayout = findViewById(R.id.baseDrawer);
         navView = findViewById(R.id.baseNav);
         baseContent = findViewById(R.id.baseContent);
+        notificationPoller = new UserForegroundNotificationPoller(this);
 
         setSupportActionBar(toolbar);
 
@@ -95,6 +104,55 @@ public abstract class UserBaseActivity extends AppCompatActivity {
             drawerLayout.closeDrawers();
             return true;
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (notificationPoller == null) return;
+
+        if (canStartForegroundNotificationPolling()) {
+            notificationPoller.start();
+        } else {
+            notificationPoller.stop();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if (notificationPoller != null) {
+            notificationPoller.stop();
+        }
+        super.onPause();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode != REQ_POST_NOTIFICATIONS || notificationPoller == null) return;
+
+        if (canStartForegroundNotificationPolling()) {
+            notificationPoller.start();
+        } else {
+            notificationPoller.stop();
+        }
+    }
+
+    private boolean canStartForegroundNotificationPolling() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return true;
+        }
+
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+
+        if (!notificationPermissionRequestedThisSession) {
+            notificationPermissionRequestedThisSession = true;
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQ_POST_NOTIFICATIONS);
+        }
+        return false;
     }
 
     protected View inflateContent(int layoutResId) {
