@@ -21,6 +21,10 @@
         android:title="@string/menu_future_rides" />
 
     <item
+        android:id="@+id/nav_reports"
+        android:title="@string/menu_reports" />
+
+    <item
         android:id="@+id/nav_support"
         android:title="@string/menu_support" />
 

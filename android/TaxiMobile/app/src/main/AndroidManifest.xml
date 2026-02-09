@@ -136,6 +136,18 @@
             android:name=".feature.admin.ui.AdminCreateDriverActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".feature.user.ui.UserReportsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".feature.driver.ui.DriverReportsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".feature.admin.ui.AdminReportsActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

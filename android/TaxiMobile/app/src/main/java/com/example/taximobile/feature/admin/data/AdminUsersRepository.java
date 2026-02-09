@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.example.taximobile.core.network.ApiClient;
 import com.example.taximobile.feature.admin.data.dto.request.AdminSetUserBlockRequestDto;
+import com.example.taximobile.feature.admin.data.dto.response.AdminUserOptionResponseDto;
 import com.example.taximobile.feature.admin.data.dto.response.AdminUserStatusResponseDto;
 
 import org.json.JSONObject;
@@ -29,6 +30,11 @@ public class AdminUsersRepository {
         void onError(String msg, int httpCode);
     }
 
+    public interface OptionsCb {
+        void onSuccess(List<AdminUserOptionResponseDto> list);
+        void onError(String msg, int httpCode);
+    }
+
     public interface SaveCb {
         void onSuccess(AdminUserStatusResponseDto updated);
         void onError(String msg, int httpCode);
@@ -51,6 +57,28 @@ public class AdminUsersRepository {
 
             @Override
             public void onFailure(Call<List<AdminUserStatusResponseDto>> call, Throwable t) {
+                cb.onError(t != null && t.getMessage() != null ? t.getMessage() : "Network error", -1);
+            }
+        });
+    }
+
+    public void listUserOptions(String role, String query, int limit, OptionsCb cb) {
+        String q = query != null && !query.trim().isEmpty() ? query.trim() : null;
+        int lim = limit <= 0 ? 200 : limit;
+
+        api.listUserOptions(role, q, lim).enqueue(new Callback<List<AdminUserOptionResponseDto>>() {
+            @Override
+            public void onResponse(Call<List<AdminUserOptionResponseDto>> call, Response<List<AdminUserOptionResponseDto>> res) {
+                if (!res.isSuccessful()) {
+                    String msg = parseErrorMessage(res.errorBody(), res.code());
+                    cb.onError(msg, res.code());
+                    return;
+                }
+                cb.onSuccess(res.body());
+            }
+
+            @Override
+            public void onFailure(Call<List<AdminUserOptionResponseDto>> call, Throwable t) {
                 cb.onError(t != null && t.getMessage() != null ? t.getMessage() : "Network error", -1);
             }
         });

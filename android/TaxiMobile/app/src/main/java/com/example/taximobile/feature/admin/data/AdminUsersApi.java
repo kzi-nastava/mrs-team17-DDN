@@ -1,6 +1,7 @@
 package com.example.taximobile.feature.admin.data;
 
 import com.example.taximobile.feature.admin.data.dto.request.AdminSetUserBlockRequestDto;
+import com.example.taximobile.feature.admin.data.dto.response.AdminUserOptionResponseDto;
 import com.example.taximobile.feature.admin.data.dto.response.AdminUserStatusResponseDto;
 
 import java.util.List;
@@ -16,6 +17,13 @@ public interface AdminUsersApi {
 
     @GET("/api/admin/users/status")
     Call<List<AdminUserStatusResponseDto>> listUsersWithStatus(
+            @Query("role") String role,
+            @Query("query") String query,
+            @Query("limit") int limit
+    );
+
+    @GET("/api/admin/users")
+    Call<List<AdminUserOptionResponseDto>> listUserOptions(
             @Query("role") String role,
             @Query("query") String query,
             @Query("limit") int limit
