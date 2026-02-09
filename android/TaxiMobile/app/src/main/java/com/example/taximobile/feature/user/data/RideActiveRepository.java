@@ -25,6 +25,11 @@ public class RideActiveRepository {
         void onError(String msg);
     }
 
+    public interface TrackingByIdCb {
+        void onSuccess(RideTrackingResponseDto dto);
+        void onError(String msg);
+    }
+
     public interface ReportCb {
         void onSuccess(RideReportResponseDto dto);
         void onError(String msg);
@@ -45,6 +50,24 @@ public class RideActiveRepository {
                     return;
                 }
 
+                cb.onError("Failed to load tracking (" + res.code() + ")");
+            }
+
+            @Override
+            public void onFailure(Call<RideTrackingResponseDto> call, Throwable t) {
+                cb.onError(t != null ? t.getMessage() : "Network error");
+            }
+        });
+    }
+
+    public void getTrackingByRideId(long rideId, TrackingByIdCb cb) {
+        api.getRideTrackingById(rideId).enqueue(new Callback<RideTrackingResponseDto>() {
+            @Override
+            public void onResponse(Call<RideTrackingResponseDto> call, Response<RideTrackingResponseDto> res) {
+                if (res.isSuccessful() && res.body() != null) {
+                    cb.onSuccess(res.body());
+                    return;
+                }
                 cb.onError("Failed to load tracking (" + res.code() + ")");
             }
 

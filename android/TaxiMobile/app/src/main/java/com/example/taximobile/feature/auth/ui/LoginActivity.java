@@ -18,9 +18,12 @@ import com.example.taximobile.core.network.TokenStorage;
 import com.example.taximobile.feature.admin.ui.AdminHomeActivity;
 import com.example.taximobile.feature.auth.data.AuthRepository;
 import com.example.taximobile.feature.driver.ui.DriverHomeActivity;
+import com.example.taximobile.feature.user.ui.PassengerActiveRideActivity;
 import com.example.taximobile.feature.user.ui.UserHomeActivity;
 
 public class LoginActivity extends AppCompatActivity {
+
+    public static final String EXTRA_POST_LOGIN_RIDE_ID = "extra_post_login_ride_id";
 
     private EditText etEmail;
     private EditText etPassword;
@@ -114,7 +117,14 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         if ("PASSENGER".equalsIgnoreCase(role) || "USER".equalsIgnoreCase(role)) {
-            startActivity(new Intent(LoginActivity.this, UserHomeActivity.class));
+            long deepLinkRideId = getIntent().getLongExtra(EXTRA_POST_LOGIN_RIDE_ID, -1L);
+            if (deepLinkRideId > 0) {
+                Intent i = new Intent(LoginActivity.this, PassengerActiveRideActivity.class);
+                i.putExtra(PassengerActiveRideActivity.EXTRA_RIDE_ID, deepLinkRideId);
+                startActivity(i);
+            } else {
+                startActivity(new Intent(LoginActivity.this, UserHomeActivity.class));
+            }
             finish();
             return;
         }

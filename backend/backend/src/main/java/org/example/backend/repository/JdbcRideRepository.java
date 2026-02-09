@@ -220,7 +220,7 @@ public class JdbcRideRepository implements RideRepository {
                             .param("rideId", rideId)
                             .query((rs2, rn) -> new RideReportDto(
                                     rs2.getString("description"),
-                                    rs2.getTimestamp("createdAt")
+                                    rs2.getTimestamp("created_at")
                             ))
                             .list();
 

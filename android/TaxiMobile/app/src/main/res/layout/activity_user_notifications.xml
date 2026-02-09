@@ -16,7 +16,7 @@
         android:id="@+id/nEmpty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="No notifications."
+        android:text="@string/notifications_empty"
         android:visibility="gone"
         android:paddingTop="24dp"/>
 

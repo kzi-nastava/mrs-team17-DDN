@@ -10,6 +10,7 @@
     <string name="menu_history">Ride history</string>
     <string name="menu_rate_ride">Rate ride</string>
     <string name="menu_live_tracking">Live Tracking</string>
+    <string name="menu_notifications">Notifications</string>
     <string name="menu_support">Support</string>
     <string name="menu_profile">Profile</string>
     <string name="menu_logout">Log out</string>
@@ -345,6 +346,28 @@
     <string name="admin_create_driver_error_invalid_seats">Seats must be a number between 1 and 9.</string>
 
     <string name="admin_create_driver_success">Driver created. Activation email sent to %1$s. Link valid: %2$dh.</string>
+
+    <string name="title_notifications">Notifications</string>
+    <string name="notifications_empty">No notifications.</string>
+
+    <string name="title_active_ride">Active ride</string>
+    <string name="title_ride_tracking">Ride tracking</string>
+    <string name="tracking_eta_fmt">ETA: %1$d min (%2$.2f km)</string>
+    <string name="tracking_status_fmt">Status: %1$s</string>
+    <string name="tracking_eta_empty">ETA: -</string>
+    <string name="tracking_status_empty">Status: -</string>
+    <string name="tracking_no_active_ride">No active ride</string>
+    <string name="tracking_load_failed">Tracking is not available.</string>
+    <string name="tracking_report_title">Report driver inconsistency</string>
+    <string name="tracking_report_cancel">Cancel</string>
+    <string name="tracking_report_send">Send</string>
+    <string name="tracking_report_inactive">No active ride</string>
+    <string name="tracking_report_sent">Report sent</string>
+
+    <string name="notif_channel_name">Ride updates</string>
+    <string name="notif_channel_description">Notifications about ride status updates.</string>
+    <string name="notif_default_title">Ride update</string>
+    <string name="notif_default_message">Open the app to view details.</string>
 
 
 </resources>

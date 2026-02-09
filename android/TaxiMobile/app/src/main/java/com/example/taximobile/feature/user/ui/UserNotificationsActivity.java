@@ -1,5 +1,6 @@
 package com.example.taximobile.feature.user.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.taximobile.R;
 import com.example.taximobile.feature.user.data.NotificationsRepository;
 import com.example.taximobile.feature.user.data.dto.response.NotificationResponseDto;
+import com.example.taximobile.feature.user.notifications.NotificationLinkRouter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +35,7 @@ public class UserNotificationsActivity extends UserBaseActivity
 
         View v = inflateContent(R.layout.activity_user_notifications);
 
-        toolbar.setTitle("Notifications");
+        toolbar.setTitle(getString(R.string.title_notifications));
 
         repo = new NotificationsRepository(this);
 
@@ -83,8 +85,12 @@ public class UserNotificationsActivity extends UserBaseActivity
             });
         }
 
-        if (n.getLinkUrl() != null && !n.getLinkUrl().isBlank()) {
-            Toast.makeText(this, n.getLinkUrl(), Toast.LENGTH_SHORT).show();
+        Intent target = NotificationLinkRouter.intentForNotification(this, n);
+        if (target.getComponent() != null
+                && UserNotificationsActivity.class.getName().equals(target.getComponent().getClassName())) {
+            return;
         }
+        target.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(target);
     }
 }
