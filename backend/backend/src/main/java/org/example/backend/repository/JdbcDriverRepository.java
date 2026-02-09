@@ -18,6 +18,7 @@ public class JdbcDriverRepository implements DriverRepository {
         this.jdbc = jdbc;
         this.driverInsert = new SimpleJdbcInsert(dataSource)
                 .withTableName("drivers")
+                .usingColumns("user_id", "available")
                 .usingGeneratedKeyColumns("id");
     }
 
