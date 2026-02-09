@@ -385,5 +385,63 @@
     <string name="notif_default_title">Ride update</string>
     <string name="notif_default_message">Open the app to view details.</string>
 
+    <string name="report_subtitle">Generate a summary for your completed rides in a selected period.</string>
+    <string name="report_filter_title">Period</string>
+    <string name="report_pick_range">Pick date range</string>
+    <string name="report_from">From:</string>
+    <string name="report_to">To:</string>
+    <string name="report_pick_date">Pick date</string>
+    <string name="report_generate">Generate</string>
+
+    <string name="report_error_choose_dates">Please choose both dates.</string>
+    <string name="report_error_range">From date must be before To date.</string>
+    <string name="report_error_failed">Failed to load report.</string>
+
+    <string name="report_total_rides">Total rides</string>
+    <string name="report_total_kilometers">Total kilometers</string>
+    <string name="report_money_spent">Total spent</string>
+    <string name="report_money_earned">Total earned</string>
+
+    <string name="report_avg_day_default">Avg/day: -</string>
+    <string name="report_avg_day_fmt">Avg/day: %1$s</string>
+
+    <string name="report_km_value_fmt">%1$s km</string>
+    <string name="report_rsd_value_fmt">%1$s RSD</string>
+
+    <string name="report_spent">spent</string>
+    <string name="report_earned">earned</string>
+    <string name="report_avg_day_rsd_fmt">Avg %1$s/day: %2$s RSD</string>
+
+    <string name="report_avg_km_ride_default">Avg km/ride: -</string>
+    <string name="report_avg_money_ride_default">Avg money/ride: -</string>
+    <string name="report_avg_km_ride_fmt">Avg km/ride: %1$s km</string>
+    <string name="report_avg_money_ride_fmt">Avg %1$s/ride: %2$s RSD</string>
+
+    <string name="report_days_range">Days in range:</string>
+
+    <string name="report_chart_rides">Number of rides per day</string>
+    <string name="report_chart_km">Kilometers per day</string>
+    <string name="report_chart_money_spent">Money spent per day</string>
+    <string name="report_chart_money_earned">Money earned per day</string>
+
+    <string name="report_tab_rides">Rides</string>
+    <string name="report_tab_km">Km</string>
+    <string name="report_tab_money">Money</string>
+
+    <string name="report_empty">No completed rides in this period.</string>
+
+    <string name="report_cumulative_default">Cumulative: -</string>
+    <string name="report_average_day_default_text">Average/day: -</string>
+
+    <string name="report_cumulative_fmt">Cumulative: %1$s</string>
+    <string name="report_average_day_fmt">Average/day: %1$s</string>
+
+    <string name="report_cumulative_km_fmt">Cumulative: %1$s km</string>
+    <string name="report_average_day_km_fmt">Average/day: %1$s km</string>
+
+    <string name="report_cumulative_rsd_fmt">Cumulative: %1$s RSD</string>
+    <string name="report_average_day_rsd_fmt2">Average/day: %1$s RSD</string>
+
+    <string name="report_unit_fmt">Unit: %1$s</string>
 
 </resources>
