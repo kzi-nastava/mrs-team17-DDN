@@ -14,13 +14,13 @@
 
 .cards-row {
   display: flex;
-  gap: 100px;
   justify-content: center;
+  width: 100%;
 }
 
 .card {
-  width: 580px;
-  height: 600px;                 /* ISTA VISINA KAO PRE */
+  width: min(760px, 100%);
+  min-height: 600px;
   background: #555;
   border-radius: 12px;
   padding: 32px;
@@ -152,11 +152,16 @@
   transform: translateX(-2px);
 }
 
-.map-card {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ccc;
-  font-size: 18px;
-  border: 1px dashed rgba(255, 255, 255, 0.3);
+@media (max-width: 900px) {
+  .page {
+    padding: 16px;
+  }
+
+  .page h1 {
+    margin-bottom: 24px;
+  }
+
+  .card {
+    padding: 24px;
+  }
 }
