@@ -36,6 +36,20 @@
             android:textSize="14sp"
             android:visibility="gone" />
 
+        <Button
+            android:id="@+id/dhFutureRidesBtn"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_button_outline_user"
+            android:backgroundTint="@null"
+            app:backgroundTint="@null"
+            android:text="@string/driver_home_open_future_rides"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
         <TextView
             android:id="@+id/dhRouteStart"
             android:layout_width="match_parent"

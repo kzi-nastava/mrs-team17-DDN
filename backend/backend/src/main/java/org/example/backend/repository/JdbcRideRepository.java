@@ -236,6 +236,37 @@ public class JdbcRideRepository implements RideRepository {
                 .optional();
     }
 
+    @Override
+    public boolean canUserAccessRideTracking(Long rideId, long userId) {
+        Boolean allowed = jdbc.sql("""
+            select exists (
+                select 1
+                from rides r
+                where r.id = :rideId
+                  and (
+                        exists (
+                            select 1
+                            from ride_passengers rp
+                            join users u on lower(u.email) = lower(rp.email)
+                            where rp.ride_id = r.id
+                              and u.id = :userId
+                        )
+                        or exists (
+                            select 1
+                            from drivers d
+                            where d.id = r.driver_id
+                              and d.user_id = :userId
+                        )
+                  )
+            )
+        """)
+                .param("rideId", rideId)
+                .param("userId", userId)
+                .query(Boolean.class)
+                .single();
+        return Boolean.TRUE.equals(allowed);
+    }
+
 
     @Override
     public java.util.List<String> findPassengerEmails(Long rideId) {

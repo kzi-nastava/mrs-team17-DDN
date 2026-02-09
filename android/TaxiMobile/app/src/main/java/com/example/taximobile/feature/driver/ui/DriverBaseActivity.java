@@ -11,7 +11,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.taximobile.R;
 import com.example.taximobile.core.auth.LogoutManager;
-import com.example.taximobile.feature.support.ui.SupportChatActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
 
@@ -59,11 +58,13 @@ public abstract class DriverBaseActivity extends AppCompatActivity {
                 startActivity(new Intent(this, DriverProfileActivity.class));
 
             } else if (id == R.id.nav_support) {
-                // ISTI support chat kao passenger
-                startActivity(new Intent(this, SupportChatActivity.class));
+                startActivity(new Intent(this, DriverSupportChatActivity.class));
 
             } else if (id == R.id.nav_active_ride) {
                 startActivity(new Intent(this, DriverActiveRideActivity.class));
+
+            } else if (id == R.id.nav_future_rides) {
+                startActivity(new Intent(this, DriverFutureRidesActivity.class));
 
             }else if (id == R.id.nav_logout) {
                 LogoutManager.logout(this);
