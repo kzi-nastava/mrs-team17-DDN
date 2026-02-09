@@ -24,6 +24,7 @@ public class UserNotificationsActivity extends UserBaseActivity
     private NotificationsRepository repo;
 
     private ProgressBar progress;
+    private View emptyContainer;
     private TextView empty;
     private RecyclerView list;
 
@@ -40,6 +41,7 @@ public class UserNotificationsActivity extends UserBaseActivity
         repo = new NotificationsRepository(this);
 
         progress = v.findViewById(R.id.nProgress);
+        emptyContainer = v.findViewById(R.id.nEmptyContainer);
         empty = v.findViewById(R.id.nEmpty);
         list = v.findViewById(R.id.nList);
 
@@ -57,7 +59,13 @@ public class UserNotificationsActivity extends UserBaseActivity
             public void onSuccess(List<NotificationResponseDto> items) {
                 adapter.setItems(items);
                 setLoading(false);
-                empty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+                boolean isEmpty = items == null || items.isEmpty();
+                if (emptyContainer != null) {
+                    emptyContainer.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                } else {
+                    empty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                }
+                list.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
             }
 
             @Override
@@ -71,6 +79,11 @@ public class UserNotificationsActivity extends UserBaseActivity
     private void setLoading(boolean loading) {
         progress.setVisibility(loading ? View.VISIBLE : View.GONE);
         list.setVisibility(loading ? View.GONE : View.VISIBLE);
+        if (emptyContainer != null) {
+            emptyContainer.setVisibility(View.GONE);
+        } else if (loading) {
+            empty.setVisibility(View.GONE);
+        }
     }
 
     @Override

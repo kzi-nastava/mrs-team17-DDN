@@ -365,6 +365,17 @@
 
     <string name="title_notifications">Notifications</string>
     <string name="notifications_empty">No notifications.</string>
+    <string name="notifications_subtitle">Latest updates about your rides.</string>
+    <string name="notifications_empty_hint">You are all caught up for now.</string>
+    <string name="notifications_type_update">Update</string>
+    <string name="notifications_type_ride">Ride</string>
+    <string name="notifications_type_alert">Alert</string>
+    <string name="notifications_type_done">Done</string>
+    <string name="notifications_time_just_now">Just now</string>
+    <string name="notifications_time_min_ago">%1$d min ago</string>
+    <string name="notifications_time_hour_ago">%1$d h ago</string>
+    <string name="notifications_time_yesterday">Yesterday %1$s</string>
+    <string name="notifications_time_fallback">Unknown time</string>
 
     <string name="title_active_ride">Active ride</string>
     <string name="title_ride_tracking">Ride tracking</string>
