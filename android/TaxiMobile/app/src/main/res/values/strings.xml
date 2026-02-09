@@ -23,6 +23,7 @@
     <!-- Admin drawer items -->
     <string name="menu_update_requests">Update Requests</string>
     <string name="menu_create_drivers">Create Drivers</string>
+    <string name="create_driver">Create Driver</string>
     <string name="menu_chats">Chats</string>
     <string name="menu_ride_status">Ride Status</string>
     <string name="menu_pricing">Pricing</string>

@@ -13,6 +13,10 @@ public class JdbcDriverRepository implements DriverRepository {
 
     public JdbcDriverRepository(JdbcClient jdbc) {
         this.jdbc = jdbc;
+        this.driverInsert = new SimpleJdbcInsert(dataSource)
+                .withTableName("drivers")
+                .usingColumns("user_id", "available")
+                .usingGeneratedKeyColumns("id");
     }
 
     @Override
