@@ -43,6 +43,12 @@ public class RideService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride tracking not found"));
     }
 
+    public void ensureUserCanAccessRideTracking(long userId, Long rideId) {
+        if (!repository.canUserAccessRideTracking(rideId, userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ride tracking is not available for this user");
+        }
+    }
+
     public RideReportResponseDto reportRideIssue(Long rideId, RideReportRequestDto request) {
         try {
             return repository.createReport(rideId, request, OffsetDateTime.now());

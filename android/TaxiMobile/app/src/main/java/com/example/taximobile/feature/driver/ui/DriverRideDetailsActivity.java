@@ -9,6 +9,7 @@ import com.example.taximobile.databinding.ActivityDriverRideDetailsBinding;
 import com.example.taximobile.feature.driver.data.DriverRideRepository;
 import com.example.taximobile.feature.driver.data.dto.response.DriverRideDetailsResponseDto;
 import com.example.taximobile.feature.driver.data.dto.response.PassengerInfoResponseDto;
+import com.example.taximobile.feature.driver.data.dto.response.RideReportResponseDto;
 
 import java.util.List;
 
@@ -94,6 +95,8 @@ public class DriverRideDetailsActivity extends DriverBaseActivity {
                             : getString(R.string.driver_ride_passenger_unknown)
             );
         }
+
+        bindReports(d.getReports());
     }
 
     private String resolveCanceledBy(boolean canceled, String canceledBy) {
@@ -112,7 +115,59 @@ public class DriverRideDetailsActivity extends DriverBaseActivity {
         out.append(value);
     }
 
+    private void bindReports(List<RideReportResponseDto> reports) {
+        binding.cardReports.setVisibility(View.VISIBLE);
+
+        if (reports == null || reports.isEmpty()) {
+            binding.tvReportsList.setVisibility(View.GONE);
+            binding.tvReportsEmpty.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        StringBuilder content = new StringBuilder();
+        for (RideReportResponseDto report : reports) {
+            if (report == null) continue;
+
+            String description = safe(report.getDescription());
+            if (description.isBlank()) continue;
+
+            if (content.length() > 0) content.append("\n\n");
+            content.append("- ").append(description);
+
+            String createdAt = formatDateTime(report.getCreatedAt());
+            if (!createdAt.isBlank() && !"-".equals(createdAt)) {
+                content.append("\n")
+                        .append(getString(R.string.driver_ride_report_created_fmt, createdAt));
+            }
+        }
+
+        if (content.length() == 0) {
+            binding.tvReportsList.setVisibility(View.GONE);
+            binding.tvReportsEmpty.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        binding.tvReportsEmpty.setVisibility(View.GONE);
+        binding.tvReportsList.setVisibility(View.VISIBLE);
+        binding.tvReportsList.setText(content.toString());
+    }
+
     private String safe(String s) {
         return s != null ? s : "";
+    }
+
+    private static String formatDateTime(String iso) {
+        if (iso == null || iso.trim().isEmpty()) return "-";
+        String s = iso.trim();
+        if (s.length() >= 16 && s.contains("T")) {
+            String date = s.substring(0, 10); // yyyy-MM-dd
+            String time = s.substring(11, 16); // HH:mm
+            String[] p = date.split("-");
+            if (p.length == 3) {
+                return p[2] + "." + p[1] + "." + p[0] + " " + time;
+            }
+            return date + " " + time;
+        }
+        return s;
     }
 }

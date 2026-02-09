@@ -84,6 +84,11 @@ public class RideController {
 
     @GetMapping("/{rideId}/tracking")
     public ResponseEntity<RideTrackingResponseDto> getRideTracking(@PathVariable Long rideId) {
+        Authentication auth = requireAuthentication();
+        long userId = parseAuthenticatedUserId(auth);
+        if (!hasRole(auth, "ROLE_ADMIN")) {
+            rideService.ensureUserCanAccessRideTracking(userId, rideId);
+        }
         return ResponseEntity.ok(rideService.getRideTracking(rideId));
     }
 
@@ -140,19 +145,34 @@ public class RideController {
     }
 
     private long requirePassengerUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = requireAuthentication();
+        if (!hasRole(auth, "ROLE_PASSENGER")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only passengers can access this endpoint");
+        }
+        return parseAuthenticatedUserId(auth);
+    }
 
+    private long requireDriverId() {
+        Authentication auth = requireAuthentication();
+        if (!hasRole(auth, "ROLE_DRIVER")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only drivers can access this endpoint");
+        }
+
+        long userId = parseAuthenticatedUserId(auth);
+
+        return driverRepository.findDriverIdByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Driver profile not found"));
+    }
+
+    private Authentication requireAuthentication() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
+        return auth;
+    }
 
-        boolean isPassenger = auth.getAuthorities().stream()
-                .anyMatch(a -> "ROLE_PASSENGER".equals(a.getAuthority()));
-
-        if (!isPassenger) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only passengers can access this endpoint");
-        }
-
+    private long parseAuthenticatedUserId(Authentication auth) {
         try {
             return Long.parseLong(auth.getPrincipal().toString());
         } catch (Exception e) {
@@ -160,28 +180,7 @@ public class RideController {
         }
     }
 
-    private long requireDriverId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-        }
-
-        boolean isDriver = auth.getAuthorities().stream()
-                .anyMatch(a -> "ROLE_DRIVER".equals(a.getAuthority()));
-
-        if (!isDriver) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only drivers can access this endpoint");
-        }
-
-        long userId;
-        try {
-            userId = Long.parseLong(auth.getPrincipal().toString());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid authentication principal");
-        }
-
-        return driverRepository.findDriverIdByUserId(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Driver profile not found"));
+    private boolean hasRole(Authentication auth, String role) {
+        return auth.getAuthorities().stream().anyMatch(a -> role.equals(a.getAuthority()));
     }
 }

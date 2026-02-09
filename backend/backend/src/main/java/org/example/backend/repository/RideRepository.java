@@ -11,6 +11,8 @@ public interface RideRepository {
 
     Optional<RideTrackingResponseDto> findTrackingByRideId(Long rideId);
 
+    boolean canUserAccessRideTracking(Long rideId, long userId);
+
     RideReportResponseDto createReport(Long rideId, RideReportRequestDto request, OffsetDateTime now);
 
     boolean finishRide(Long rideId);

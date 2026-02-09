@@ -164,6 +164,9 @@
     <string name="driver_ride_canceled_by_na">N/A</string>
     <string name="driver_ride_canceled_by_unknown">Unknown</string>
     <string name="driver_ride_passenger_unknown">Unknown</string>
+    <string name="driver_ride_reports_title">Passenger reports</string>
+    <string name="driver_ride_reports_empty">No reports for this ride.</string>
+    <string name="driver_ride_report_created_fmt">Created: %1$s</string>
 
     <!-- Profile -->
     <string name="driver_profile_title">Profile</string>
