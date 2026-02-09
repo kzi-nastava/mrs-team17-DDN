@@ -1,6 +1,7 @@
 package com.example.taximobile.feature.driver.ui;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -27,6 +28,7 @@ public class DriverActiveRideActivity extends DriverBaseActivity {
 
     private Button btnReload;
     private Button btnFinish;
+    private Button btnFutureRides;
 
     private Long activeRideId;
 
@@ -35,7 +37,7 @@ public class DriverActiveRideActivity extends DriverBaseActivity {
         super.onCreate(savedInstanceState);
         View v = inflateContent(R.layout.activity_driver_active_ride);
 
-        toolbar.setTitle("Active ride");
+        toolbar.setTitle(getString(R.string.title_active_ride));
 
         repo = new DriverRideRepository(this);
 
@@ -50,9 +52,12 @@ public class DriverActiveRideActivity extends DriverBaseActivity {
 
         btnReload = v.findViewById(R.id.arReload);
         btnFinish = v.findViewById(R.id.arFinish);
+        btnFutureRides = v.findViewById(R.id.arFutureRides);
 
         btnReload.setOnClickListener(x -> load());
         btnFinish.setOnClickListener(x -> confirmFinish());
+        btnFutureRides.setOnClickListener(x ->
+                startActivity(new Intent(this, DriverFutureRidesActivity.class)));
 
         load();
     }
@@ -125,7 +130,7 @@ public class DriverActiveRideActivity extends DriverBaseActivity {
             public void onSuccess() {
                 setLoading(false);
                 Toast.makeText(DriverActiveRideActivity.this, "Ride finished", Toast.LENGTH_SHORT).show();
-                load(); // posle finish očekuj prazno (nema active ride)
+                openDriverHomeAfterFinish();
             }
 
             @Override
@@ -135,6 +140,13 @@ public class DriverActiveRideActivity extends DriverBaseActivity {
                 btnFinish.setEnabled(true);
             }
         });
+    }
+
+    private void openDriverHomeAfterFinish() {
+        Intent intent = new Intent(this, DriverHomeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        finish();
     }
 
     private void setLoading(boolean loading) {

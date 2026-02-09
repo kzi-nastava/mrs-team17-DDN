@@ -22,7 +22,7 @@
         android:background="@drawable/bg_button_primary_user"
         android:backgroundTint="@null"
         app:backgroundTint="@null"
-        android:text="Reload"
+        android:text="@string/driver_active_reload"
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:textStyle="bold" />
@@ -39,7 +39,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="No active ride."
+            android:text="@string/driver_active_empty_title"
             android:textColor="@color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -48,9 +48,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="When a ride is assigned, details will appear here."
+            android:text="@string/driver_active_empty_subtitle"
             android:textColor="@color/text_gray"
             android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/arFutureRides"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_button_outline_user"
+            android:backgroundTint="@null"
+            app:backgroundTint="@null"
+            android:text="@string/driver_active_open_future_rides"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout

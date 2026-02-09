@@ -13,6 +13,7 @@
     <string name="menu_notifications">Notifications</string>
     <string name="menu_support">Support</string>
     <string name="menu_profile">Profile</string>
+    <string name="menu_future_rides">Future rides</string>
     <string name="menu_logout">Log out</string>
     <string name="support_empty">No messages yet. Start the conversation.</string>
     <string name="support_error">Could not load chat.</string>
@@ -340,6 +341,17 @@
 
     <string name="driver_start_ride_checkpoints_label">Checkpoints:</string>
     <string name="driver_home_no_accepted_ride">You currently do not have any accepted rides.</string>
+    <string name="driver_home_open_future_rides">Open future rides</string>
+    <string name="driver_future_rides_title">Driver – Future Rides</string>
+    <string name="driver_future_rides_subtitle">Assigned rides waiting to be started.</string>
+    <string name="driver_future_rides_empty">No future assigned rides right now.</string>
+    <string name="driver_future_rides_reload">Reload future rides</string>
+    <string name="driver_future_rides_error_load">Unable to load future rides (%1$s)</string>
+    <string name="driver_future_rides_open_details_hint">Tap card to open details</string>
+    <string name="driver_active_reload">Reload</string>
+    <string name="driver_active_empty_title">No active ride.</string>
+    <string name="driver_active_empty_subtitle">When a ride is assigned, details will appear here.</string>
+    <string name="driver_active_open_future_rides">View future rides</string>
 
     <string name="admin_create_driver_subtitle">Create a driver account and vehicle details. The driver will receive an activation email to set the password.</string>
     <string name="admin_create_driver_create">Create driver</string>

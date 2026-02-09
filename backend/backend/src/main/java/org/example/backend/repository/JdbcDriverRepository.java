@@ -1,35 +1,39 @@
 package org.example.backend.repository;
 
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
-import java.util.Map;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 @Repository
 public class JdbcDriverRepository implements DriverRepository {
 
     private final JdbcClient jdbc;
-    private final SimpleJdbcInsert driverInsert;
 
-    public JdbcDriverRepository(JdbcClient jdbc, DataSource dataSource) {
+    public JdbcDriverRepository(JdbcClient jdbc) {
         this.jdbc = jdbc;
-        this.driverInsert = new SimpleJdbcInsert(dataSource)
-                .withTableName("drivers")
-                .usingGeneratedKeyColumns("id");
     }
 
     @Override
     public Long insertDriverReturningId(Long userId) {
-        Number key = driverInsert.executeAndReturnKey(
-                Map.of(
-                        "user_id", userId,
-                        "available", false
-                )
-        );
-        return key.longValue();
+        jdbc.sql("""
+                insert into drivers (user_id, available, created_at)
+                values (:userId, :available, :createdAt)
+                """)
+                .param("userId", userId)
+                .param("available", false)
+                .param("createdAt", OffsetDateTime.now())
+                .update();
+
+        return jdbc.sql("""
+                select id
+                from drivers
+                where user_id = :userId
+                """)
+                .param("userId", userId)
+                .query(Long.class)
+                .single();
     }
     @Override
     public Optional<Long> findDriverIdByUserId(long userId) {

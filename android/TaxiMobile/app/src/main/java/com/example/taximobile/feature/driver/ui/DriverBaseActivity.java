@@ -65,6 +65,9 @@ public abstract class DriverBaseActivity extends AppCompatActivity {
             } else if (id == R.id.nav_active_ride) {
                 startActivity(new Intent(this, DriverActiveRideActivity.class));
 
+            } else if (id == R.id.nav_future_rides) {
+                startActivity(new Intent(this, DriverFutureRidesActivity.class));
+
             }else if (id == R.id.nav_logout) {
                 LogoutManager.logout(this);
                 drawerLayout.closeDrawers();
