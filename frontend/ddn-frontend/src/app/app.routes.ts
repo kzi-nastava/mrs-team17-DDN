@@ -136,6 +136,11 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { roles: ['DRIVER'] },
     children: [
+      {
+        path: 'support',
+        loadComponent: () => import('./pages/user/user-chat/user-chat').then(m => m.UserChat),
+        providers: [{ provide: CHAT_DS, useClass: ChatHttpDataSource }],
+      },
       { path: 'home', component: DriverHomeComponent },
       {
         path: 'active-ride',
