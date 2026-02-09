@@ -81,6 +81,9 @@
         <activity
             android:name=".feature.support.ui.SupportChatActivity"
             android:exported="false" />
+        <activity
+            android:name=".feature.driver.ui.DriverSupportChatActivity"
+            android:exported="false" />
 
         <activity
             android:name=".feature.admin.ui.AdminSupportThreadsActivity"
