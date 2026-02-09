@@ -23,6 +23,7 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
   notifications: Notification[] = [];
   unreadCount = 0;
   open = false;
+  liveTrackingRideId: number | null = null;
 
   ngOnInit(): void {
     this.refreshNotifications();
@@ -41,7 +42,10 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
       .subscribe(c => this.unreadCount = c);
 
     this.notificationsApi.getMy(this.notificationsLimit)
-      .subscribe(n => this.notifications = (n ?? []).slice(0, this.notificationsLimit));
+      .subscribe(n => {
+        this.notifications = (n ?? []).slice(0, this.notificationsLimit);
+        this.liveTrackingRideId = this.resolveLatestTrackingRideId(this.notifications);
+      });
   }
 
   private startPolling(): void {
@@ -75,6 +79,27 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
 
     if (changed) {
       this.unreadCount = Math.max(0, this.unreadCount - 1);
+    }
+  }
+
+  private resolveLatestTrackingRideId(notifications: Notification[]): number | null {
+    for (const notification of notifications) {
+      const rideId = this.extractRideId(notification.linkUrl);
+      if (rideId != null) return rideId;
+    }
+    return null;
+  }
+
+  private extractRideId(linkUrl: string | null | undefined): number | null {
+    if (!linkUrl) return null;
+
+    try {
+      const parsed = new URL(linkUrl, 'http://localhost');
+      const raw = parsed.searchParams.get('rideId');
+      const rideId = Number(raw);
+      return Number.isFinite(rideId) && rideId > 0 ? rideId : null;
+    } catch {
+      return null;
     }
   }
 

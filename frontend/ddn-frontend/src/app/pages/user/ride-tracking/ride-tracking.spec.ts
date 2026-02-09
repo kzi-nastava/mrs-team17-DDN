@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { vi } from 'vitest';
 
 import { RideTrackingComponent } from './ride-tracking';
@@ -15,6 +15,7 @@ describe('RideTracking', () => {
     submitInconsistencyForMyActiveRide: ReturnType<typeof vi.fn>;
     listInconsistenciesForMyActiveRide: ReturnType<typeof vi.fn>;
   };
+  let queryParamMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   const trackingState: TrackingState = {
     car: { lat: 45.26, lng: 19.83 },
@@ -37,6 +38,8 @@ describe('RideTracking', () => {
       listInconsistenciesForMyActiveRide: vi.fn().mockReturnValue(of([])),
     };
 
+    queryParamMap$ = new BehaviorSubject(convertToParamMap(rideId ? { rideId } : {}));
+
     await TestBed.configureTestingModule({
       imports: [RideTrackingComponent],
       providers: [
@@ -47,6 +50,7 @@ describe('RideTracking', () => {
             snapshot: {
               queryParamMap: convertToParamMap(rideId ? { rideId } : {}),
             },
+            queryParamMap: queryParamMap$.asObservable(),
           },
         },
       ],
@@ -90,6 +94,14 @@ describe('RideTracking', () => {
   it('should fall back to active ride tracking when query param is missing', async () => {
     await createComponent();
 
+    expect(dsMock.watchMyActiveTracking).toHaveBeenCalledWith(undefined);
+  });
+
+  it('should re-subscribe tracking when rideId query param changes', async () => {
+    await createComponent('123');
+    queryParamMap$.next(convertToParamMap({}));
+
+    expect(dsMock.watchMyActiveTracking).toHaveBeenCalledWith(123);
     expect(dsMock.watchMyActiveTracking).toHaveBeenCalledWith(undefined);
   });
 });
