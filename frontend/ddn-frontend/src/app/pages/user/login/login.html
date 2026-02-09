@@ -27,6 +27,7 @@
         type="email"
         placeholder="Email address"
         formControlName="email"
+        data-testid="login-email-input"
       />
     </div>
     <!-- Error poruka za email -->
@@ -42,6 +43,7 @@
         type="password"
         placeholder="Password"
         formControlName="password"
+        data-testid="login-password-input"
       />
     </div>
     <!-- Error poruka za password -->
@@ -56,7 +58,12 @@
     </div>
 
     <!-- Submit dugme -->
-    <button class="login-btn" type="submit" [disabled]="loginForm.invalid || loading">
+    <button
+      class="login-btn"
+      type="submit"
+      [disabled]="loginForm.invalid || loading"
+      data-testid="login-submit-button"
+    >
       {{ loading ? 'LOGGING IN...' : 'LOG IN' }}
     </button>
 
