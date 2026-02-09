@@ -33,12 +33,26 @@
         <span class="badge">{{ statusText() }}</span>
       </div>
 
-      <button class="btn" (click)="finishRide()" [disabled]="finishing || finished">
+      <button class="btn" *ngIf="!finished" (click)="finishRide()" [disabled]="finishing || finished">
         Finish ride (paid)
       </button>
 
       <div class="success" *ngIf="finished">
-        Ride finished. Driver is now available.
+        <div>{{ postFinishMessage || 'Ride finished.' }}</div>
+        <button
+          class="btn success-btn"
+          type="button"
+          (click)="continueAfterFinish()"
+          [disabled]="!postFinishTarget"
+        >
+          {{
+            postFinishTarget === 'future'
+              ? 'Open Future Rides'
+              : postFinishTarget === 'home'
+                ? 'Back to Driver Home'
+                : 'Preparing next step...'
+          }}
+        </button>
       </div>
     </div>
   </div>

@@ -130,7 +130,7 @@ public class DriverActiveRideActivity extends DriverBaseActivity {
             public void onSuccess() {
                 setLoading(false);
                 Toast.makeText(DriverActiveRideActivity.this, "Ride finished", Toast.LENGTH_SHORT).show();
-                openDriverHomeAfterFinish();
+                openFutureRidesAfterFinish();
             }
 
             @Override
@@ -142,8 +142,8 @@ public class DriverActiveRideActivity extends DriverBaseActivity {
         });
     }
 
-    private void openDriverHomeAfterFinish() {
-        Intent intent = new Intent(this, DriverHomeActivity.class);
+    private void openFutureRidesAfterFinish() {
+        Intent intent = new Intent(this, DriverFutureRidesActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
         finish();
