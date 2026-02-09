@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/repTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/menu_reports"
+            android:textSize="28sp"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:paddingBottom="4dp" />
+
+        <TextView
+            android:id="@+id/repSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/report_subtitle"
+            android:textColor="@color/text_gray"
+            android:textSize="14sp"
+            android:paddingBottom="12dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card_surface_user"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/report_filter_title"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:paddingBottom="10dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/report_from"
+                    android:textColor="@color/text_gray"
+                    android:layout_marginEnd="10dp"/>
+
+                <EditText
+                    android:id="@+id/repEtFrom"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_input_surface_user"
+                    android:paddingHorizontal="12dp"
+                    android:textColor="@color/white"
+                    android:hint="@string/report_pick_date"
+                    android:focusable="false"
+                    android:cursorVisible="false"
+                    android:inputType="none" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/report_to"
+                    android:textColor="@color/text_gray"
+                    android:layout_marginEnd="28dp"/>
+
+                <EditText
+                    android:id="@+id/repEtTo"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_input_surface_user"
+                    android:paddingHorizontal="12dp"
+                    android:textColor="@color/white"
+                    android:hint="@string/report_pick_date"
+                    android:focusable="false"
+                    android:cursorVisible="false"
+                    android:inputType="none" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/repBtnGenerate"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_button_primary_user"
+                android:backgroundTint="@null"
+                app:backgroundTint="@null"
+                android:text="@string/report_generate"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
+
+            <ProgressBar
+                android:id="@+id/repProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/repError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FF6B6B"
+                android:textSize="14sp"
+                android:layout_marginTop="10dp"
+                android:visibility="gone"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="14dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card_surface_user"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/report_total_rides"
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/repTotalRidesValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:textSize="22sp"
+                    android:paddingTop="4dp"/>
+
+                <TextView
+                    android:id="@+id/repTotalRidesAvg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/report_avg_day_default"
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp"
+                    android:paddingTop="4dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card_surface_user"
+                android:orientation="vertical"
+                android:padding="14dp"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/report_total_kilometers"
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/repTotalKmValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="0.00 km"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:textSize="22sp"
+                    android:paddingTop="4dp"/>
+
+                <TextView
+                    android:id="@+id/repTotalKmAvg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/report_avg_day_default"
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp"
+                    android:paddingTop="4dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card_surface_user"
+                android:orientation="vertical"
+                android:padding="14dp"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:id="@+id/repMoneyLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/report_money_earned"
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/repTotalMoneyValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="0.00 RSD"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:textSize="22sp"
+                    android:paddingTop="4dp"/>
+
+                <TextView
+                    android:id="@+id/repTotalMoneyAvg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/report_avg_day_default"
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp"
+                    android:paddingTop="4dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card_surface_user"
+            android:orientation="vertical"
+            android:padding="14dp"
+            android:layout_marginTop="12dp">
+
+            <TextView
+                android:id="@+id/repAvgKmPerRide"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/report_avg_km_ride_default"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:paddingBottom="6dp"/>
+
+            <TextView
+                android:id="@+id/repAvgMoneyPerRide"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/report_avg_money_ride_default"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:paddingBottom="6dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/report_days_range"
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/repDays"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:layout_marginStart="6dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card_surface_user"
+            android:orientation="vertical"
+            android:padding="14dp"
+            android:layout_marginTop="12dp">
+
+            <TextView
+                android:id="@+id/repChartTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/report_chart_rides"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:textSize="16sp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <Button
+                    android:id="@+id/repTabRides"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_button_primary_user_blue"
+                    android:backgroundTint="@null"
+                    app:backgroundTint="@null"
+                    android:text="@string/report_tab_rides"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="8dp"/>
+
+                <Button
+                    android:id="@+id/repTabKm"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_button_outline_user_green"
+                    android:backgroundTint="@null"
+                    app:backgroundTint="@null"
+                    android:text="@string/report_tab_km"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="8dp"/>
+
+                <Button
+                    android:id="@+id/repTabMoney"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_button_outline_user_orange"
+                    android:backgroundTint="@null"
+                    app:backgroundTint="@null"
+                    android:text="@string/report_tab_money"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/repBarsContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="bottom"/>
+            </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/repChartEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/report_empty"
+                android:textColor="@color/text_gray"
+                android:textSize="14sp"
+                android:paddingTop="8dp"
+                android:visibility="gone"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:id="@+id/repFootCumulative"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/report_cumulative_default"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:paddingBottom="4dp"/>
+
+                <TextView
+                    android:id="@+id/repFootAverageDay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/report_average_day_default_text"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:paddingBottom="4dp"/>
+
+                <TextView
+                    android:id="@+id/repFootUnit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

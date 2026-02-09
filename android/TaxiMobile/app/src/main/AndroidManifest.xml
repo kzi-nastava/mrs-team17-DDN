@@ -140,6 +140,10 @@
             android:name=".feature.user.ui.UserReportsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".feature.driver.ui.DriverReportsActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
