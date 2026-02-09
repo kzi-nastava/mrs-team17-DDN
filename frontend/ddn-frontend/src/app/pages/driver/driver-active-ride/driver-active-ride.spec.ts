@@ -80,12 +80,33 @@ describe('DriverActiveRide', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should redirect to future rides with next ride id after finish', () => {
+  it('should prepare future rides navigation after finish', () => {
     component.finishRide();
 
     expect(lifecycleMock.finishRide).toHaveBeenCalledWith(77);
+    expect(component.finished).toBe(true);
+    expect(component.postFinishTarget).toBe('future');
+    expect(component.postFinishRideId).toBe(88);
+    expect(routerMock.navigate).not.toHaveBeenCalled();
+
+    component.continueAfterFinish();
     expect(routerMock.navigate).toHaveBeenCalledWith(['/driver/future-rides'], {
       queryParams: { rideId: 88 },
     });
+  });
+
+  it('should prepare home navigation when there are no future rides', () => {
+    ridesApiMock.getAcceptedRides.mockReturnValueOnce(of([]));
+
+    component.finishRide();
+
+    expect(component.finished).toBe(true);
+    expect(component.postFinishTarget).toBe('home');
+    expect(component.postFinishRideId).toBeNull();
+    expect(driverStateMock.setAvailable).toHaveBeenCalledWith(true);
+    expect(routerMock.navigate).not.toHaveBeenCalled();
+
+    component.continueAfterFinish();
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/driver/home']);
   });
 });

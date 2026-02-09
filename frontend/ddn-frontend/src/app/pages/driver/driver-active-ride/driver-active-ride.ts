@@ -27,6 +27,9 @@ export class DriverActiveRideComponent implements OnInit {
 
   finishing = false;
   finished = false;
+  postFinishTarget: 'future' | 'home' | null = null;
+  postFinishRideId: number | null = null;
+  postFinishMessage: string | null = null;
 
   ngOnInit(): void {
     this.loadActiveRide();
@@ -37,6 +40,9 @@ export class DriverActiveRideComponent implements OnInit {
     this.error = null;
     this.ride = null;
     this.finished = false;
+    this.postFinishTarget = null;
+    this.postFinishRideId = null;
+    this.postFinishMessage = null;
     this.driverState.setAvailable(false);
 
     this.ridesApi
@@ -76,7 +82,7 @@ export class DriverActiveRideComponent implements OnInit {
       .subscribe({
         next: () => {
           this.finished = true;
-          this.redirectAfterFinish();
+          this.preparePostFinishState();
         },
         error: () => {
           this.error = 'Finish ride failed.';
@@ -94,21 +100,46 @@ export class DriverActiveRideComponent implements OnInit {
     this.router.navigate(['/driver/future-rides']);
   }
 
-  private redirectAfterFinish(): void {
+  continueAfterFinish(): void {
+    if (this.postFinishTarget === 'future') {
+      if (this.postFinishRideId != null) {
+        this.router.navigate(['/driver/future-rides'], {
+          queryParams: { rideId: this.postFinishRideId },
+        });
+        return;
+      }
+
+      this.router.navigate(['/driver/future-rides']);
+      return;
+    }
+
+    if (this.postFinishTarget === 'home') {
+      this.router.navigate(['/driver/home']);
+    }
+  }
+
+  private preparePostFinishState(): void {
     this.ridesApi.getAcceptedRides().pipe(take(1)).subscribe({
       next: (rides) => {
         const nextRideId = rides?.length ? rides[0].rideId : null;
         if (nextRideId != null) {
           this.driverState.setAvailable(false);
-          this.router.navigate(['/driver/future-rides'], { queryParams: { rideId: nextRideId } });
+          this.postFinishTarget = 'future';
+          this.postFinishRideId = nextRideId;
+          this.postFinishMessage = 'Ride finished. Next assigned ride is ready.';
           return;
         }
 
         this.driverState.setAvailable(true);
-        this.router.navigate(['/driver/future-rides']);
+        this.postFinishTarget = 'home';
+        this.postFinishRideId = null;
+        this.postFinishMessage = 'Ride finished. No assigned future rides.';
       },
       error: () => {
-        this.router.navigate(['/driver/future-rides']);
+        this.driverState.setAvailable(true);
+        this.postFinishTarget = 'home';
+        this.postFinishRideId = null;
+        this.postFinishMessage = 'Ride finished.';
       },
     });
   }
