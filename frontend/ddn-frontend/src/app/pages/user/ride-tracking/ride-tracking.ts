@@ -3,6 +3,7 @@ import * as L from 'leaflet';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 import { UserNavbarComponent } from '../../../components/user-navbar/user-navbar';
 import { RIDE_TRACKING_DS } from '../../../api/user/ride-tracking.datasource';
 import { RideCheckpoint, TrackingState } from '../../../api/user/models/ride-tracking.models';
@@ -18,6 +19,7 @@ type LatLng = { lat: number; lng: number };
 })
 export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   private ds = inject(RIDE_TRACKING_DS);
+  private route = inject(ActivatedRoute);
 
   private map!: L.Map;
   private sub: Subscription | null = null;
@@ -39,12 +41,17 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   reportText = '';
 
   private initializedFromState = false;
+  private trackingRideId?: number;
 
   ngAfterViewInit(): void {
-    console.log(this.ds.listInconsistenciesForMyActiveRide)
+    const rawRideId = this.route.snapshot.queryParamMap.get('rideId');
+    const parsedRideId = Number(rawRideId);
+    this.trackingRideId =
+      Number.isFinite(parsedRideId) && parsedRideId > 0 ? parsedRideId : undefined;
+
     this.initMap();
 
-    this.sub = this.ds.watchMyActiveTracking().subscribe({
+    this.sub = this.ds.watchMyActiveTracking(this.trackingRideId).subscribe({
       next: (s) => this.applyState(s),
       error: () => (this.rideStatus = 'Tracking not available'),
     });
@@ -80,7 +87,7 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
     const text = this.reportText.trim();
     if (text.length < 5) return;
 
-    this.ds.submitInconsistencyForMyActiveRide(text).subscribe({
+    this.ds.submitInconsistencyForMyActiveRide(text, this.trackingRideId).subscribe({
       next: () => {
         this.reportOpen = false;
         this.reportText = '';
@@ -104,8 +111,6 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   }
 
   private applyState(s: TrackingState): void {
-    console.log(("OKINUTA FUNKCIJA ZA SETOVANJE PODATAKA TRACKINGA"))
-    console.log(s)
     this.etaMinutes = s.etaMinutes;
     this.distanceKm = s.distanceKm;
     this.rideStatus = s.status;
