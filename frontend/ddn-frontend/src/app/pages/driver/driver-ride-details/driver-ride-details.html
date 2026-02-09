@@ -49,6 +49,11 @@
             </div>
 
             <div class="item">
+              <span class="label">Canceled by</span>
+              <span class="value">{{ ride.canceledBy || '-' }}</span>
+            </div>
+
+            <div class="item">
               <span class="label">Panic</span>
               <span
                 class="badge"
@@ -75,7 +80,7 @@
             <span>{{ p.email }}</span>
           </div>
 
-          <div *ngIf="ride.passengers?.length === 0" style="padding: 10px 0;">
+          <div *ngIf="ride.passengers.length === 0" style="padding: 10px 0;">
             No passengers.
           </div>
         </div>
