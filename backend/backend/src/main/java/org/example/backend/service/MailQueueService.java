@@ -20,6 +20,19 @@ public class MailQueueService {
         this.mailSender = mailSender;
     }
 
+    public void sendNow(SimpleMailMessage msg) {
+        if (msg == null) return;
+        try {
+            sendAsMime(msg);
+            System.out.println("MAIL SENT TO: " + recipientsOf(msg));
+        } catch (Exception ex) {
+            System.out.println(
+                    "MAIL FAILED TO: " + recipientsOf(msg) +
+                            " | " + ex.getMessage()
+            );
+        }
+    }
+
     /**
      * Šalje sve mejlove jedan po jedan, ravnomerno raspoređene
      * tako da svi stignu u zadatom vremenskom prozoru (npr. 10s).
