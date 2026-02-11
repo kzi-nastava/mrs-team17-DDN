@@ -12,6 +12,7 @@ import org.example.backend.service.PassengerRideHistoryService;
 import org.example.backend.service.RideRatingService;
 import org.example.backend.service.RideService;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -55,7 +56,9 @@ public class RideController {
         long userId = requirePassengerUserId();
         Long rideId = rideService.getActiveRideIdForPassenger(userId);
         var rideTracking = rideService.getRideTracking(rideId);
-        return ResponseEntity.ok(rideTracking);
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(rideTracking);
     }
 
     @PostMapping("/active/reports")
@@ -89,7 +92,9 @@ public class RideController {
         if (!hasRole(auth, "ROLE_ADMIN")) {
             rideService.ensureUserCanAccessRideTracking(userId, rideId);
         }
-        return ResponseEntity.ok(rideService.getRideTracking(rideId));
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(rideService.getRideTracking(rideId));
     }
 
     @PostMapping("/{rideId}/reports")

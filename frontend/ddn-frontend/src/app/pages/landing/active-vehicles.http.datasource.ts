@@ -16,6 +16,8 @@ export class ActiveVehiclesHttpDataSource {
   private readonly baseUrl = inject(API_BASE_URL);
 
   getActiveVehicles(): Observable<ActiveVehicleDto[]> {
-    return this.http.get<ActiveVehicleDto[]>(`${this.baseUrl}/vehicles/active`);
+    return this.http.get<ActiveVehicleDto[]>(`${this.baseUrl}/vehicles/active`, {
+      params: { ts: Date.now().toString() },
+    });
   }
 }

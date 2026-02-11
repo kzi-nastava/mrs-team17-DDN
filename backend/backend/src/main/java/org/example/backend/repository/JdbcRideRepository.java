@@ -28,7 +28,7 @@ public class JdbcRideRepository implements RideRepository {
         return jdbc.sql("""
             select r.id
             from rides r
-            where r.status = 'ACTIVE'
+            where r.status in ('ACTIVE', 'ACCEPTED')
               and r.canceled = false
               and r.ended_at is null
         """)

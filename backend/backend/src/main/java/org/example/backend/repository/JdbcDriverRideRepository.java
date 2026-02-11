@@ -159,6 +159,39 @@ public class JdbcDriverRideRepository implements DriverRideRepository {
         return findOpenRidesByStatuses(driverId, List.of("SCHEDULED", "ACCEPTED"));
     }
 
+    @Override
+    public Optional<StartRideSnapshot> findStartRideSnapshot(Long driverId, Long rideId) {
+        String sql = """
+            select
+                r.status,
+                r.scheduled_at,
+                r.start_lat,
+                r.start_lng,
+                v.latitude as car_lat,
+                v.longitude as car_lng
+            from rides r
+            join vehicles v
+              on v.driver_id = r.driver_id
+            where r.id = :rideId
+              and r.driver_id = :driverId
+              and r.ended_at is null
+              and r.canceled = false
+        """;
+
+        return jdbc.sql(sql)
+                .param("rideId", rideId)
+                .param("driverId", driverId)
+                .query((rs, rowNum) -> new StartRideSnapshot(
+                        rs.getString("status"),
+                        rs.getObject("scheduled_at", OffsetDateTime.class),
+                        (Double) rs.getObject("start_lat"),
+                        (Double) rs.getObject("start_lng"),
+                        (Double) rs.getObject("car_lat"),
+                        (Double) rs.getObject("car_lng")
+                ))
+                .optional();
+    }
+
     private List<DriverRideDetailsResponseDto> findOpenRidesByStatuses(Long driverId, List<String> statuses) {
         if (statuses == null || statuses.isEmpty()) return List.of();
 
