@@ -208,9 +208,13 @@ mvn verify
 ```bash
 # Run unit tests
 ng test
+```
 
-# Run E2E tests with Selenium
-ng e2e
+### E2E Tests
+```bash
+# Run dedicated Selenium E2E tests
+cd e2e-tests
+./mvnw test -De2e.headless=true
 ```
 
 ### Mobile Tests

@@ -1,4 +1,4 @@
-package org.example.backend.e2e.page;
+package org.example.e2e.page;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
