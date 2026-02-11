@@ -35,13 +35,21 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   distanceKm = 0;
   rideStatus = '';
 
+  // ✅ cancel window
+  canCancel = false;
+  cancelDisabledReason = 'Cancellation is available only during ACTIVE rides';
+
+  // (opciono) feedback u UI
+  canceling = false;
+  cancelError: string | null = null;
+  cancelSuccess = false;
+
   reportOpen = false;
   reportText = '';
 
   private initializedFromState = false;
 
   ngAfterViewInit(): void {
-    console.log(this.ds.listInconsistenciesForMyActiveRide)
     this.initMap();
 
     this.sub = this.ds.watchMyActiveTracking().subscribe({
@@ -91,6 +99,30 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  // ✅ CANCEL RIDE
+  cancelRide(): void {
+    if (!this.canCancel || this.canceling) return;
+
+    const ok = confirm('Are you sure you want to cancel this ride?');
+    if (!ok) return;
+
+    this.canceling = true;
+    this.cancelError = null;
+    this.cancelSuccess = false;
+
+    // ✅ OVDE POVEŽI TVOJ ENDPOINT (kad ga imaš)
+    // Primer ako dodaš metodu u datasource:
+    // this.ds.cancelMyRide().subscribe({ ... })
+
+    // Za sada: mock (odmah success)
+    setTimeout(() => {
+      this.canceling = false;
+      this.cancelSuccess = true;
+      // Ako želiš, možeš i da “zamrzneš” UI:
+      // this.rideStatus = 'CANCELLED';
+    }, 500);
+  }
+
   private initMap(): void {
     this.map = L.map('tracking-map', {
       center: [45.2671, 19.8335],
@@ -104,11 +136,25 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   }
 
   private applyState(s: TrackingState): void {
-    console.log(("OKINUTA FUNKCIJA ZA SETOVANJE PODATAKA TRACKINGA"))
-    console.log(s)
+    console.log('OKINUTA FUNKCIJA ZA SETOVANJE PODATAKA TRACKINGA');
+    console.log(s);
+
     this.etaMinutes = s.etaMinutes;
     this.distanceKm = s.distanceKm;
     this.rideStatus = s.status;
+
+    // ✅ pravilo: cancel dozvoljen ako je ACTIVE i eta >= 10 min
+    // (koristimo etaMinutes kao "minutes to start", jer u tvom UI piše ETA)
+    if (this.rideStatus !== 'ACTIVE') {
+      this.canCancel = false;
+      this.cancelDisabledReason = 'Cancellation is available only during ACTIVE rides';
+    } else if (this.etaMinutes < 10) {
+      this.canCancel = false;
+      this.cancelDisabledReason = 'You can cancel only 10+ minutes before start';
+    } else {
+      this.canCancel = true;
+      this.cancelDisabledReason = 'Cancel this ride';
+    }
 
     const routePoints = (s.route ?? []).map((p) => [p.lat, p.lng] as [number, number]);
 
@@ -143,7 +189,7 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
 
       this.drawCheckpoints(s.checkpoints ?? []);
 
-      // RUTA SE CRTА JEDNOM: pickup -> destination (nikad se više ne menja)
+      // RUTA SE CRTA JEDNOM
       if (routePoints.length >= 2) {
         this.routeLine = L.polyline(routePoints, { weight: 4 }).addTo(this.map);
       } else {
@@ -156,7 +202,6 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
         ).addTo(this.map);
       }
 
-      // fit bounds (uključi i auto da se sve vidi)
       const bounds = L.latLngBounds([
         [s.car.lat, s.car.lng],
         [s.pickup.lat, s.pickup.lng],
@@ -168,12 +213,14 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    // posle init-a: NE DIRAMO routeLine uopšte
     this.animateCarTo({ lat: s.car.lat, lng: s.car.lng }, 900);
   }
+
   private drawCheckpoints(checkpoints: RideCheckpoint[]): void {
     this.checkpointMarkers.forEach((m) => {
-      try { m.remove(); } catch {}
+      try {
+        m.remove();
+      } catch {}
     });
     this.checkpointMarkers = [];
 

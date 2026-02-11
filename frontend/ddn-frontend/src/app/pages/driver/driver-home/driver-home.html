@@ -29,14 +29,25 @@
         {{ error }}
       </div>
 
-      <button
-        class="start-btn"
-        type="button"
-        (click)="startRide()"
-        [disabled]="!canStart()"
-      >
-        {{ starting ? 'STARTING...' : 'START' }}
-      </button>
+      <div class="start-actions">
+        <button
+          class="start-btn"
+          type="button"
+          (click)="startRide()"
+          [disabled]="!canStart()"
+        >
+          {{ starting ? 'STARTING...' : 'START' }}
+        </button>
+
+        <button
+          class="cancel-btn"
+          type="button"
+          (click)="openCancelPopup()"
+          [disabled]="!canCancel()"
+        >
+          CANCEL
+        </button>
+      </div>
 
       <ng-template #loadingLines>
         <div class="drive-line muted">{{ loading ? 'Loading...' : '' }}</div>
@@ -53,5 +64,24 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<div class="cancel-backdrop" *ngIf="showCancelPopup">
+  <div class="cancel-modal">
+    
+    <div class="cancel-title">NOTIFICATION</div>
+
+    <select class="cancel-select">
+      <option value="" selected disabled>Cancel reason</option>
+      <option value="PASSENGER_NOT_PRESENT">Passenger is not at the pickup location</option>
+      <option value="HEALTH_ISSUE">Health issue</option>
+      <option value="VEHICLE_PROBLEM">Vehicle problem</option>
+      <option value="TRAFFIC_INCIDENT">Traffic incident / road blockage</option>
+      <option value="SAFETY_CONCERN">Safety concern</option>
+    </select>
+
+
+    <button class="cancel-send" type="button" (click)="closeCancelPopup()">Send</button>
   </div>
 </div>

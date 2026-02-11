@@ -54,6 +54,8 @@ export class DriverHomeComponent implements AfterViewInit, OnDestroy {
   starting = false;
   error: string | null = null;
 
+  showCancelPopup = false;
+
   ngAfterViewInit(): void {
     this.initMap();
 
@@ -78,6 +80,18 @@ export class DriverHomeComponent implements AfterViewInit, OnDestroy {
       this.map?.remove();
     } catch {
     }
+  }
+
+  openCancelPopup(): void {
+    this.showCancelPopup = true;
+  }
+
+  closeCancelPopup(): void {
+    this.showCancelPopup = false;
+  }
+
+  canCancel(): boolean {
+    return !!this.ride && !this.loading && !this.starting;
   }
 
   private initMap(): void {

@@ -1,4 +1,5 @@
 import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, inject } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import * as L from 'leaflet';
 import { Subject, of, timer } from 'rxjs';
 import { catchError, switchMap, takeUntil } from 'rxjs/operators';
@@ -13,7 +14,7 @@ const VEHICLE_POLL_MS = 800;
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [PublicNavbarComponent],
+  imports: [PublicNavbarComponent, RouterModule],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
@@ -129,7 +130,12 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
 
       existing.getPopup()?.setContent(`Vehicle ${v.id} — ${v.status.toUpperCase()}`);
 
-      this.animateMarkerTo(v.id, existing, { lat: v.lat, lng: v.lng }, Math.max(200, Math.floor(VEHICLE_POLL_MS * 0.85)));
+      this.animateMarkerTo(
+        v.id,
+        existing,
+        { lat: v.lat, lng: v.lng },
+        Math.max(200, Math.floor(VEHICLE_POLL_MS * 0.85))
+      );
     }
 
     for (const [id, marker] of this.markersById.entries()) {
