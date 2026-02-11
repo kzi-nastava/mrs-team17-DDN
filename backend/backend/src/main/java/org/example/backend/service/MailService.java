@@ -165,9 +165,6 @@ public class MailService {
         }
         return base + (base.contains("?") ? "&" : "?") + "rideId=" + rideId;
     }
-}
-
-
 
     public void sendPasswordResetEmail(String to, String resetLink) {
         SimpleMailMessage msg = new SimpleMailMessage();
