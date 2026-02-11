@@ -119,14 +119,18 @@ export class DriverActiveRideComponent implements OnInit {
   }
 
   private preparePostFinishState(): void {
-    this.ridesApi.getAcceptedRides().pipe(take(1)).subscribe({
+    this.ridesApi.getUpcomingRides().pipe(take(1)).subscribe({
       next: (rides) => {
-        const nextRideId = rides?.length ? rides[0].rideId : null;
+        const nextRide = rides?.length ? rides[0] : null;
+        const nextRideId = nextRide?.rideId ?? null;
         if (nextRideId != null) {
-          this.driverState.setAvailable(false);
+          const readyToStart = nextRide?.status?.toUpperCase() === 'ACCEPTED';
+          this.driverState.setAvailable(!readyToStart);
           this.postFinishTarget = 'future';
           this.postFinishRideId = nextRideId;
-          this.postFinishMessage = 'Ride finished. Next assigned ride is ready.';
+          this.postFinishMessage = readyToStart
+            ? 'Ride finished. Next assigned ride is ready.'
+            : 'Ride finished. Upcoming scheduled ride is assigned.';
           return;
         }
 

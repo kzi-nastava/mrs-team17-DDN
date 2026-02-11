@@ -59,6 +59,10 @@ public class DriverRideService {
         return repository.findAcceptedRides(driverId);
     }
 
+    public List<DriverRideDetailsResponseDto> getUpcomingRides(Long driverId) {
+        return repository.findUpcomingRides(driverId);
+    }
+
     public void startRide(Long driverId, Long rideId) {
         boolean ok = repository.startRide(driverId, rideId);
         if (!ok) {

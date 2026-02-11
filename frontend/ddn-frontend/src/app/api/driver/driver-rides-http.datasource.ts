@@ -29,6 +29,10 @@ export class DriverRidesHttpDataSource {
     return this.http.get<DriverRideDetails[]>(`${this.baseUrl}/driver/rides/accepted`);
   }
 
+  getUpcomingRides(): Observable<DriverRideDetails[]> {
+    return this.http.get<DriverRideDetails[]>(`${this.baseUrl}/driver/rides/upcoming`);
+  }
+
   startRide(rideId: number): Observable<void> {
     return this.http.put<void>(`${this.baseUrl}/driver/rides/${rideId}/start`, null);
   }

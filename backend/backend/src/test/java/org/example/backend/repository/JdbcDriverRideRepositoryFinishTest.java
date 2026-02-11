@@ -339,6 +339,24 @@ class JdbcDriverRideRepositoryFinishTest {
     }
 
     @Test
+    void hasUpcomingAssignedRide_shouldReturnTrue_whenScheduledRideIsWithinLockWindow() {
+        insertRide(304L, DRIVER_ID, "SCHEDULED", false, null, null, OffsetDateTime.now().plusMinutes(10), null, null, 0, false);
+
+        boolean hasUpcoming = repository.hasUpcomingAssignedRide(DRIVER_ID);
+
+        assertTrue(hasUpcoming);
+    }
+
+    @Test
+    void hasUpcomingAssignedRide_shouldReturnFalse_whenScheduledRideIsOutsideLockWindow() {
+        insertRide(305L, DRIVER_ID, "SCHEDULED", false, null, null, OffsetDateTime.now().plusHours(2), null, null, 0, false);
+
+        boolean hasUpcoming = repository.hasUpcomingAssignedRide(DRIVER_ID);
+
+        assertFalse(hasUpcoming);
+    }
+
+    @Test
     void hasUpcomingAssignedRide_shouldReturnFalse_whenNoOpenAssignedRidesExist() {
         insertRide(
                 302L,

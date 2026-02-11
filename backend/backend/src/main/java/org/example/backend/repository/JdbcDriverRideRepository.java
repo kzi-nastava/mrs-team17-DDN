@@ -8,12 +8,15 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public class JdbcDriverRideRepository implements DriverRideRepository {
+
+    private static final int SCHEDULE_LOCK_MINUTES = 15;
 
     private final JdbcClient jdbc;
 
@@ -148,11 +151,22 @@ public class JdbcDriverRideRepository implements DriverRideRepository {
 
     @Override
     public List<DriverRideDetailsResponseDto> findAcceptedRides(Long driverId) {
+        return findOpenRidesByStatuses(driverId, List.of("ACCEPTED"));
+    }
+
+    @Override
+    public List<DriverRideDetailsResponseDto> findUpcomingRides(Long driverId) {
+        return findOpenRidesByStatuses(driverId, List.of("SCHEDULED", "ACCEPTED"));
+    }
+
+    private List<DriverRideDetailsResponseDto> findOpenRidesByStatuses(Long driverId, List<String> statuses) {
+        if (statuses == null || statuses.isEmpty()) return List.of();
+
         String sql = """
             select r.id
             from rides r
             where r.driver_id = :driverId
-              and r.status = 'ACCEPTED'
+              and r.status in (:statuses)
               and r.ended_at is null
               and r.canceled = false
             order by coalesce(r.scheduled_at, r.created_at) asc
@@ -160,6 +174,7 @@ public class JdbcDriverRideRepository implements DriverRideRepository {
 
         List<Long> rideIds = jdbc.sql(sql)
                 .param("driverId", driverId)
+                .param("statuses", statuses)
                 .query(Long.class)
                 .list();
 
@@ -214,15 +229,25 @@ public class JdbcDriverRideRepository implements DriverRideRepository {
 
     @Override
     public boolean hasUpcomingAssignedRide(Long driverId) {
+        OffsetDateTime lockBoundary = OffsetDateTime.now().plusMinutes(SCHEDULE_LOCK_MINUTES);
+
         Integer count = jdbc.sql("""
             select count(1)
             from rides
             where driver_id = :driverId
               and ended_at is null
               and canceled = false
-              and status in ('SCHEDULED', 'ACCEPTED', 'ACTIVE')
+              and (
+                    status in ('ACCEPTED', 'ACTIVE')
+                    or (
+                        status = 'SCHEDULED'
+                        and scheduled_at is not null
+                        and scheduled_at <= :lockBoundary
+                    )
+              )
         """)
                 .param("driverId", driverId)
+                .param("lockBoundary", lockBoundary)
                 .query(Integer.class)
                 .single();
 

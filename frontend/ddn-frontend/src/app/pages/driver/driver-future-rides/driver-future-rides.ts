@@ -106,7 +106,7 @@ export class DriverFutureRidesComponent implements AfterViewInit, OnDestroy {
     this.clearRouteFromMap();
 
     this.ridesApi
-      .getAcceptedRides()
+      .getUpcomingRides()
       .pipe(
         take(1),
         finalize(() => (this.loading = false))
@@ -258,7 +258,17 @@ export class DriverFutureRidesComponent implements AfterViewInit, OnDestroy {
   }
 
   canStart(): boolean {
-    return !!this.ride && !this.loading && !this.starting;
+    return (
+      !!this.ride &&
+      this.ride.status?.toUpperCase() === 'ACCEPTED' &&
+      !this.loading &&
+      !this.starting
+    );
+  }
+
+  startLabel(): string {
+    if (!this.ride) return 'START RIDE';
+    return this.ride.status?.toUpperCase() === 'ACCEPTED' ? 'START RIDE' : 'WAITING FOR START WINDOW';
   }
 
   startRide(): void {
@@ -289,8 +299,26 @@ export class DriverFutureRidesComponent implements AfterViewInit, OnDestroy {
     this.loadAcceptedRides();
   }
 
+  compactRouteLabel(ride: DriverRideDetails): string {
+    return `${this.compactAddress(ride.startAddress)} → ${this.compactAddress(ride.destinationAddress)}`;
+  }
+
+  fullRouteLabel(ride: DriverRideDetails): string {
+    return `${ride.startAddress ?? ''} → ${ride.destinationAddress ?? ''}`;
+  }
+
   private parseRideId(raw: string | null): number | null {
     const parsed = Number(raw);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }
+
+  private compactAddress(address: string | null | undefined): string {
+    const value = (address ?? '').replace(/\s+/g, ' ').trim();
+    if (!value) return '—';
+
+    const comma = value.indexOf(',');
+    const base = comma > 0 ? value.slice(0, comma) : value;
+    if (base.length <= 32) return base;
+    return `${base.slice(0, 31)}…`;
   }
 }
