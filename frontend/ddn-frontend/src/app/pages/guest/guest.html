@@ -1,0 +1,69 @@
+<app-public-navbar></app-public-navbar>
+
+<div class="guest-page">
+  <div class="guest-container">
+
+    <div class="map-wrap">
+      <div id="guestMap" class="map"></div>
+    </div>
+
+    <div class="guest-card">
+      <div class="hint">
+        Click on the map to select the <b>starting point</b>, then click again to choose the <b>destination</b>.
+        The third click resets the selection.
+      </div>
+
+      <div class="form-grid">
+        <div class="field-block">
+          <div class="lbl">From:</div>
+          <div class="field">
+            <input type="text" [value]="start.address" readonly placeholder="Pick start on map" />
+          </div>
+        </div>
+
+        <div class="field-block">
+          <div class="lbl">To:</div>
+          <div class="field">
+            <input type="text" [value]="destination.address" readonly placeholder="Pick destination on map" />
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button
+          class="btn primary"
+          type="button"
+          (click)="showEstimate()"
+          [disabled]="!hasStart || !hasDestination || previewLoading">
+          {{ previewLoading ? 'Calculating...' : 'Show estimate' }}
+        </button>
+
+        <button class="btn ghost" type="button" (click)="resetAll()">
+          Reset
+        </button>
+      </div>
+
+      <div class="result" *ngIf="previewEtaMinutes !== null">
+        <div class="pill">
+          <span class="k">ETA</span>
+          <span class="v">{{ previewEtaMinutes }} min</span>
+        </div>
+
+        <div class="pill" *ngIf="previewDistanceKm !== null">
+          <span class="k">Distance</span>
+          <span class="v">{{ previewDistanceKm | number:'1.1-1' }} km</span>
+        </div>
+
+        <div class="pill" *ngIf="previewPriceRsd !== null">
+          <span class="k">Estimated price</span>
+          <span class="v">{{ previewPriceRsd }} RSD</span>
+        </div>
+      </div>
+
+      <div class="small" *ngIf="isGeocoding">
+        Resolving address...
+      </div>
+    </div>
+
+  </div>
+</div>

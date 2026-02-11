@@ -36,4 +36,20 @@ public class AccountController {
         }
         return null;
     }
+
+    @PostMapping("/password-change-request")
+    public ResponseEntity<Void> passwordChangeRequest(
+            @RequestParam("email") String email
+    ) {
+        // Important: do NOT reveal whether email exists
+        changePasswordService.requestPasswordReset(email);
+        return ResponseEntity.accepted().build(); // always
+    }
+
+    @PostMapping("/password-change")
+    public ResponseEntity<Void> passwordChange(@RequestBody ChangePasswordRequestDto request) {
+        // your existing authenticated flow can stay, but forgot-password flow should use token-based DTO
+        return ResponseEntity.status(501).build();
+    }
+
 }

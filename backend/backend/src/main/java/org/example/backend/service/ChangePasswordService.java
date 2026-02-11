@@ -3,20 +3,28 @@ package org.example.backend.service;
 import org.example.backend.dto.request.ChangePasswordRequestDto;
 import org.example.backend.dto.response.UserAuthResponseDto;
 import org.example.backend.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.UUID;
 
 @Service
 public class ChangePasswordService {
 
     private final UserRepository users;
     private final PasswordEncoder passwordEncoder;
+    private final MailService mailService;
 
-    public ChangePasswordService(UserRepository users, PasswordEncoder passwordEncoder) {
+    @Value("${app.frontend.base-url:http://localhost:4200}")
+    private String frontendBaseUrl;
+
+    public ChangePasswordService(UserRepository users, PasswordEncoder passwordEncoder, MailService mailService) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
+        this.mailService = mailService;
     }
 
     public void changePassword(Long userId, ChangePasswordRequestDto req) {
@@ -60,6 +68,19 @@ public class ChangePasswordService {
         if (updated <= 0) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Password update failed");
         }
+    }
+
+    public void requestPasswordReset(String email) {
+        if (email == null || email.isBlank()) return;
+
+        users.findAuthByEmail(email.trim())
+                .ifPresent(user -> {
+                    String token = UUID.randomUUID().toString();
+
+                    String link = frontendBaseUrl + "/reset-password?token=" + token;
+
+                    mailService.sendPasswordResetEmail(user.email(), link);
+                });
     }
 
     private static boolean isBlank(String s) {

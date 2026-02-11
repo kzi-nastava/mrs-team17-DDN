@@ -1,4 +1,3 @@
-
 <div class="content">
   <div class="grid">
     <div class="map-wrap">
@@ -30,6 +29,20 @@
         >
           Report inconsistency
         </button>
+
+        <!-- ✅ CANCEL BUTTON -->
+        <button
+          class="btn btn-danger"
+          (click)="cancelRide()"
+          [disabled]="!canCancel || canceling"
+          [title]="cancelDisabledReason"
+        >
+          {{ canceling ? 'Canceling…' : 'Cancel ride' }}
+        </button>
+
+        <!-- (opciono) mali feedback -->
+        <div class="hint ok" *ngIf="cancelSuccess">Ride canceled.</div>
+        <div class="hint err" *ngIf="cancelError">{{ cancelError }}</div>
       </div>
     </div>
   </div>
