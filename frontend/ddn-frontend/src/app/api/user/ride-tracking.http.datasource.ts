@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, timer } from 'rxjs';
-import { switchMap, shareReplay } from 'rxjs/operators';
+import { EMPTY, Observable, of, timer } from 'rxjs';
+import { catchError, exhaustMap, shareReplay } from 'rxjs/operators';
 import { RideTrackingDataSource } from './ride-tracking.datasource';
 import { InconsistencyReport, TrackingState } from './models/ride-tracking.models';
 import { API_BASE_URL } from '../../app.config';
@@ -17,9 +17,11 @@ export class RideTrackingHttpDataSource implements RideTrackingDataSource {
       : `${this.baseUrl}/rides/active/tracking`;
 
     return timer(0, 2000).pipe(
-      switchMap(() =>
-        this.http.get<TrackingState>(endpoint)
-      ),
+      exhaustMap(() => this.http.get<TrackingState>(endpoint, {
+        params: { ts: Date.now().toString() },
+      }).pipe(
+        catchError(() => EMPTY)
+      )),
       shareReplay({ bufferSize: 1, refCount: true })
     );
   }

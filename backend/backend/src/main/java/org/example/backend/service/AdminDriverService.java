@@ -2,6 +2,7 @@ package org.example.backend.service;
 
 import org.example.backend.dto.request.AdminCreateDriverRequestDto;
 import org.example.backend.dto.response.AdminCreateDriverResponseDto;
+import org.example.backend.osrm.OsrmClient;
 import org.example.backend.repository.DriverActivationTokenRepository;
 import org.example.backend.repository.DriverRepository;
 import org.example.backend.repository.UserAccountRepository;
@@ -26,6 +27,7 @@ public class AdminDriverService {
     private final DriverActivationTokenRepository tokenRepo;
     private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
+    private final OsrmClient osrmClient;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -41,7 +43,8 @@ public class AdminDriverService {
             VehicleRepository vehicleRepo,
             DriverActivationTokenRepository tokenRepo,
             MailService mailService,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            OsrmClient osrmClient
     ) {
         this.userRepo = userRepo;
         this.driverRepo = driverRepo;
@@ -49,6 +52,7 @@ public class AdminDriverService {
         this.tokenRepo = tokenRepo;
         this.mailService = mailService;
         this.passwordEncoder = passwordEncoder;
+        this.osrmClient = osrmClient;
     }
 
     @Transactional
@@ -85,7 +89,7 @@ public class AdminDriverService {
 
         Long driverId = driverRepo.insertDriverReturningId(userId);
 
-        double[] coords = randomNoviSadCoords();
+        double[] coords = snapToRoad(randomNoviSadCoords());
         vehicleRepo.insertVehicleReturningId(
                 driverId,
                 coords[0],
@@ -112,6 +116,17 @@ public class AdminDriverService {
         resp.setStatus("PENDING_PASSWORD_SETUP");
         resp.setActivationLinkValidHours(validHours);
         return resp;
+    }
+
+    private double[] snapToRoad(double[] coords) {
+        double lat = coords[0];
+        double lng = coords[1];
+        try {
+            OsrmClient.Point snapped = osrmClient.nearestDrivingPoint(lat, lng);
+            return new double[]{snapped.lat(), snapped.lon()};
+        } catch (Exception ignored) {
+            return new double[]{lat, lng};
+        }
     }
 
     private static String safeTrim(String s) {

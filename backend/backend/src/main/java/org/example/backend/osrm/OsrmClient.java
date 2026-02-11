@@ -39,6 +39,54 @@ public class OsrmClient {
             List<Point> geometry // ordered polyline points (lat/lon)
     ) {}
 
+    public Point nearestDrivingPoint(Point point) {
+        return nearestDrivingPoint(point.lat(), point.lon());
+    }
+
+    public Point nearestDrivingPoint(double lat, double lon) {
+        String url = baseUrl + "/nearest/v1/driving/" + lon + "," + lat + "?number=1";
+
+        try {
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(3))
+                    .GET()
+                    .header("Accept", "application/json")
+                    .build();
+
+            HttpResponse<byte[]> resp = http.send(req, HttpResponse.BodyHandlers.ofByteArray());
+
+            int sc = resp.statusCode();
+            if (sc < 200 || sc >= 300) {
+                throw new IllegalStateException("OSRM HTTP " + sc);
+            }
+
+            String json = new String(resp.body(), StandardCharsets.UTF_8);
+            JsonNode root = om.readTree(json);
+            JsonNode waypoints = root.path("waypoints");
+            if (!waypoints.isArray() || waypoints.isEmpty()) {
+                throw new IllegalStateException("OSRM JSON missing waypoints");
+            }
+
+            JsonNode loc = waypoints.get(0).path("location");
+            if (!loc.isArray() || loc.size() < 2) {
+                throw new IllegalStateException("OSRM waypoint location missing");
+            }
+
+            double snappedLon = loc.get(0).asDouble(Double.NaN);
+            double snappedLat = loc.get(1).asDouble(Double.NaN);
+            if (!Double.isFinite(snappedLat) || !Double.isFinite(snappedLon)) {
+                throw new IllegalStateException("OSRM waypoint location invalid");
+            }
+
+            return new Point(snappedLat, snappedLon);
+
+        } catch (Exception e) {
+            String msg = (e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
+            throw new IllegalStateException("OSRM nearest request failed: " + msg, e);
+        }
+    }
+
     public RouteSummary routeDriving(List<Point> points) {
         var full = routeDrivingWithGeometry(points, false);
         return new RouteSummary(full.distanceMeters(), full.durationSeconds());

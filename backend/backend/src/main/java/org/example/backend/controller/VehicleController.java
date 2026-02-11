@@ -2,6 +2,7 @@ package org.example.backend.controller;
 
 import org.example.backend.dto.response.ActiveVehicleResponseDto;
 import org.example.backend.service.VehicleService;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,8 @@ public class VehicleController {
             @RequestParam(required = false) Double minLng,
             @RequestParam(required = false) Double maxLng
     ) {
-        return ResponseEntity.ok(vehicleService.getActiveVehicles(minLat, maxLat, minLng, maxLng));
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(vehicleService.getActiveVehicles(minLat, maxLat, minLng, maxLng));
     }
 }

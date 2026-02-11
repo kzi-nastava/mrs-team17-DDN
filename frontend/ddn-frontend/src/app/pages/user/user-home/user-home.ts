@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import * as L from 'leaflet';
 import { HttpClient } from '@angular/common/http';
 import { Subject, of, timer } from 'rxjs';
-import { catchError, switchMap, takeUntil } from 'rxjs/operators';
+import { catchError, exhaustMap, takeUntil } from 'rxjs/operators';
 
 import { ActiveVehiclesHttpDataSource } from '../../landing/active-vehicles.http.datasource';
 import { API_BASE_URL } from '../../../app.config';
@@ -85,7 +85,7 @@ export class UserHome implements AfterViewInit, OnDestroy {
     timer(0, VEHICLE_POLL_MS)
       .pipe(
         takeUntil(this.destroy$),
-        switchMap(() =>
+        exhaustMap(() =>
           this.ds.getActiveVehicles().pipe(
             catchError((err) => {
               console.error('Failed to load active vehicles', err);

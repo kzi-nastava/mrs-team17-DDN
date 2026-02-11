@@ -114,8 +114,9 @@ public class RideService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ride already ended/canceled");
         }
 
-        if (!"ACTIVE".equals(snap.status())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ride is not ACTIVE");
+        boolean accepted = "ACCEPTED".equals(snap.status());
+        if (!accepted && !"ACTIVE".equals(snap.status())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ride is not ACTIVE/ACCEPTED");
         }
 
         final double PICKUP_THRESHOLD_M = 80.0;
@@ -123,7 +124,7 @@ public class RideService {
         final double DEST_THRESHOLD_M = 30.0;
         final double STEP_METERS = 25.0;
 
-        boolean pickedUp = snap.pickedUp();
+        boolean pickedUp = !accepted && snap.pickedUp();
 
         if (!pickedUp) {
             double distToPickup = haversineMeters(
@@ -132,8 +133,10 @@ public class RideService {
             );
 
             if (distToPickup <= PICKUP_THRESHOLD_M) {
-                repository.markPickedUp(rideId);
-                repository.updateVehicleLocation(snap.driverId(), snap.pickupLat(), snap.pickupLng());
+                if (!accepted) {
+                    repository.markPickedUp(rideId);
+                    repository.updateVehicleLocation(snap.driverId(), snap.pickupLat(), snap.pickupLng());
+                }
                 return;
             }
         }
@@ -201,6 +204,21 @@ public class RideService {
                 STEP_METERS
         );
 
+        double movedMeters = haversineMeters(
+                snap.carLat(), snap.carLng(),
+                next.lat(), next.lng()
+        );
+        if (movedMeters < 1.0) {
+            LatLng fallback = firstPointAtLeastMeters(
+                    snap.carLat(), snap.carLng(),
+                    route.geometry(),
+                    5.0
+            );
+            if (fallback != null) {
+                next = fallback;
+            }
+        }
+
         boolean updated = repository.updateVehicleLocation(snap.driverId(), next.lat(), next.lng());
         if (!updated) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Vehicle location not updated");
@@ -243,6 +261,23 @@ public class RideService {
 
         OsrmClient.Point last = geometry.get(geometry.size() - 1);
         return new LatLng(last.lat(), last.lon());
+    }
+
+    private static LatLng firstPointAtLeastMeters(
+            double startLat,
+            double startLng,
+            List<OsrmClient.Point> geometry,
+            double minMeters
+    ) {
+        if (geometry == null || geometry.isEmpty()) return null;
+
+        for (OsrmClient.Point p : geometry) {
+            double dist = haversineMeters(startLat, startLng, p.lat(), p.lon());
+            if (dist >= minMeters) {
+                return new LatLng(p.lat(), p.lon());
+            }
+        }
+        return null;
     }
 
     private static LatLng lerpOnSphereApprox(double lat1, double lon1, double lat2, double lon2, double t) {
