@@ -54,39 +54,38 @@ export const routes: Routes = [
   {
     path: 'driver/activate',
     loadComponent: () =>
-      import('./pages/driver/driver-activate/driver-activate')
-        .then(m => m.DriverActivate),
+      import('./pages/driver/driver-activate/driver-activate').then((m) => m.DriverActivate),
   },
-
   {
     path: 'reset-password',
     loadComponent: () =>
-      import('./pages/user/reset-password/reset-password')
-        .then(m => m.ResetPassword),
+      import('./pages/user/reset-password/reset-password').then((m) => m.ResetPassword),
   },
   {
     path: 'new-password',
     loadComponent: () =>
-      import('./pages/user/new-password/new-password')
-        .then(m => m.NewPassword),
+      import('./pages/user/new-password/new-password').then((m) => m.NewPassword),
   },
   {
     path: 'success',
     loadComponent: () =>
-      import('./pages/user/success-password/success-password')
-        .then(m => m.SuccessPassword),
+      import('./pages/user/success-password/success-password').then((m) => m.SuccessPassword),
   },
   {
     path: 'sign-up',
-    loadComponent: () =>
-      import('./pages/user/sign-up/sign-up')
-        .then(m => m.SignUp),
+    loadComponent: () => import('./pages/user/sign-up/sign-up').then((m) => m.SignUp),
   },
   {
     path: 'sign-up-confirmed',
     loadComponent: () =>
-      import('./pages/user/sign-up-confirmed/sign-up-confirmed')
-        .then(m => m.SignUpConfirmed),
+      import('./pages/user/sign-up-confirmed/sign-up-confirmed').then((m) => m.SignUpConfirmed),
+  },
+  {
+    path: 'registration-confirm',
+    loadComponent: () =>
+      import('./pages/user/registration-confirm/registration-confirm').then(
+        (m) => m.RegistrationConfirm,
+      ),
   },
 
   // USER
@@ -98,34 +97,27 @@ export const routes: Routes = [
     children: [
       {
         path: 'support',
-        loadComponent: () =>
-          import('./pages/user/user-chat/user-chat')
-            .then(m => m.UserChat),
+        loadComponent: () => import('./pages/user/user-chat/user-chat').then((m) => m.UserChat),
         providers: [{ provide: CHAT_DS, useClass: ChatHttpDataSource }],
       },
       {
         path: 'home',
-        loadComponent: () =>
-          import('./pages/user/user-home/user-home')
-            .then(m => m.UserHome),
+        loadComponent: () => import('./pages/user/user-home/user-home').then((m) => m.UserHome),
       },
       {
         path: 'ride-history',
         loadComponent: () =>
-          import('./pages/user/user-ride-history/user-ride-history')
-            .then(m => m.UserRideHistory),
+          import('./pages/user/user-ride-history/user-ride-history').then((m) => m.UserRideHistory),
       },
       {
         path: 'reports',
         loadComponent: () =>
-          import('./pages/user/user-reports/user-reports')
-            .then(m => m.UserReports),
+          import('./pages/user/user-reports/user-reports').then((m) => m.UserReports),
       },
       {
         path: 'profile',
         loadComponent: () =>
-          import('./pages/user/user-profile/user-profile')
-            .then(m => m.UserProfile),
+          import('./pages/user/user-profile/user-profile').then((m) => m.UserProfile),
       },
       {
         path: 'ride-tracking',
@@ -165,8 +157,7 @@ export const routes: Routes = [
       {
         path: 'reports',
         loadComponent: () =>
-          import('./pages/driver/driver-reports/driver-reports')
-            .then(m => m.DriverReports),
+          import('./pages/driver/driver-reports/driver-reports').then((m) => m.DriverReports),
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
     ],
@@ -182,33 +173,32 @@ export const routes: Routes = [
       {
         path: 'ride-status',
         loadComponent: () =>
-          import('./pages/admin/admin-ride-status/admin-ride-status')
-            .then(m => m.AdminRideStatus),
+          import('./pages/admin/admin-ride-status/admin-ride-status').then(
+            (m) => m.AdminRideStatus,
+          ),
       },
       {
         path: 'pricing',
         loadComponent: () =>
-          import('./pages/admin/admin-pricing/admin-pricing')
-            .then(m => m.AdminPricing),
+          import('./pages/admin/admin-pricing/admin-pricing').then((m) => m.AdminPricing),
       },
       {
         path: 'reports',
         loadComponent: () =>
-          import('./pages/admin/admin-reports/admin-reports')
-            .then(m => m.AdminReports),
+          import('./pages/admin/admin-reports/admin-reports').then((m) => m.AdminReports),
       },
       {
         path: 'chats',
         loadComponent: () =>
-          import('./pages/admin/admin-chats/admin-chats')
-            .then(m => m.AdminChats),
+          import('./pages/admin/admin-chats/admin-chats').then((m) => m.AdminChats),
         providers: [{ provide: CHAT_DS, useClass: ChatHttpDataSource }],
       },
       {
         path: 'chats/:threadId',
         loadComponent: () =>
-          import('./pages/admin/admin-chat-details/admin-chat-details')
-            .then(m => m.AdminChatDetails),
+          import('./pages/admin/admin-chat-details/admin-chat-details').then(
+            (m) => m.AdminChatDetails,
+          ),
         providers: [{ provide: CHAT_DS, useClass: ChatHttpDataSource }],
       },
       { path: 'home', component: AdminHome },
@@ -217,21 +207,22 @@ export const routes: Routes = [
       {
         path: 'profile',
         loadComponent: () =>
-          import('./pages/admin/admin-profile/admin-profile')
-            .then(m => m.AdminProfile),
+          import('./pages/admin/admin-profile/admin-profile').then((m) => m.AdminProfile),
       },
       {
         path: 'password-change',
         loadComponent: () =>
-          import('./pages/admin/admin-password-change/admin-password-change')
-            .then(m => m.AdminPasswordChange),
+          import('./pages/admin/admin-password-change/admin-password-change').then(
+            (m) => m.AdminPasswordChange,
+          ),
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       {
         path: 'update-requests/:requestId',
         loadComponent: () =>
-          import('./pages/admin/admin-update-request-details/admin-update-request-details')
-            .then(m => m.AdminUpdateRequestDetails),
+          import('./pages/admin/admin-update-request-details/admin-update-request-details').then(
+            (m) => m.AdminUpdateRequestDetails,
+          ),
       },
     ],
   },

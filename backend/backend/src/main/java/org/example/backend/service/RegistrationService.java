@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.example.backend.event.RegistrationEmailEvent;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -20,8 +23,8 @@ public class RegistrationService {
 
     private final UserAccountRepository userAccountRepository;
     private final RegistrationTokenRepository registrationTokenRepository;
-    private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher events;
 
     @Value("${app.frontendBaseUrl:http://localhost:4200}")
     private String frontendBaseUrl;
@@ -31,15 +34,16 @@ public class RegistrationService {
     public RegistrationService(
             UserAccountRepository userAccountRepository,
             RegistrationTokenRepository registrationTokenRepository,
-            MailService mailService,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            ApplicationEventPublisher events
     ) {
         this.userAccountRepository = userAccountRepository;
         this.registrationTokenRepository = registrationTokenRepository;
-        this.mailService = mailService;
         this.passwordEncoder = passwordEncoder;
+        this.events = events;
     }
 
+    @Transactional
     public RegisterResponseDto register(RegisterRequestDto request) {
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request body is required");
@@ -90,11 +94,12 @@ public class RegistrationService {
 
         // 4) mail link ka frontu
         String link = frontendBaseUrl + "/registration-confirm?token=" + token;
-        mailService.sendRegistrationConfirmation(email, link);
+        events.publishEvent(new RegistrationEmailEvent(email, link));
 
         return new RegisterResponseDto();
     }
 
+    @Transactional
     public void confirm(String token) {
         if (isBlank(token)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token is required");

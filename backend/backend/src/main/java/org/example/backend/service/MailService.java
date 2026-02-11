@@ -134,4 +134,21 @@ public class MailService {
 
     System.out.println(">>> MAIL SENT SUCCESSFULLY");
 }
+
+
+
+    public void sendPasswordResetEmail(String to, String resetLink) {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(from);
+        msg.setTo(to);
+        msg.setSubject("Password reset");
+        msg.setText(
+                "We received a request to reset your password.\n\n" +
+                        "Set a new password using this link (valid for 24 hours):\n" +
+                        resetLink + "\n\n" +
+                        "If you did not request this, you can ignore this email."
+        );
+
+        mailSender.send(msg);
+    }
 }
