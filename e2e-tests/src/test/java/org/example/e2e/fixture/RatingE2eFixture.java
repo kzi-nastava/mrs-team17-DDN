@@ -1,4 +1,4 @@
-package org.example.backend.e2e.fixture;
+package org.example.e2e.fixture;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 

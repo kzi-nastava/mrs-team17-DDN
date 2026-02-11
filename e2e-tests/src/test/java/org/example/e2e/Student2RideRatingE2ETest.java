@@ -1,9 +1,9 @@
-package org.example.backend.e2e;
+package org.example.e2e;
 
-import org.example.backend.e2e.fixture.RatingE2eFixture;
-import org.example.backend.e2e.page.LoginPage;
-import org.example.backend.e2e.page.RideRatePage;
-import org.example.backend.e2e.page.UserHomePage;
+import org.example.e2e.fixture.RatingE2eFixture;
+import org.example.e2e.page.LoginPage;
+import org.example.e2e.page.RideRatePage;
+import org.example.e2e.page.UserHomePage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("e2e")
-class Student2RideRatingE2ETest {
+class   Student2RideRatingE2ETest {
 
     private WebDriver driver;
     private RatingE2eFixture fixture;
@@ -115,7 +115,7 @@ class Student2RideRatingE2ETest {
         ratePage.submit();
 
         ratePage.waitForError();
-        assertEquals("Submit failed", ratePage.errorText());
+        assertEquals("Rating is available up to 3 days after ride completion.", ratePage.errorText());
         assertEquals(0, fixture.countRatingsForRide(rideId));
     }
 
