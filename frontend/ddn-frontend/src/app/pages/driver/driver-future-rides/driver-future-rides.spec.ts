@@ -14,7 +14,7 @@ describe('DriverFutureRides', () => {
   let fixture: ComponentFixture<DriverFutureRidesComponent>;
   let ridesApiMock: {
     getActiveRide: ReturnType<typeof vi.fn>;
-    getAcceptedRides: ReturnType<typeof vi.fn>;
+    getUpcomingRides: ReturnType<typeof vi.fn>;
     startRide: ReturnType<typeof vi.fn>;
   };
   let httpMock: { get: ReturnType<typeof vi.fn> };
@@ -57,7 +57,7 @@ describe('DriverFutureRides', () => {
   beforeEach(async () => {
     ridesApiMock = {
       getActiveRide: vi.fn().mockReturnValue(throwError(() => ({ status: 404 }))),
-      getAcceptedRides: vi.fn().mockReturnValue(of(acceptedRides)),
+      getUpcomingRides: vi.fn().mockReturnValue(of(acceptedRides)),
       startRide: vi.fn().mockReturnValue(of(void 0)),
     };
     httpMock = {

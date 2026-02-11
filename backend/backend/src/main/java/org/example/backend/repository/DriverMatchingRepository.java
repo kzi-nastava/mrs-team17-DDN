@@ -1,5 +1,6 @@
 package org.example.backend.repository;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public interface DriverMatchingRepository {
@@ -26,6 +27,13 @@ public interface DriverMatchingRepository {
             int requiredSeats
     );
 
+    List<CandidateDriver> findAssignableDriversForScheduledRide(
+            String vehicleTypeLower,
+            boolean babyTransport,
+            boolean petTransport,
+            int requiredSeats
+    );
+
     List<FinishingSoonDriver> findDriversFinishingSoon(
             String vehicleTypeLower,
             boolean babyTransport,
@@ -37,4 +45,10 @@ public interface DriverMatchingRepository {
     boolean setDriverAvailable(Long driverId, boolean available);
 
     boolean tryClaimAvailableDriver(Long driverId);
+
+    boolean hasOpenImmediateRideConflictingWithSchedule(Long driverId, OffsetDateTime latestAllowedFinishAt);
+
+    boolean hasAssignedScheduledRideBefore(Long driverId, OffsetDateTime latestAllowedStartAt);
+
+    boolean hasScheduledRideInWindow(Long driverId, OffsetDateTime fromInclusive, OffsetDateTime toInclusive);
 }

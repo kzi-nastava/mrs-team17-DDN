@@ -7,6 +7,7 @@ public interface ScheduledRideRepository {
 
     record ScheduledRideRow(
             Long rideId,
+            Long driverId,
             OffsetDateTime scheduledAt,
             String startAddress,
             double startLat,

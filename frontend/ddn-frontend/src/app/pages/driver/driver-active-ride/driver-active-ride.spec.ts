@@ -15,6 +15,7 @@ describe('DriverActiveRide', () => {
   let ridesApiMock: {
     getActiveRide: ReturnType<typeof vi.fn>;
     getAcceptedRides: ReturnType<typeof vi.fn>;
+    getUpcomingRides: ReturnType<typeof vi.fn>;
   };
   let driverStateMock: { setAvailable: ReturnType<typeof vi.fn> };
   let routerMock: { navigate: ReturnType<typeof vi.fn> };
@@ -42,6 +43,16 @@ describe('DriverActiveRide', () => {
     ridesApiMock = {
       getActiveRide: vi.fn().mockReturnValue(of(activeRide)),
       getAcceptedRides: vi.fn().mockReturnValue(
+        of([
+          {
+            ...activeRide,
+            rideId: 88,
+            status: 'ACCEPTED',
+            startedAt: null,
+          },
+        ])
+      ),
+      getUpcomingRides: vi.fn().mockReturnValue(
         of([
           {
             ...activeRide,
@@ -96,7 +107,7 @@ describe('DriverActiveRide', () => {
   });
 
   it('should prepare home navigation when there are no future rides', () => {
-    ridesApiMock.getAcceptedRides.mockReturnValueOnce(of([]));
+    ridesApiMock.getUpcomingRides.mockReturnValueOnce(of([]));
 
     component.finishRide();
 

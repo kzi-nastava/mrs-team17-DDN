@@ -13,7 +13,7 @@ import java.util.List;
 @ConditionalOnProperty(name = "app.scheduling.enabled", havingValue = "true", matchIfMissing = true)
 public class ScheduledRideAssignmentService {
 
-    private static final int ASSIGN_AHEAD_MINUTES = 10;
+    private static final int ASSIGN_AHEAD_MINUTES = 15;
 
     private final ScheduledRideRepository scheduledRepo;
     private final DriverMatchingRepository driverMatching;
@@ -33,11 +33,23 @@ public class ScheduledRideAssignmentService {
                 scheduledRepo.findDueScheduledRides(ASSIGN_AHEAD_MINUTES);
 
         for (ScheduledRideRepository.ScheduledRideRow r : due) {
-            tryAssign(r);
+            if (r.driverId() != null) {
+                activateAssignedRide(r);
+            } else {
+                tryAssignUnassignedRide(r);
+            }
         }
     }
 
-    private void tryAssign(ScheduledRideRepository.ScheduledRideRow r) {
+    private void activateAssignedRide(ScheduledRideRepository.ScheduledRideRow r) {
+        Long driverId = r.driverId();
+        if (driverId == null) return;
+
+        driverMatching.setDriverAvailable(driverId, false);
+        scheduledRepo.markScheduledRideAccepted(r.rideId());
+    }
+
+    private void tryAssignUnassignedRide(ScheduledRideRepository.ScheduledRideRow r) {
 
         var candidates = driverMatching.findAvailableDrivers(
                 safeLower(r.vehicleType()),

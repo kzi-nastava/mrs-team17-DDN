@@ -25,6 +25,7 @@ public class RideOrderService {
     private static final BigDecimal PRICE_PER_KM = new BigDecimal("120");
     private static final double FALLBACK_AVG_SPEED_KMH = 35.0;
     private static final int FINISHING_SOON_THRESHOLD_SECONDS = 10 * 60;
+    private static final int SCHEDULE_GAP_BUFFER_SECONDS = 15 * 60;
 
     private final OsrmClient osrmClient;
     private final DriverMatchingRepository driverRepo;
@@ -133,9 +134,14 @@ public class RideOrderService {
             );
         }
 
-        if (rideOrderRepo.userHasActiveRide(requester.email())) {
-            throw new ActiveRideConflictException("User already has an active ride.");
-        }
+        ensurePassengerHasNoConflicts(
+                requester.email(),
+                "User",
+                orderType,
+                now,
+                scheduledAt,
+                metrics.durationSeconds
+        );
 
         List<RidePassengerRepository.PassengerRow> passengers = new ArrayList<>();
         passengers.add(new RidePassengerRepository.PassengerRow(
@@ -181,9 +187,14 @@ public class RideOrderService {
                     throw new BlockedUserException(msg, reason);
                 }
 
-                if (rideOrderRepo.userHasActiveRide(u.email())) {
-                    throw new ActiveRideConflictException("One of the linked users already has an active ride.");
-                }
+                ensurePassengerHasNoConflicts(
+                        u.email(),
+                        "One of the linked users",
+                        orderType,
+                        now,
+                        scheduledAt,
+                        metrics.durationSeconds
+                );
 
                 passengers.add(new RidePassengerRepository.PassengerRow(
                         u.firstName() + " " + u.lastName(),
@@ -196,8 +207,22 @@ public class RideOrderService {
         }
 
         if (orderType.equals("schedule")) {
+            DriverPick scheduledPick = findNearestDriverForScheduledRide(
+                    vehicleType,
+                    baby,
+                    pet,
+                    requiredSeats,
+                    start.getLat(),
+                    start.getLng(),
+                    scheduledAt,
+                    metrics.durationSeconds
+            );
+            if (scheduledPick == null) {
+                throw new NoAvailableDriverException("No available drivers for selected criteria");
+            }
 
             Long rideId = rideOrderRepo.insertScheduledRideReturningId(
+                    scheduledPick.driverId,
                     scheduledAt,
                     safeTrim(start.getAddress()),
                     safeTrim(dest.getAddress()),
@@ -205,6 +230,8 @@ public class RideOrderService {
                     "SCHEDULED",
                     start.getLat(), start.getLng(),
                     dest.getLat(), dest.getLng(),
+                    scheduledPick.carLat,
+                    scheduledPick.carLng,
                     metrics.distanceMeters,
                     metrics.durationSeconds,
                     vehicleType,
@@ -231,7 +258,7 @@ public class RideOrderService {
 
             CreateRideResponseDto resp = new CreateRideResponseDto();
             resp.setRideId(rideId);
-            resp.setDriverId(null);
+            resp.setDriverId(scheduledPick.driverId);
             resp.setStatus("SCHEDULED");
             resp.setPrice(price);
             return resp;
@@ -240,7 +267,15 @@ public class RideOrderService {
         DriverPick pick = null;
         Long rideId = null;
 
-        pick = reserveNearestAvailableDriver(vehicleType, baby, pet, requiredSeats, start.getLat(), start.getLng());
+        pick = reserveNearestAvailableDriver(
+                vehicleType,
+                baby,
+                pet,
+                requiredSeats,
+                start.getLat(),
+                start.getLng(),
+                metrics.durationSeconds
+        );
         if (pick != null) {
             try {
                 rideId = insertRide(pick, scheduledAt, start, dest, price, metrics);
@@ -260,6 +295,14 @@ public class RideOrderService {
                     finishingSoonPicksOrdered(vehicleType, baby, pet, requiredSeats, start.getLat(), start.getLng());
 
             for (DriverPick candidate : finishingSoonPicks) {
+                if (!canFinishBeforeNextScheduledRide(
+                        candidate.driverId,
+                        metrics.durationSeconds,
+                        candidate.leadInSeconds
+                )) {
+                    continue;
+                }
+
                 try {
                     rideId = insertRide(candidate, scheduledAt, start, dest, price, metrics);
                     pick = candidate;
@@ -350,12 +393,53 @@ public class RideOrderService {
         final Long driverId;
         final double carLat;
         final double carLng;
+        final double leadInSeconds;
 
-        DriverPick(Long driverId, double carLat, double carLng) {
+        DriverPick(Long driverId, double carLat, double carLng, double leadInSeconds) {
             this.driverId = driverId;
             this.carLat = carLat;
             this.carLng = carLng;
+            this.leadInSeconds = leadInSeconds;
         }
+    }
+
+    private DriverPick findNearestDriverForScheduledRide(String vehicleType,
+                                                         boolean baby,
+                                                         boolean pet,
+                                                         int requiredSeats,
+                                                         double startLat,
+                                                         double startLng,
+                                                         OffsetDateTime scheduledAt,
+                                                         double durationSeconds) {
+
+        List<DriverMatchingRepository.CandidateDriver> candidates =
+                driverRepo.findAssignableDriversForScheduledRide(vehicleType, baby, pet, requiredSeats);
+
+        if (candidates.isEmpty()) return null;
+
+        List<CandidateWithDist> ordered = new ArrayList<>();
+        for (DriverMatchingRepository.CandidateDriver c : candidates) {
+            double km = haversineKm(startLat, startLng, c.vehicleLat(), c.vehicleLng());
+            ordered.add(new CandidateWithDist(c, km));
+        }
+        ordered.sort(Comparator.comparingDouble(o -> o.distKm));
+
+        long scheduleWindowSeconds = Math.max(
+                SCHEDULE_GAP_BUFFER_SECONDS,
+                Math.round(Math.max(0.0, durationSeconds)) + SCHEDULE_GAP_BUFFER_SECONDS
+        );
+        OffsetDateTime from = scheduledAt.minusSeconds(scheduleWindowSeconds);
+        OffsetDateTime to = scheduledAt.plusSeconds(scheduleWindowSeconds);
+        OffsetDateTime latestAllowedImmediateFinish = scheduledAt.minusSeconds(SCHEDULE_GAP_BUFFER_SECONDS);
+
+        for (CandidateWithDist cand : ordered) {
+            Long driverId = cand.c.driverId();
+            if (driverRepo.hasOpenImmediateRideConflictingWithSchedule(driverId, latestAllowedImmediateFinish)) continue;
+            if (driverRepo.hasScheduledRideInWindow(driverId, from, to)) continue;
+            return new DriverPick(driverId, cand.c.vehicleLat(), cand.c.vehicleLng(), 0.0);
+        }
+
+        return null;
     }
 
     private DriverPick reserveNearestAvailableDriver(String vehicleType,
@@ -363,7 +447,8 @@ public class RideOrderService {
                                                      boolean pet,
                                                      int requiredSeats,
                                                      double startLat,
-                                                     double startLng) {
+                                                     double startLng,
+                                                     double durationSeconds) {
 
         for (int attempt = 0; attempt < 2; attempt++) {
             List<DriverMatchingRepository.CandidateDriver> candidates =
@@ -380,8 +465,13 @@ public class RideOrderService {
 
             for (CandidateWithDist cand : ordered) {
                 Long driverId = cand.c.driverId();
+                if (!canFinishBeforeNextScheduledRide(driverId, durationSeconds, 0.0)) continue;
                 if (driverRepo.tryClaimAvailableDriver(driverId)) {
-                    return new DriverPick(driverId, cand.c.vehicleLat(), cand.c.vehicleLng());
+                    if (!canFinishBeforeNextScheduledRide(driverId, durationSeconds, 0.0)) {
+                        driverRepo.setDriverAvailable(driverId, true);
+                        continue;
+                    }
+                    return new DriverPick(driverId, cand.c.vehicleLat(), cand.c.vehicleLng(), 0.0);
                 }
             }
         }
@@ -420,9 +510,21 @@ public class RideOrderService {
 
         List<DriverPick> out = new ArrayList<>();
         for (FinishingWithDist o : ordered) {
-            out.add(new DriverPick(o.d.driverId(), o.d.vehicleLat(), o.d.vehicleLng()));
+            out.add(new DriverPick(o.d.driverId(), o.d.vehicleLat(), o.d.vehicleLng(), o.d.remainingSeconds()));
         }
         return out;
+    }
+
+    private boolean canFinishBeforeNextScheduledRide(Long driverId,
+                                                     double rideDurationSeconds,
+                                                     double leadInSeconds) {
+        long projectedSeconds = Math.max(
+                0L,
+                Math.round(Math.max(0.0, leadInSeconds) + Math.max(0.0, rideDurationSeconds)) + SCHEDULE_GAP_BUFFER_SECONDS
+        );
+
+        OffsetDateTime latestAllowedStart = OffsetDateTime.now().plusSeconds(projectedSeconds);
+        return !driverRepo.hasAssignedScheduledRideBefore(driverId, latestAllowedStart);
     }
 
     private static class FinishingWithDist {
@@ -488,6 +590,51 @@ public class RideOrderService {
         double km = distanceMeters / 1000.0;
         double hours = km / FALLBACK_AVG_SPEED_KMH;
         return hours * 3600.0;
+    }
+
+    private void ensurePassengerHasNoConflicts(String email,
+                                               String subjectLabel,
+                                               String orderType,
+                                               OffsetDateTime now,
+                                               OffsetDateTime scheduledAt,
+                                               double durationSeconds) {
+        String normalizedEmail = safeTrim(email);
+        if (normalizedEmail.isEmpty()) return;
+
+        if ("now".equals(orderType)) {
+            if (rideOrderRepo.userHasOpenImmediateRide(normalizedEmail)) {
+                throw new ActiveRideConflictException(subjectLabel + " already has an active ride.");
+            }
+
+            long projectedSeconds = Math.max(
+                    0L,
+                    Math.round(Math.max(0.0, durationSeconds)) + SCHEDULE_GAP_BUFFER_SECONDS
+            );
+            OffsetDateTime latestAllowedStart = now.plusSeconds(projectedSeconds);
+
+            if (rideOrderRepo.userHasScheduledRideBefore(normalizedEmail, latestAllowedStart)) {
+                throw new ActiveRideConflictException(subjectLabel + " has a scheduled ride too soon.");
+            }
+            return;
+        }
+
+        if ("schedule".equals(orderType) && scheduledAt != null) {
+            OffsetDateTime latestAllowedImmediateFinish = scheduledAt.minusSeconds(SCHEDULE_GAP_BUFFER_SECONDS);
+            if (rideOrderRepo.userHasOpenImmediateRideConflictingWithSchedule(normalizedEmail, latestAllowedImmediateFinish)) {
+                throw new ActiveRideConflictException(subjectLabel + " already has an active ride.");
+            }
+
+            long scheduleWindowSeconds = Math.max(
+                    SCHEDULE_GAP_BUFFER_SECONDS,
+                    Math.round(Math.max(0.0, durationSeconds)) + SCHEDULE_GAP_BUFFER_SECONDS
+            );
+            OffsetDateTime from = scheduledAt.minusSeconds(scheduleWindowSeconds);
+            OffsetDateTime to = scheduledAt.plusSeconds(scheduleWindowSeconds);
+
+            if (rideOrderRepo.userHasScheduledRideInWindow(normalizedEmail, from, to)) {
+                throw new ActiveRideConflictException(subjectLabel + " has a conflicting scheduled ride.");
+            }
+        }
     }
 
     private static String safeTrim(String s) {

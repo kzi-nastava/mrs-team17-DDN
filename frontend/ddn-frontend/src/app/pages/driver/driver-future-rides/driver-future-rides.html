@@ -9,8 +9,11 @@
           *ngFor="let assignedRide of acceptedRides"
           [class.active]="assignedRide.rideId === ride?.rideId"
           (click)="selectRide(assignedRide.rideId)"
+          [title]="fullRouteLabel(assignedRide)"
         >
-          #{{ assignedRide.rideId }} · {{ assignedRide.startAddress }} → {{ assignedRide.destinationAddress }}
+          <span class="assigned-item-id">#{{ assignedRide.rideId }}</span>
+          <span class="assigned-item-sep">·</span>
+          <span class="assigned-item-route">{{ compactRouteLabel(assignedRide) }}</span>
         </button>
       </div>
 
@@ -48,7 +51,7 @@
         (click)="startRide()"
         [disabled]="!canStart()"
       >
-        {{ starting ? 'STARTING...' : 'START RIDE' }}
+        {{ starting ? 'STARTING...' : startLabel() }}
       </button>
 
       <button
