@@ -339,8 +339,12 @@
     <string name="driver_start_ride_error_check_active">Unable to check active ride (%1$s)</string>
     <string name="driver_start_ride_error_load_assigned">Unable to load assigned rides (%1$s)</string>
     <string name="driver_start_ride_error_start">The ride start failed (%1$s)</string>
+    <string name="driver_start_ride_error_start_generic">The ride start failed. Please try again.</string>
+    <string name="driver_start_ride_error_too_far">You are not close enough to pickup. Move within %1$d m and try again. The map refreshes automatically.</string>
+    <string name="driver_start_ride_error_too_far_with_distance">You are about %1$d m from pickup. Move within %2$d m and try again. The map refreshes automatically.</string>
 
     <string name="driver_start_ride_checkpoints_label">Checkpoints:</string>
+    <string name="driver_home_live_refresh_hint">Live map updates every 2 seconds.</string>
     <string name="driver_home_no_accepted_ride">You currently do not have any accepted rides.</string>
     <string name="driver_home_open_future_rides">Open future rides</string>
     <string name="driver_future_rides_title">Driver – Future Rides</string>
