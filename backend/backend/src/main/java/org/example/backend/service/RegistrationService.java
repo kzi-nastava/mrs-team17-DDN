@@ -22,6 +22,7 @@ import java.util.UUID;
 public class RegistrationService {
 
     private final UserAccountRepository userAccountRepository;
+    private final DriverRepository driverRepository;
     private final RegistrationTokenRepository registrationTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher events;
@@ -33,11 +34,13 @@ public class RegistrationService {
 
     public RegistrationService(
             UserAccountRepository userAccountRepository,
+            DriverRepository driverRepository,
             RegistrationTokenRepository registrationTokenRepository,
             PasswordEncoder passwordEncoder,
             ApplicationEventPublisher events
     ) {
         this.userAccountRepository = userAccountRepository;
+        this.driverRepository = driverRepository;
         this.registrationTokenRepository = registrationTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.events = events;
@@ -45,6 +48,15 @@ public class RegistrationService {
 
     @Transactional
     public RegisterResponseDto register(RegisterRequestDto request) {
+        return registerInternal(request, RegistrationRole.PASSENGER);
+    }
+
+    @Transactional
+    public RegisterResponseDto registerDriver(RegisterRequestDto request) {
+        return registerInternal(request, RegistrationRole.DRIVER);
+    }
+
+    private RegisterResponseDto registerInternal(RegisterRequestDto request, RegistrationRole role) {
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request body is required");
         }
@@ -63,28 +75,29 @@ public class RegistrationService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
         }
 
-        // 1) Kreiraj user-a kao "neaktivan" (password se može setovati odmah ili tek na confirm)
-        // Ako želite da password bude aktivan tek nakon potvrde, onda OVDE NE setujemo password u bazi,
-        // nego ga čuvamo privremeno (ne preporučujem).
-        // Najjednostavnije: upišemo user-a sa hash-om i neaktivan flag, pa confirm samo aktivira.
-        // Ali vaš repo nudi activateAndSetPassword, pa ćemo:
-        // - upisati user-a sa nekim placeholder passwordom (ili null ako schema dozvoljava),
-        // - na confirm setujemo pravi password hash.
-        //
-        // Da bi ovo bilo čisto, čuvaćemo passwordHash u token tabeli (najbezbednije od "plain").
-        // (Ako već imate drugačiji plan, reci pa prilagodim.)
-
         String passwordHash = passwordEncoder.encode(password);
 
-        // 2) Insert PASSENGER user (moraš dodati ovu metodu u repo, vidi ispod)
-        Long userId = userAccountRepository.insertPassengerUserReturningId(
-                email,
-                passwordHash,
-                request.getFirstName(),
-                request.getLastName(),
-                request.getAddress(),
-                request.getPhone()
-        );
+        Long userId;
+        if (role == RegistrationRole.DRIVER) {
+            userId = userAccountRepository.insertDriverUserReturningId(
+                    email,
+                    passwordHash,
+                    request.getFirstName(),
+                    request.getLastName(),
+                    request.getAddress(),
+                    request.getPhone()
+            );
+            driverRepository.insertDriverReturningId(userId);
+        } else {
+            userId = userAccountRepository.insertPassengerUserReturningId(
+                    email,
+                    passwordHash,
+                    request.getFirstName(),
+                    request.getLastName(),
+                    request.getAddress(),
+                    request.getPhone()
+            );
+        }
 
         // 3) token + persist (ovde čuvamo userId i token + expires)
         String token = UUID.randomUUID().toString().replace("-", "");
@@ -131,5 +144,10 @@ public class RegistrationService {
 
     private static boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
+    }
+
+    private enum RegistrationRole {
+        PASSENGER,
+        DRIVER
     }
 }
