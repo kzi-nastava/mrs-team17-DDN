@@ -40,12 +40,17 @@ public class SecurityConfig {
                         .requestMatchers("/api/registration/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/drivers/activation").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/vehicles/active").permitAll()
+
+                        // public password reset endpoints
+                        .requestMatchers(HttpMethod.POST, "/api/password-reset/request").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/password-reset/confirm").permitAll()
+
                         .requestMatchers("/error").permitAll()
-
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
                         .anyRequest().authenticated()
                 )
+
+
 
                 // JWT filter pre Spring auth filtera
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

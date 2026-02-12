@@ -1,43 +1,85 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import {
+  ReactiveFormsModule,
+  FormGroup,
+  FormControl,
+  Validators,
+} from '@angular/forms';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-new-password',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './new-password.html',
-  styleUrls: ['./new-password.css']
+  styleUrls: ['./new-password.css'],
 })
 export class NewPassword {
-  //  Reactive forma za novu lozinku
-  // - password: obavezno polje, minimum 6 karaktera
-  // - confirmPassword: obavezno polje
+  token: string | null = null;
+
+  loading = false;
+  serverError: string | null = null;
+
   newPasswordForm: FormGroup = new FormGroup({
-    password: new FormControl('', [Validators.required, Validators.minLength(6)]),
-    confirmPassword: new FormControl('', Validators.required)
+    password: new FormControl('', [Validators.required, Validators.minLength(8)]),
+    confirmPassword: new FormControl('', Validators.required),
   });
 
-  //  Router za navigaciju posle uspešnog setovanja lozinke
-  constructor(private router: Router) {}
+  constructor(
+    private route: ActivatedRoute,
+    private http: HttpClient,
+    private router: Router
+  ) {
+    this.token = this.route.snapshot.queryParamMap.get('token');
+  }
 
-  //  Submit handler
   onSubmit(): void {
-    //  Provera da li je forma validna
-    if (this.newPasswordForm.valid) {
-      const { password, confirmPassword } = this.newPasswordForm.value;
+    this.serverError = null;
 
-      //  Provera da li se lozinke poklapaju
-      if (password === confirmPassword) {
-        console.log('Password set:', password);
-
-        //  Navigacija na success stranicu
-        this.router.navigate(['/success']);
-      } else {
-        //  Ako lozinke nisu iste
-        console.error('Passwords do not match');
-      }
+    if (!this.token) {
+      this.serverError = 'Missing token. Please request a new reset link.';
+      return;
     }
+
+    if (this.newPasswordForm.invalid) {
+      this.newPasswordForm.markAllAsTouched();
+      return;
+    }
+
+    const password = String(this.newPasswordForm.value.password ?? '').trim();
+    const confirmPassword = String(this.newPasswordForm.value.confirmPassword ?? '').trim();
+
+    if (password !== confirmPassword) {
+      this.serverError = 'Passwords do not match.';
+      return;
+    }
+
+    this.loading = true;
+
+    const body = {
+      token: this.token,
+      newPassword: password,
+      confirmNewPassword: confirmPassword,
+    };
+
+    this.http.post('/api/password-reset/confirm', body).subscribe({
+      next: () => {
+        this.loading = false;
+        this.router.navigate(['/success']);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.loading = false;
+
+        if (err.status === 400) {
+          this.serverError = 'Invalid or expired link. Please request a new reset link.';
+        } else if (err.status === 409) {
+          this.serverError = 'This link was already used. Please request a new reset link.';
+        } else {
+          this.serverError = 'Something went wrong. Please try again.';
+        }
+      },
+    });
   }
 }
