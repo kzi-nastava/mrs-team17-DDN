@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
+import org.example.backend.testsupport.PostgresTestContainerBase;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -24,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         },
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
 )
-class JdbcRideRepositoryFinishTest {
+class JdbcRideRepositoryFinishTest extends PostgresTestContainerBase {
 
     private static final long RIDE_ID = 100L;
 

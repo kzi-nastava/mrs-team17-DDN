@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
+import org.example.backend.testsupport.PostgresTestContainerBase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         },
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
 )
-class JdbcDriverRepositoryFinishTest {
+class JdbcDriverRepositoryFinishTest extends PostgresTestContainerBase {
 
     private static final long USER_ID = 2L;
     private static final long DRIVER_ID = 10L;
