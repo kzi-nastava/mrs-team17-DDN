@@ -43,6 +43,7 @@ public class DriverHomeActivity extends DriverBaseActivity {
     private TextView tvCheckpointsList;
     private TextView tvError;
     private Button btnStart;
+    private Button btnFutureRides;
 
     private MapView map;
 
@@ -81,6 +82,7 @@ public class DriverHomeActivity extends DriverBaseActivity {
         tvCheckpointsList = contentView.findViewById(R.id.dhCheckpointsList);
         tvError = contentView.findViewById(R.id.dhError);
         btnStart = contentView.findViewById(R.id.dhStartBtn);
+        btnFutureRides = contentView.findViewById(R.id.dhFutureRidesBtn);
         map = contentView.findViewById(R.id.dhMap);
 
         Configuration.getInstance().setUserAgentValue(getPackageName());
@@ -97,6 +99,8 @@ public class DriverHomeActivity extends DriverBaseActivity {
         trackingRepo = new DriverRideTrackingRepository(this);
 
         btnStart.setOnClickListener(v -> onStartClicked());
+        btnFutureRides.setOnClickListener(v ->
+                startActivity(new Intent(this, DriverFutureRidesActivity.class)));
 
         setLoading(true);
         bootstrap();
@@ -195,6 +199,7 @@ public class DriverHomeActivity extends DriverBaseActivity {
         tvTitle.setText(getString(R.string.menu_home));
 
         tvEmptyState.setVisibility(View.VISIBLE);
+        btnFutureRides.setVisibility(View.VISIBLE);
 
         tvStart.setVisibility(View.GONE);
         tvEnd.setVisibility(View.GONE);
@@ -214,6 +219,7 @@ public class DriverHomeActivity extends DriverBaseActivity {
         map.setVisibility(View.VISIBLE);
 
         tvEmptyState.setVisibility(View.GONE);
+        btnFutureRides.setVisibility(View.GONE);
         tvStart.setVisibility(View.VISIBLE);
         tvEnd.setVisibility(View.VISIBLE);
         tvMeta.setVisibility(View.VISIBLE);

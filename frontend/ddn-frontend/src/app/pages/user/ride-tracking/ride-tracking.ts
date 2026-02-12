@@ -3,6 +3,7 @@ import * as L from 'leaflet';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 import { UserNavbarComponent } from '../../../components/user-navbar/user-navbar';
 import { RIDE_TRACKING_DS } from '../../../api/user/ride-tracking.datasource';
 import { RideCheckpoint, TrackingState } from '../../../api/user/models/ride-tracking.models';
@@ -18,9 +19,11 @@ type LatLng = { lat: number; lng: number };
 })
 export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   private ds = inject(RIDE_TRACKING_DS);
+  private route = inject(ActivatedRoute);
 
   private map!: L.Map;
   private sub: Subscription | null = null;
+  private routeParamsSub: Subscription | null = null;
 
   private pickupMarker: L.CircleMarker | null = null;
   private destinationMarker: L.CircleMarker | null = null;
@@ -35,26 +38,48 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   distanceKm = 0;
   rideStatus = '';
 
+  // ✅ cancel window
+  canCancel = false;
+  cancelDisabledReason = 'Cancellation is available only during ACTIVE rides';
+
+  // (opciono) feedback u UI
+  canceling = false;
+  cancelError: string | null = null;
+  cancelSuccess = false;
+
   reportOpen = false;
   reportText = '';
 
   private initializedFromState = false;
+  private trackingRideId?: number;
 
   ngAfterViewInit(): void {
-    console.log(this.ds.listInconsistenciesForMyActiveRide)
     this.initMap();
+    this.routeParamsSub = this.route.queryParamMap.subscribe((params) => {
+      const nextRideId = this.parseRideId(params.get('rideId'));
+      const changed = this.trackingRideId !== nextRideId || this.sub == null;
+      if (!changed) return;
 
-    this.sub = this.ds.watchMyActiveTracking().subscribe({
-      next: (s) => this.applyState(s),
-      error: () => (this.rideStatus = 'Tracking not available'),
+      this.trackingRideId = nextRideId;
+      this.resetTrackingUi();
+      this.startTracking();
     });
 
-    setTimeout(() => this.map.invalidateSize(), 0);
+    // Fallback when route query stream is not immediately available in some test setups.
+    if (this.sub == null) {
+      this.trackingRideId = this.parseRideId(this.route.snapshot.queryParamMap.get('rideId'));
+      this.resetTrackingUi();
+      this.startTracking();
+    }
+
+    this.deferMapResize();
   }
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
     this.sub = null;
+    this.routeParamsSub?.unsubscribe();
+    this.routeParamsSub = null;
 
     if (this.carAnimFrame != null) {
       cancelAnimationFrame(this.carAnimFrame);
@@ -80,7 +105,7 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
     const text = this.reportText.trim();
     if (text.length < 5) return;
 
-    this.ds.submitInconsistencyForMyActiveRide(text).subscribe({
+    this.ds.submitInconsistencyForMyActiveRide(text, this.trackingRideId).subscribe({
       next: () => {
         this.reportOpen = false;
         this.reportText = '';
@@ -89,6 +114,30 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
         this.reportOpen = false;
       },
     });
+  }
+
+  // ✅ CANCEL RIDE
+  cancelRide(): void {
+    if (!this.canCancel || this.canceling) return;
+
+    const ok = confirm('Are you sure you want to cancel this ride?');
+    if (!ok) return;
+
+    this.canceling = true;
+    this.cancelError = null;
+    this.cancelSuccess = false;
+
+    // ✅ OVDE POVEŽI TVOJ ENDPOINT (kad ga imaš)
+    // Primer ako dodaš metodu u datasource:
+    // this.ds.cancelMyRide().subscribe({ ... })
+
+    // Za sada: mock (odmah success)
+    setTimeout(() => {
+      this.canceling = false;
+      this.cancelSuccess = true;
+      // Ako želiš, možeš i da “zamrzneš” UI:
+      // this.rideStatus = 'CANCELLED';
+    }, 500);
   }
 
   private initMap(): void {
@@ -103,12 +152,71 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
     }).addTo(this.map);
   }
 
+  private startTracking(): void {
+    this.sub?.unsubscribe();
+    this.sub = this.ds.watchMyActiveTracking(this.trackingRideId).subscribe({
+      next: (s) => this.applyState(s),
+      error: () => (this.rideStatus = 'Tracking not available'),
+    });
+  }
+
+  private parseRideId(raw: string | null): number | undefined {
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+  }
+
+  private resetTrackingUi(): void {
+    this.etaMinutes = 0;
+    this.distanceKm = 0;
+    this.rideStatus = '';
+    this.reportOpen = false;
+    this.reportText = '';
+    this.initializedFromState = false;
+
+    if (this.carAnimFrame != null) {
+      cancelAnimationFrame(this.carAnimFrame);
+      this.carAnimFrame = null;
+    }
+    this.lastCar = null;
+
+    this.pickupMarker?.remove();
+    this.pickupMarker = null;
+    this.destinationMarker?.remove();
+    this.destinationMarker = null;
+    this.carMarker?.remove();
+    this.carMarker = null;
+    this.routeLine?.remove();
+    this.routeLine = null;
+
+    this.checkpointMarkers.forEach((m) => {
+      try { m.remove(); } catch {}
+    });
+    this.checkpointMarkers = [];
+
+    this.deferMapResize();
+  }
+
+  private deferMapResize(): void {
+    setTimeout(() => this.map.invalidateSize(), 0);
+  }
+
   private applyState(s: TrackingState): void {
-    console.log(("OKINUTA FUNKCIJA ZA SETOVANJE PODATAKA TRACKINGA"))
-    console.log(s)
     this.etaMinutes = s.etaMinutes;
     this.distanceKm = s.distanceKm;
     this.rideStatus = s.status;
+
+    // ✅ pravilo: cancel dozvoljen ako je ACTIVE i eta >= 10 min
+    // (koristimo etaMinutes kao "minutes to start", jer u tvom UI piše ETA)
+    if (this.rideStatus !== 'ACTIVE') {
+      this.canCancel = false;
+      this.cancelDisabledReason = 'Cancellation is available only during ACTIVE rides';
+    } else if (this.etaMinutes < 10) {
+      this.canCancel = false;
+      this.cancelDisabledReason = 'You can cancel only 10+ minutes before start';
+    } else {
+      this.canCancel = true;
+      this.cancelDisabledReason = 'Cancel this ride';
+    }
 
     const routePoints = (s.route ?? []).map((p) => [p.lat, p.lng] as [number, number]);
 
@@ -143,7 +251,7 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
 
       this.drawCheckpoints(s.checkpoints ?? []);
 
-      // RUTA SE CRTА JEDNOM: pickup -> destination (nikad se više ne menja)
+      // RUTA SE CRTA JEDNOM
       if (routePoints.length >= 2) {
         this.routeLine = L.polyline(routePoints, { weight: 4 }).addTo(this.map);
       } else {
@@ -156,7 +264,6 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
         ).addTo(this.map);
       }
 
-      // fit bounds (uključi i auto da se sve vidi)
       const bounds = L.latLngBounds([
         [s.car.lat, s.car.lng],
         [s.pickup.lat, s.pickup.lng],
@@ -168,12 +275,14 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    // posle init-a: NE DIRAMO routeLine uopšte
     this.animateCarTo({ lat: s.car.lat, lng: s.car.lng }, 900);
   }
+
   private drawCheckpoints(checkpoints: RideCheckpoint[]): void {
     this.checkpointMarkers.forEach((m) => {
-      try { m.remove(); } catch {}
+      try {
+        m.remove();
+      } catch {}
     });
     this.checkpointMarkers = [];
 

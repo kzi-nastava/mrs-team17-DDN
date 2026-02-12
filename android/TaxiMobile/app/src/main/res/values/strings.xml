@@ -10,8 +10,10 @@
     <string name="menu_history">Ride history</string>
     <string name="menu_rate_ride">Rate ride</string>
     <string name="menu_live_tracking">Live Tracking</string>
+    <string name="menu_notifications">Notifications</string>
     <string name="menu_support">Support</string>
     <string name="menu_profile">Profile</string>
+    <string name="menu_future_rides">Future rides</string>
     <string name="menu_logout">Log out</string>
     <string name="support_empty">No messages yet. Start the conversation.</string>
     <string name="support_error">Could not load chat.</string>
@@ -21,6 +23,7 @@
     <!-- Admin drawer items -->
     <string name="menu_update_requests">Update Requests</string>
     <string name="menu_create_drivers">Create Drivers</string>
+    <string name="create_driver">Create Driver</string>
     <string name="menu_chats">Chats</string>
     <string name="menu_ride_status">Ride Status</string>
     <string name="menu_pricing">Pricing</string>
@@ -163,6 +166,9 @@
     <string name="driver_ride_canceled_by_na">N/A</string>
     <string name="driver_ride_canceled_by_unknown">Unknown</string>
     <string name="driver_ride_passenger_unknown">Unknown</string>
+    <string name="driver_ride_reports_title">Passenger reports</string>
+    <string name="driver_ride_reports_empty">No reports for this ride.</string>
+    <string name="driver_ride_report_created_fmt">Created: %1$s</string>
 
     <!-- Profile -->
     <string name="driver_profile_title">Profile</string>
@@ -336,6 +342,17 @@
 
     <string name="driver_start_ride_checkpoints_label">Checkpoints:</string>
     <string name="driver_home_no_accepted_ride">You currently do not have any accepted rides.</string>
+    <string name="driver_home_open_future_rides">Open future rides</string>
+    <string name="driver_future_rides_title">Driver – Future Rides</string>
+    <string name="driver_future_rides_subtitle">Assigned rides waiting to be started.</string>
+    <string name="driver_future_rides_empty">No future assigned rides right now.</string>
+    <string name="driver_future_rides_reload">Reload future rides</string>
+    <string name="driver_future_rides_error_load">Unable to load future rides (%1$s)</string>
+    <string name="driver_future_rides_open_details_hint">Tap card to open details</string>
+    <string name="driver_active_reload">Reload</string>
+    <string name="driver_active_empty_title">No active ride.</string>
+    <string name="driver_active_empty_subtitle">When a ride is assigned, details will appear here.</string>
+    <string name="driver_active_open_future_rides">View future rides</string>
 
     <string name="admin_create_driver_subtitle">Create a driver account and vehicle details. The driver will receive an activation email to set the password.</string>
     <string name="admin_create_driver_create">Create driver</string>
@@ -346,5 +363,137 @@
 
     <string name="admin_create_driver_success">Driver created. Activation email sent to %1$s. Link valid: %2$dh.</string>
 
+    <string name="title_notifications">Notifications</string>
+    <string name="notifications_empty">No notifications.</string>
+    <string name="notifications_subtitle">Latest updates about your rides.</string>
+    <string name="notifications_empty_hint">You are all caught up for now.</string>
+    <string name="notifications_type_update">Update</string>
+    <string name="notifications_type_ride">Ride</string>
+    <string name="notifications_type_alert">Alert</string>
+    <string name="notifications_type_done">Done</string>
+    <string name="notifications_time_just_now">Just now</string>
+    <string name="notifications_time_min_ago">%1$d min ago</string>
+    <string name="notifications_time_hour_ago">%1$d h ago</string>
+    <string name="notifications_time_yesterday">Yesterday %1$s</string>
+    <string name="notifications_time_fallback">Unknown time</string>
+
+    <string name="title_active_ride">Active ride</string>
+    <string name="title_ride_tracking">Ride tracking</string>
+    <string name="tracking_eta_fmt">ETA: %1$d min (%2$.2f km)</string>
+    <string name="tracking_status_fmt">Status: %1$s</string>
+    <string name="tracking_eta_empty">ETA: -</string>
+    <string name="tracking_status_empty">Status: -</string>
+    <string name="tracking_no_active_ride">No active ride</string>
+    <string name="tracking_load_failed">Tracking is not available.</string>
+    <string name="tracking_report_title">Report driver inconsistency</string>
+    <string name="tracking_report_cancel">Cancel</string>
+    <string name="tracking_report_send">Send</string>
+    <string name="tracking_report_inactive">No active ride</string>
+    <string name="tracking_report_sent">Report sent</string>
+
+    <string name="notif_channel_name">Ride updates</string>
+    <string name="notif_channel_description">Notifications about ride status updates.</string>
+    <string name="notif_default_title">Ride update</string>
+    <string name="notif_default_message">Open the app to view details.</string>
+
+    <string name="report_subtitle">Generate a summary for your completed rides in a selected period.</string>
+    <string name="report_filter_title">Period</string>
+    <string name="report_pick_range">Pick date range</string>
+    <string name="report_from">From:</string>
+    <string name="report_to">To:</string>
+    <string name="report_pick_date">Pick date</string>
+    <string name="report_generate">Generate</string>
+
+    <string name="report_error_choose_dates">Please choose both dates.</string>
+    <string name="report_error_range">From date must be before To date.</string>
+    <string name="report_error_failed">Failed to load report.</string>
+
+    <string name="report_total_rides">Total rides</string>
+    <string name="report_total_kilometers">Total kilometers</string>
+    <string name="report_money_spent">Total spent</string>
+    <string name="report_money_earned">Total earned</string>
+
+    <string name="report_avg_day_default">Avg/day: -</string>
+    <string name="report_avg_day_fmt">Avg/day: %1$s</string>
+
+    <string name="report_km_value_fmt">%1$s km</string>
+    <string name="report_rsd_value_fmt">%1$s RSD</string>
+
+    <string name="report_spent">spent</string>
+    <string name="report_earned">earned</string>
+    <string name="report_avg_day_rsd_fmt">Avg %1$s/day: %2$s RSD</string>
+
+    <string name="report_avg_km_ride_default">Avg km/ride: -</string>
+    <string name="report_avg_money_ride_default">Avg money/ride: -</string>
+    <string name="report_avg_km_ride_fmt">Avg km/ride: %1$s km</string>
+    <string name="report_avg_money_ride_fmt">Avg %1$s/ride: %2$s RSD</string>
+
+    <string name="report_days_range">Days in range:</string>
+
+    <string name="report_chart_rides">Number of rides per day</string>
+    <string name="report_chart_km">Kilometers per day</string>
+    <string name="report_chart_money_spent">Money spent per day</string>
+    <string name="report_chart_money_earned">Money earned per day</string>
+
+    <string name="report_tab_rides">Rides</string>
+    <string name="report_tab_km">Km</string>
+    <string name="report_tab_money">Money</string>
+
+    <string name="report_empty">No completed rides in this period.</string>
+
+    <string name="report_cumulative_default">Cumulative: -</string>
+    <string name="report_average_day_default_text">Average/day: -</string>
+
+    <string name="report_cumulative_fmt">Cumulative: %1$s</string>
+    <string name="report_average_day_fmt">Average/day: %1$s</string>
+
+    <string name="report_cumulative_km_fmt">Cumulative: %1$s km</string>
+    <string name="report_average_day_km_fmt">Average/day: %1$s km</string>
+
+    <string name="report_cumulative_rsd_fmt">Cumulative: %1$s RSD</string>
+    <string name="report_average_day_rsd_fmt2">Average/day: %1$s RSD</string>
+
+    <string name="report_unit_fmt">Unit: %1$s</string>
+
+    <string name="report_admin_subtitle">Generate ride reports for all users (by role) or a single selected person.</string>
+
+    <string name="report_role">Role</string>
+    <string name="report_role_driver">Drivers</string>
+    <string name="report_role_passenger">Passengers</string>
+
+    <string name="report_scope">Scope</string>
+    <string name="report_scope_all">All</string>
+    <string name="report_scope_user">Single user</string>
+
+    <string name="report_user_pick">User</string>
+    <string name="report_user_query_hint">Search (name/email) optional</string>
+    <string name="report_load_users">Load</string>
+
+    <string name="report_select_user_placeholder">Select user...</string>
+    <string name="report_users_loading">Loading users...</string>
+    <string name="report_users_empty">No users found.</string>
+    <string name="report_users_failed">Failed to load users.</string>
+
+    <string name="report_error_select_user">Please select a user.</string>
+
+    <string name="driver_activate_title">Driver account activation</string>
+    <string name="driver_activate_subtitle">Set a password to activate your account.</string>
+
+    <string name="driver_activate_password_label">New password</string>
+    <string name="driver_activate_password_hint">New password (min 8 characters)</string>
+
+    <string name="driver_activate_confirm_label">Confirm password</string>
+    <string name="driver_activate_confirm_hint">Confirm password</string>
+
+    <string name="driver_activate_button">Activate</string>
+    <string name="driver_activate_back_to_login">Back to login</string>
+
+    <string name="driver_activate_error_missing_token">Invalid link (missing token). Please request a new activation link.</string>
+    <string name="driver_activate_error_fill_all">Please fill in both password fields.</string>
+    <string name="driver_activate_error_min_len">Password must be at least 8 characters.</string>
+    <string name="driver_activate_error_mismatch">Passwords do not match.</string>
+
+    <string name="driver_activate_success">Your account has been activated successfully. Redirecting to login...</string>
+    <string name="driver_activate_failed">Activation failed. Please try again or request a new activation link.</string>
 
 </resources>

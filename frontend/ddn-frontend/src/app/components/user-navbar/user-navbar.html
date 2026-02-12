@@ -12,14 +12,19 @@
       Reports
     </a>
 
-    <a class="nav-link" routerLink="/user/ride-tracking" routerLinkActive="active">
+    <a
+      class="nav-link"
+      [routerLink]="['/user/ride-tracking']"
+      [queryParams]="liveTrackingRideId ? { rideId: liveTrackingRideId } : null"
+      routerLinkActive="active"
+    >
       Live Tracking
     </a>    
 
   </div>
 
   <div class="nav-center">
-    <div class="panic-btn" routerLink="/support" routerLinkActive="active-panic">
+    <div class="panic-btn" routerLink="/user/support" routerLinkActive="active-panic">
       <img src="panic.svg" alt="panic" />
     </div>
   </div>
@@ -59,4 +64,3 @@
       </button>
   </div>
 </nav>
-

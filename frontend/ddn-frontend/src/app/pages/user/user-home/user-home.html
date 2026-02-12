@@ -1,12 +1,16 @@
 <div class="content">
   <div class="map-wrap">
 
-    <div class="rate-banner" *ngIf="pendingRideId">
+    <div class="rate-banner" *ngIf="pendingRideId" data-testid="pending-rate-banner">
   <div class="rate-text">
     Your ride is finished. Please rate your driver.
   </div>
 
-  <a class="rate-btn" [routerLink]="['/user/rides', pendingRideId, 'rate']">
+  <a
+    class="rate-btn"
+    [routerLink]="['/user/rides', pendingRideId, 'rate']"
+    data-testid="pending-rate-link"
+  >
     RATE NOW
   </a>
 </div>

@@ -50,6 +50,11 @@ public class DriverController {
         return ResponseEntity.ok(driverRideService.getAcceptedRides(getCurrentDriverId()));
     }
 
+    @GetMapping("/rides/upcoming")
+    public ResponseEntity<List<DriverRideDetailsResponseDto>> getUpcomingRides() {
+        return ResponseEntity.ok(driverRideService.getUpcomingRides(getCurrentDriverId()));
+    }
+
     @PutMapping("/rides/{rideId}/start")
     public ResponseEntity<Void> startRide(@PathVariable Long rideId) {
         driverRideService.startRide(getCurrentDriverId(), rideId);

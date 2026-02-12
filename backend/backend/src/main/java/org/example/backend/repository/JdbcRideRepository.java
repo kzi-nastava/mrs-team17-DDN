@@ -28,7 +28,7 @@ public class JdbcRideRepository implements RideRepository {
         return jdbc.sql("""
             select r.id
             from rides r
-            where r.status = 'ACTIVE'
+            where r.status in ('ACTIVE', 'ACCEPTED')
               and r.canceled = false
               and r.ended_at is null
         """)
@@ -220,7 +220,7 @@ public class JdbcRideRepository implements RideRepository {
                             .param("rideId", rideId)
                             .query((rs2, rn) -> new RideReportDto(
                                     rs2.getString("description"),
-                                    rs2.getTimestamp("createdAt")
+                                    rs2.getTimestamp("created_at")
                             ))
                             .list();
 
@@ -234,6 +234,37 @@ public class JdbcRideRepository implements RideRepository {
                     return dto;
                 })
                 .optional();
+    }
+
+    @Override
+    public boolean canUserAccessRideTracking(Long rideId, long userId) {
+        Boolean allowed = jdbc.sql("""
+            select exists (
+                select 1
+                from rides r
+                where r.id = :rideId
+                  and (
+                        exists (
+                            select 1
+                            from ride_passengers rp
+                            join users u on lower(u.email) = lower(rp.email)
+                            where rp.ride_id = r.id
+                              and u.id = :userId
+                        )
+                        or exists (
+                            select 1
+                            from drivers d
+                            where d.id = r.driver_id
+                              and d.user_id = :userId
+                        )
+                  )
+            )
+        """)
+                .param("rideId", rideId)
+                .param("userId", userId)
+                .query(Boolean.class)
+                .single();
+        return Boolean.TRUE.equals(allowed);
     }
 
 

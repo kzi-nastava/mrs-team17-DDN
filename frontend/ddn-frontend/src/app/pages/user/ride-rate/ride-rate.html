@@ -1,25 +1,25 @@
-<div class="page">
+<div class="page" data-testid="ride-rate-page">
   <h1>Rate Ride</h1>
 
   <div class="card-fixed">
-    <div class="info" *ngIf="info">{{ info }}</div>
-    <div class="error" *ngIf="error">{{ error }}</div>
+    <div class="info" *ngIf="info" data-testid="ride-rate-info">{{ info }}</div>
+    <div class="error" *ngIf="error" data-testid="ride-rate-error">{{ error }}</div>
 
     <!-- already rated -->
-    <div *ngIf="existing" class="rated">
+    <div *ngIf="existing" class="rated" data-testid="ride-rate-existing">
       <div class="rated-row">
         <span class="rated-label">Driver rating:</span>
-        <span class="rated-value">{{ existing.driverRating }}/5</span>
+        <span class="rated-value" data-testid="ride-rate-existing-driver-rating">{{ existing.driverRating }}/5</span>
       </div>
 
       <div class="rated-row">
         <span class="rated-label">Vehicle rating:</span>
-        <span class="rated-value">{{ existing.vehicleRating }}/5</span>
+        <span class="rated-value" data-testid="ride-rate-existing-vehicle-rating">{{ existing.vehicleRating }}/5</span>
       </div>
 
       <div class="rated-row" *ngIf="existing.comment">
         <span class="rated-label">Comment:</span>
-        <span class="rated-value">{{ existing.comment }}</span>
+        <span class="rated-value" data-testid="ride-rate-existing-comment">{{ existing.comment }}</span>
       </div>
 
       <div class="actions">
@@ -39,6 +39,7 @@
             [value]="driverRating"
             (input)="driverRating = $any($event.target).value"
             class="rating-input"
+            data-testid="ride-rate-driver-input"
           />
         </div>
 
@@ -51,10 +52,11 @@
             [value]="vehicleRating"
             (input)="vehicleRating = $any($event.target).value"
             class="rating-input"
+            data-testid="ride-rate-vehicle-input"
           />
         </div>
 
-        <button type="submit" [disabled]="submitting">Submit</button>
+        <button type="submit" [disabled]="submitting || ratingWindowExpired" data-testid="ride-rate-submit-button">Submit</button>
       </div>
 
       <div class="comment-box">
@@ -65,6 +67,7 @@
           [(ngModel)]="comment"
           name="comment"
           placeholder="Write a short comment..."
+          data-testid="ride-rate-comment-input"
         ></textarea>
       </div>
 

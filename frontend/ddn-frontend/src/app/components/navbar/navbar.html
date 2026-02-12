@@ -8,6 +8,10 @@
       Active Ride
     </a>
 
+    <a class="nav-link" routerLink="/driver/future-rides" routerLinkActive="active">
+      Future Rides
+    </a>
+
     <a class="nav-link" routerLink="/driver/ride-history" routerLinkActive="active">
       Ride History
     </a>
@@ -18,7 +22,7 @@
   </div>
 
   <div class="nav-center">
-    <div class="panic-btn" routerLink="/support" routerLinkActive="active-panic">
+    <div class="panic-btn" routerLink="/driver/support" routerLinkActive="active-panic">
       <img src="panic.svg" alt="panic" />
     </div>
   </div>
@@ -28,7 +32,7 @@
       {{ (driverAvailable$ | async) ? 'Available' : 'Busy' }}
     </div>
 
-    <a class="nav-link" routerLink="/support" routerLinkActive="active">
+    <a class="nav-link" routerLink="/driver/support" routerLinkActive="active">
       Support
     </a>
 

@@ -14,7 +14,15 @@
         android:title="@string/menu_profile" />
     <item
         android:id="@+id/nav_active_ride"
-        android:title="Active ride" />
+        android:title="@string/title_active_ride" />
+
+    <item
+        android:id="@+id/nav_future_rides"
+        android:title="@string/menu_future_rides" />
+
+    <item
+        android:id="@+id/nav_reports"
+        android:title="@string/menu_reports" />
 
     <item
         android:id="@+id/nav_support"

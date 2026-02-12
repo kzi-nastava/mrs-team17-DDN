@@ -14,9 +14,15 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.taximobile.R;
+import com.example.taximobile.core.auth.JwtUtils;
+import com.example.taximobile.core.network.TokenStorage;
+import com.example.taximobile.feature.admin.ui.AdminHomeActivity;
 import com.example.taximobile.feature.auth.ui.LoginActivity;
+import com.example.taximobile.feature.driver.ui.DriverHomeActivity;
 import com.example.taximobile.feature.publichome.data.VehiclesRepository;
 import com.example.taximobile.feature.publichome.data.dto.response.ActiveVehicleResponseDto;
+import com.example.taximobile.feature.user.notifications.NotificationLinkRouter;
+import com.example.taximobile.feature.user.ui.PassengerActiveRideActivity;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.util.GeoPoint;
@@ -47,6 +53,10 @@ public class PublicHomeMapActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (handleRideTrackingDeepLink()) {
+            return;
+        }
+
         // required by osmdroid
         Configuration.getInstance().setUserAgentValue(getPackageName());
 
@@ -62,6 +72,49 @@ public class PublicHomeMapActivity extends AppCompatActivity {
 
         initMap();
         loadVehicles();
+    }
+
+    private boolean handleRideTrackingDeepLink() {
+        Intent in = getIntent();
+        if (in == null || in.getData() == null) return false;
+
+        long rideId = NotificationLinkRouter.extractRideId(String.valueOf(in.getData()));
+        if (rideId <= 0) return false;
+
+        String token = new TokenStorage(getApplicationContext()).getToken();
+        if (token == null || token.trim().isEmpty()) {
+            Intent i = new Intent(this, LoginActivity.class);
+            i.putExtra(LoginActivity.EXTRA_POST_LOGIN_RIDE_ID, rideId);
+            startActivity(i);
+            finish();
+            return true;
+        }
+
+        String role = JwtUtils.getRole(token);
+        if ("PASSENGER".equalsIgnoreCase(role) || "USER".equalsIgnoreCase(role)) {
+            Intent i = new Intent(this, PassengerActiveRideActivity.class);
+            i.putExtra(PassengerActiveRideActivity.EXTRA_RIDE_ID, rideId);
+            startActivity(i);
+            finish();
+            return true;
+        }
+
+        if ("DRIVER".equalsIgnoreCase(role)) {
+            startActivity(new Intent(this, DriverHomeActivity.class));
+            finish();
+            return true;
+        }
+
+        if ("ADMIN".equalsIgnoreCase(role)) {
+            startActivity(new Intent(this, AdminHomeActivity.class));
+            finish();
+            return true;
+        }
+
+        new TokenStorage(getApplicationContext()).clear();
+        startActivity(new Intent(this, LoginActivity.class));
+        finish();
+        return true;
     }
 
     private void applyEdgeToEdgeInsets() {

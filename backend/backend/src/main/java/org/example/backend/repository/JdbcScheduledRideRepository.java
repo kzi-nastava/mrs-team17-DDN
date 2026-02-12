@@ -20,6 +20,7 @@ public class JdbcScheduledRideRepository implements ScheduledRideRepository {
         String sql = """
             select
                 r.id as ride_id,
+                r.driver_id,
                 r.scheduled_at,
                 r.start_address, r.start_lat, r.start_lng,
                 r.destination_address, r.dest_lat, r.dest_lng,
@@ -29,12 +30,11 @@ public class JdbcScheduledRideRepository implements ScheduledRideRepository {
                 r.required_seats
             from rides r
             where r.status = 'SCHEDULED'
-              and r.driver_id is null
               and r.canceled = false
               and r.ended_at is null
+              and r.started_at is null
               and r.scheduled_at is not null
               and r.scheduled_at <= now() + (:minutesAhead * interval '1 minute')
-              and r.scheduled_at > now() - interval '1 minute'
             order by r.scheduled_at asc
         """;
 
@@ -42,6 +42,7 @@ public class JdbcScheduledRideRepository implements ScheduledRideRepository {
                 .param("minutesAhead", minutesAhead)
                 .query((rs, rowNum) -> new ScheduledRideRow(
                         rs.getLong("ride_id"),
+                        (Long) rs.getObject("driver_id"),
                         rs.getObject("scheduled_at", OffsetDateTime.class),
                         rs.getString("start_address"),
                         rs.getDouble("start_lat"),

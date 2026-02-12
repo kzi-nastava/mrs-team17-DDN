@@ -1,4 +1,4 @@
-package org.example.backend.service;
+package org.example.backend.security;
 
 import org.example.backend.dto.request.AdminSetUserBlockRequestDto;
 import org.example.backend.dto.response.AdminUserStatusResponseDto;

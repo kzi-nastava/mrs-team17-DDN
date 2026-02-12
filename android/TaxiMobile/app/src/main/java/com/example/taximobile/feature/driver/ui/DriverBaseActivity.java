@@ -11,7 +11,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.taximobile.R;
 import com.example.taximobile.core.auth.LogoutManager;
-import com.example.taximobile.feature.support.ui.SupportChatActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
 
@@ -50,22 +49,39 @@ public abstract class DriverBaseActivity extends AppCompatActivity {
             int id = item.getItemId();
 
             if (id == R.id.nav_home) {
-                startActivity(new Intent(this, DriverHomeActivity.class));
+                if (!(this instanceof DriverHomeActivity)) {
+                    startActivity(new Intent(this, DriverHomeActivity.class));
+                }
 
             } else if (id == R.id.nav_history) {
-                startActivity(new Intent(this, DriverRideHistoryActivity.class));
+                if (!(this instanceof DriverRideHistoryActivity)) {
+                    startActivity(new Intent(this, DriverRideHistoryActivity.class));
+                }
 
             } else if (id == R.id.nav_profile) {
-                startActivity(new Intent(this, DriverProfileActivity.class));
+                if (!(this instanceof DriverProfileActivity)) {
+                    startActivity(new Intent(this, DriverProfileActivity.class));
+                }
 
             } else if (id == R.id.nav_support) {
-                // ISTI support chat kao passenger
-                startActivity(new Intent(this, SupportChatActivity.class));
+                startActivity(new Intent(this, DriverSupportChatActivity.class));
 
             } else if (id == R.id.nav_active_ride) {
-                startActivity(new Intent(this, DriverActiveRideActivity.class));
+                if (!(this instanceof DriverActiveRideActivity)) {
+                    startActivity(new Intent(this, DriverActiveRideActivity.class));
+                }
 
-            }else if (id == R.id.nav_logout) {
+            } else if (id == R.id.nav_future_rides) {
+                if (!(this instanceof DriverFutureRidesActivity)) {
+                    startActivity(new Intent(this, DriverFutureRidesActivity.class));
+                }
+
+            } else if (id == R.id.nav_reports) {
+                if (!(this instanceof DriverReportsActivity)) {
+                    startActivity(new Intent(this, DriverReportsActivity.class));
+                }
+
+            } else if (id == R.id.nav_logout) {
                 LogoutManager.logout(this);
                 drawerLayout.closeDrawers();
                 return true;

@@ -52,6 +52,11 @@ public abstract class AdminBaseActivity extends AppCompatActivity {
                     startActivity(new Intent(this, AdminHomeActivity.class));
                 }
 
+            } else if (id == R.id.nav_update_requests) {
+                if (!(this instanceof AdminUpdateRequestsActivity)) {
+                    startActivity(new Intent(this, AdminUpdateRequestsActivity.class));
+                }
+
             } else if (id == R.id.nav_create_drivers) {
                 if (!(this instanceof AdminCreateDriverActivity)) {
                     startActivity(new Intent(this, AdminCreateDriverActivity.class));
@@ -60,8 +65,16 @@ public abstract class AdminBaseActivity extends AppCompatActivity {
             } else if (id == R.id.nav_chats) {
                 startActivity(new Intent(this, AdminSupportThreadsActivity.class));
 
+            } else if (id == R.id.nav_ride_status) {
+                startActivity(new Intent(this, AdminRideStatusActivity.class));
+
             } else if (id == R.id.nav_pricing) {
                 startActivity(new Intent(this, AdminPricingActivity.class));
+
+            } else if (id == R.id.nav_reports) {
+                if (!(this instanceof AdminReportsActivity)) {
+                    startActivity(new Intent(this, AdminReportsActivity.class));
+                }
 
             } else if (id == R.id.nav_profile) {
                 if (!(this instanceof AdminProfileActivity)) {
@@ -73,17 +86,7 @@ public abstract class AdminBaseActivity extends AppCompatActivity {
                 drawerLayout.closeDrawers();
                 return true;
 
-            }
-            else if (id == R.id.nav_ride_status) {
-                startActivity(new Intent(this, AdminRideStatusActivity.class));
-            }
-            else if (id == R.id.nav_update_requests) {
-                if (!(this instanceof AdminUpdateRequestsActivity)) {
-                    startActivity(new Intent(this, AdminUpdateRequestsActivity.class));
-                }
-            }
-
-            else {
+            } else {
                 Intent i = new Intent(this, AdminPlaceholderActivity.class);
                 i.putExtra(AdminPlaceholderActivity.EXTRA_TITLE, String.valueOf(item.getTitle()));
                 startActivity(i);

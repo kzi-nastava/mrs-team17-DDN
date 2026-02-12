@@ -3,6 +3,7 @@ package org.example.backend.repository;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Repository
@@ -40,6 +41,45 @@ public class JdbcDriverMatchingRepository implements DriverMatchingRepository {
                       and r.ended_at is null
                       and r.canceled = false
               )
+              and coalesce((
+                    select extract(epoch from sum(coalesce(r2.ended_at, now()) - r2.started_at))
+                    from rides r2
+                    where r2.driver_id = d.id
+                      and r2.started_at is not null
+                      and r2.started_at >= now() - interval '24 hours'
+                      and r2.canceled = false
+              ), 0) < :maxWorkSeconds
+        """;
+
+        return jdbc.sql(sql)
+                .param("type", vehicleTypeLower)
+                .param("seats", requiredSeats)
+                .param("baby", babyTransport)
+                .param("pet", petTransport)
+                .param("maxWorkSeconds", MAX_WORK_SECONDS_LAST_24H)
+                .query((rs, rowNum) -> new CandidateDriver(
+                        rs.getLong("driver_id"),
+                        rs.getDouble("lat"),
+                        rs.getDouble("lng")
+                ))
+                .list();
+    }
+
+    @Override
+    public List<CandidateDriver> findAssignableDriversForScheduledRide(String vehicleTypeLower, boolean babyTransport, boolean petTransport, int requiredSeats) {
+        String sql = """
+            select
+                d.id as driver_id,
+                v.latitude as lat,
+                v.longitude as lng
+            from drivers d
+            join vehicles v on v.driver_id = d.id
+            left join users u on u.id = d.user_id
+            where v.type = :type
+              and v.seats >= :seats
+              and (:baby = false or v.baby_transport = true)
+              and (:pet  = false or v.pet_transport  = true)
+              and (d.user_id is null or (u.is_active = true and u.blocked = false))
               and coalesce((
                     select extract(epoch from sum(coalesce(r2.ended_at, now()) - r2.started_at))
                     from rides r2
@@ -157,5 +197,84 @@ public class JdbcDriverMatchingRepository implements DriverMatchingRepository {
                 .update();
 
         return updated > 0;
+    }
+
+    @Override
+    public boolean hasOpenImmediateRideConflictingWithSchedule(Long driverId, OffsetDateTime latestAllowedFinishAt) {
+        Boolean exists = jdbc.sql("""
+            select exists (
+                select 1
+                from rides r
+                where r.driver_id = :driverId
+                  and r.ended_at is null
+                  and r.canceled = false
+                  and r.status in ('ACCEPTED', 'ACTIVE')
+                  and (
+                        case
+                            when r.status = 'ACTIVE' then
+                                now() + (
+                                    greatest(
+                                        0,
+                                        coalesce(r.est_duration_seconds, 86400)
+                                        - extract(epoch from (now() - coalesce(r.started_at, now())))
+                                    ) * interval '1 second'
+                                )
+                            else
+                                now() + (coalesce(r.est_duration_seconds, 86400) * interval '1 second')
+                        end
+                  ) > :latestAllowedFinishAt
+            )
+        """)
+                .param("driverId", driverId)
+                .param("latestAllowedFinishAt", latestAllowedFinishAt)
+                .query(Boolean.class)
+                .single();
+
+        return Boolean.TRUE.equals(exists);
+    }
+
+    @Override
+    public boolean hasAssignedScheduledRideBefore(Long driverId, OffsetDateTime latestAllowedStartAt) {
+        Boolean exists = jdbc.sql("""
+            select exists (
+                select 1
+                from rides r
+                where r.driver_id = :driverId
+                  and r.ended_at is null
+                  and r.canceled = false
+                  and r.status in ('SCHEDULED', 'ACCEPTED')
+                  and r.scheduled_at is not null
+                  and r.scheduled_at < :latestAllowedStartAt
+            )
+        """)
+                .param("driverId", driverId)
+                .param("latestAllowedStartAt", latestAllowedStartAt)
+                .query(Boolean.class)
+                .single();
+
+        return Boolean.TRUE.equals(exists);
+    }
+
+    @Override
+    public boolean hasScheduledRideInWindow(Long driverId, OffsetDateTime fromInclusive, OffsetDateTime toInclusive) {
+        Boolean exists = jdbc.sql("""
+            select exists (
+                select 1
+                from rides r
+                where r.driver_id = :driverId
+                  and r.ended_at is null
+                  and r.canceled = false
+                  and r.status in ('SCHEDULED', 'ACCEPTED')
+                  and r.scheduled_at is not null
+                  and r.scheduled_at between :fromInclusive and :toInclusive
+            )
+        """)
+                .param("driverId", driverId)
+                .param("fromInclusive", fromInclusive)
+                .param("toInclusive", toInclusive)
+                .query(Boolean.class)
+                .single();
+
+        return Boolean.TRUE.equals(exists);
     }
 }

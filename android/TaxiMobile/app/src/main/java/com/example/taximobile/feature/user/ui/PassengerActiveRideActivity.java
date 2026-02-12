@@ -1,5 +1,6 @@
 package com.example.taximobile.feature.user.ui;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -29,6 +30,10 @@ import java.util.Locale;
 
 public class PassengerActiveRideActivity extends UserBaseActivity {
 
+    public static final String EXTRA_RIDE_ID = "extra_ride_id";
+    public static final String EXTRA_READ_ONLY = "extra_read_only";
+    public static final String EXTRA_NOTIFICATION_TYPE = "extra_notification_type";
+
     private TextView tvEta, tvStatus, tvError;
     private Button btnReport;
     private MapView map;
@@ -49,13 +54,21 @@ public class PassengerActiveRideActivity extends UserBaseActivity {
     private boolean firstCamera = true;
     private boolean hasActiveRide = true;
 
+    private boolean specificRideMode = false;
+    private long selectedRideId = -1L;
+    private boolean readOnlyMode = false;
+    private String notificationType;
+
     private final android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
-    private final long POLL_MS = 2000;
+    private static final long POLL_MS = 2000L;
 
     private final Runnable pollRunnable = new Runnable() {
-        @Override public void run() {
+        @Override
+        public void run() {
             loadTracking(false);
-            handler.postDelayed(this, POLL_MS);
+            if (shouldPoll()) {
+                handler.postDelayed(this, POLL_MS);
+            }
         }
     };
 
@@ -63,8 +76,10 @@ public class PassengerActiveRideActivity extends UserBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        resolveModeFromIntent();
+
         View v = inflateContent(R.layout.activity_passenger_active_ride);
-        toolbar.setTitle("Active ride");
+        toolbar.setTitle(getString(specificRideMode ? R.string.title_ride_tracking : R.string.title_active_ride));
 
         tvEta = v.findViewById(R.id.tvEta);
         tvStatus = v.findViewById(R.id.tvStatus);
@@ -76,7 +91,6 @@ public class PassengerActiveRideActivity extends UserBaseActivity {
         map.setMultiTouchControls(true);
         map.getController().setZoom(15.0);
 
-        // different icons
         carIcon = ContextCompat.getDrawable(this, R.drawable.ic_marker_car);
         pickupIcon = ContextCompat.getDrawable(this, R.drawable.ic_marker_pickup);
         destIcon = ContextCompat.getDrawable(this, R.drawable.ic_marker_destination);
@@ -84,59 +98,120 @@ public class PassengerActiveRideActivity extends UserBaseActivity {
         repo = new RideActiveRepository(this);
 
         btnReport.setOnClickListener(x -> openReportDialog());
+        if (readOnlyMode) {
+            btnReport.setVisibility(View.GONE);
+        }
 
         loadTracking(true);
     }
 
+    private void resolveModeFromIntent() {
+        Intent i = getIntent();
+        if (i == null) return;
+
+        selectedRideId = i.getLongExtra(EXTRA_RIDE_ID, -1L);
+        specificRideMode = selectedRideId > 0;
+        readOnlyMode = i.getBooleanExtra(EXTRA_READ_ONLY, false);
+        notificationType = i.getStringExtra(EXTRA_NOTIFICATION_TYPE);
+
+        if ("RIDE_FINISHED".equalsIgnoreCase(notificationType)) {
+            readOnlyMode = true;
+        }
+    }
+
     private void loadTracking(boolean moveCamera) {
+        if (specificRideMode) {
+            loadTrackingByRideId(moveCamera);
+            return;
+        }
+
         repo.getTracking(new RideActiveRepository.TrackingCb() {
-            @Override public void onSuccess(RideTrackingResponseDto dto) {
+            @Override
+            public void onSuccess(RideTrackingResponseDto dto) {
                 runOnUiThread(() -> {
                     hasActiveRide = true;
-                    setActiveRideUi(true);
+                    setTrackingUi(true);
 
                     showError(null);
-                    tvEta.setText(String.format(Locale.US, "ETA: %d min (%.2f km)",
-                            dto.getEtaMinutes(), dto.getDistanceKm()));
-                    tvStatus.setText("Status: " + safe(dto.getStatus()));
-
+                    bindTrackingSummary(dto);
                     render(dto, moveCamera);
                 });
             }
 
-            @Override public void onNoActiveRide() {
+            @Override
+            public void onNoActiveRide() {
                 runOnUiThread(() -> {
                     hasActiveRide = false;
                     clearOverlays();
-                    setActiveRideUi(false);
-                    showError("No active ride" );
+                    setNoRideUi();
+                    showError(getString(R.string.tracking_no_active_ride));
                 });
             }
 
-            @Override public void onError(String msg) {
+            @Override
+            public void onError(String msg) {
+                runOnUiThread(() -> showError(msg));
+            }
+        });
+    }
+
+    private void loadTrackingByRideId(boolean moveCamera) {
+        repo.getTrackingByRideId(selectedRideId, new RideActiveRepository.TrackingByIdCb() {
+            @Override
+            public void onSuccess(RideTrackingResponseDto dto) {
                 runOnUiThread(() -> {
-                    // ako nema vožnje, backend često vraća 404; to hvatamo gore.
+                    if (dto == null) {
+                        clearOverlays();
+                        setNoRideUi();
+                        showError(getString(R.string.tracking_load_failed));
+                        return;
+                    }
+
+                    hasActiveRide = "ACTIVE".equalsIgnoreCase(dto.getStatus());
+                    setTrackingUi(!readOnlyMode && hasActiveRide);
+
+                    showError(null);
+                    bindTrackingSummary(dto);
+                    render(dto, moveCamera);
+                });
+            }
+
+            @Override
+            public void onError(String msg) {
+                runOnUiThread(() -> {
+                    clearOverlays();
+                    setNoRideUi();
                     showError(msg);
                 });
             }
         });
     }
 
-    private void setActiveRideUi(boolean active) {
-        // ETA/Status može ostati, ali mapa i report nema smisla kad nema vožnje
-        map.setVisibility(active ? View.VISIBLE : View.GONE);
-        btnReport.setVisibility(active ? View.VISIBLE : View.GONE);
+    private void bindTrackingSummary(RideTrackingResponseDto dto) {
+        tvEta.setText(String.format(
+                Locale.US,
+                getString(R.string.tracking_eta_fmt),
+                dto.getEtaMinutes(),
+                dto.getDistanceKm()
+        ));
+        tvStatus.setText(getString(R.string.tracking_status_fmt, safe(dto.getStatus())));
+    }
 
-        if (!active) {
-            tvEta.setText("ETA: -");
-            tvStatus.setText("Status: -");
-        }
+    private void setTrackingUi(boolean reportEnabled) {
+        map.setVisibility(View.VISIBLE);
+        btnReport.setVisibility(reportEnabled ? View.VISIBLE : View.GONE);
+    }
+
+    private void setNoRideUi() {
+        map.setVisibility(View.GONE);
+        btnReport.setVisibility(View.GONE);
+        tvEta.setText(getString(R.string.tracking_eta_empty));
+        tvStatus.setText(getString(R.string.tracking_status_empty));
     }
 
     private void render(RideTrackingResponseDto dto, boolean moveCamera) {
         if (dto == null) return;
 
-        // car
         LatLngDto car = dto.getCar();
         if (car != null) {
             GeoPoint p = new GeoPoint(car.getLat(), car.getLng());
@@ -155,7 +230,6 @@ public class PassengerActiveRideActivity extends UserBaseActivity {
             }
         }
 
-        // pickup
         LatLngDto pickup = dto.getPickup();
         if (pickup != null) {
             GeoPoint p = new GeoPoint(pickup.getLat(), pickup.getLng());
@@ -169,7 +243,6 @@ public class PassengerActiveRideActivity extends UserBaseActivity {
             pickupMarker.setPosition(p);
         }
 
-        // destination
         LatLngDto dest = dto.getDestination();
         if (dest != null) {
             GeoPoint p = new GeoPoint(dest.getLat(), dest.getLng());
@@ -183,7 +256,6 @@ public class PassengerActiveRideActivity extends UserBaseActivity {
             destMarker.setPosition(p);
         }
 
-        // route polyline
         List<LatLngDto> route = dto.getRoute();
         if (route != null && !route.isEmpty()) {
             List<GeoPoint> pts = new ArrayList<>();
@@ -201,7 +273,6 @@ public class PassengerActiveRideActivity extends UserBaseActivity {
             }
         }
 
-        // checkpoints markers
         clearCheckpointMarkers();
         List<RideCheckpointDto> cps = dto.getCheckpoints();
         if (cps != null && !cps.isEmpty()) {
@@ -239,8 +310,8 @@ public class PassengerActiveRideActivity extends UserBaseActivity {
     }
 
     private void openReportDialog() {
-        if (!hasActiveRide) {
-            showError("Nema aktivne vožnje");
+        if (readOnlyMode || !hasActiveRide) {
+            showError(getString(R.string.tracking_report_inactive));
             return;
         }
 
@@ -248,10 +319,10 @@ public class PassengerActiveRideActivity extends UserBaseActivity {
         EditText et = form.findViewById(R.id.etReport);
 
         new AlertDialog.Builder(this)
-                .setTitle("Report driver inconsistency")
+                .setTitle(getString(R.string.tracking_report_title))
                 .setView(form)
-                .setNegativeButton("Cancel", (d, w) -> d.dismiss())
-                .setPositiveButton("Send", (d, w) -> {
+                .setNegativeButton(getString(R.string.tracking_report_cancel), (d, w) -> d.dismiss())
+                .setPositiveButton(getString(R.string.tracking_report_send), (d, w) -> {
                     String text = et.getText() != null ? et.getText().toString().trim() : "";
                     if (TextUtils.isEmpty(text)) return;
                     sendReport(text);
@@ -261,11 +332,13 @@ public class PassengerActiveRideActivity extends UserBaseActivity {
 
     private void sendReport(String text) {
         repo.report(text, new RideActiveRepository.ReportCb() {
-            @Override public void onSuccess(com.example.taximobile.feature.user.data.dto.response.RideReportResponseDto dto) {
-                runOnUiThread(() -> showError("Report sent"));
+            @Override
+            public void onSuccess(com.example.taximobile.feature.user.data.dto.response.RideReportResponseDto dto) {
+                runOnUiThread(() -> showError(getString(R.string.tracking_report_sent)));
             }
 
-            @Override public void onError(String msg) {
+            @Override
+            public void onError(String msg) {
                 runOnUiThread(() -> showError(msg));
             }
         });
@@ -280,17 +353,27 @@ public class PassengerActiveRideActivity extends UserBaseActivity {
         }
     }
 
+    private boolean shouldPoll() {
+        return !readOnlyMode;
+    }
+
     private static String safe(String s) {
         return (s == null || s.trim().isEmpty()) ? "-" : s.trim();
     }
 
-    @Override protected void onResume() {
+    @Override
+    protected void onResume() {
         super.onResume();
         if (map != null) map.onResume();
-        handler.post(pollRunnable);
+
+        handler.removeCallbacks(pollRunnable);
+        if (shouldPoll()) {
+            handler.post(pollRunnable);
+        }
     }
 
-    @Override protected void onPause() {
+    @Override
+    protected void onPause() {
         handler.removeCallbacks(pollRunnable);
         if (map != null) map.onPause();
         super.onPause();

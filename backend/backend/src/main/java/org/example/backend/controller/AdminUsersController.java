@@ -5,7 +5,7 @@ import org.example.backend.dto.request.AdminSetUserBlockRequestDto;
 import org.example.backend.dto.response.AdminUserStatusResponseDto;
 import org.example.backend.dto.response.AdminUserOptionResponseDto;
 import org.example.backend.repository.AdminUserSelectRepository;
-import org.example.backend.service.AdminUserManagementService;
+import org.example.backend.security.AdminUserManagementService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

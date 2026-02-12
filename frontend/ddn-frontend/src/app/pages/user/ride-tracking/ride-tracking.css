@@ -85,6 +85,36 @@
   cursor: not-allowed;
 }
 
+/* ✅ crveno cancel dugme */
+.btn-danger {
+  background: rgba(220, 53, 69, 0.92);
+  border-color: rgba(220, 53, 69, 0.75);
+}
+
+.btn-danger:hover {
+  background: rgba(220, 53, 69, 1);
+  border-color: rgba(220, 53, 69, 1);
+}
+
+.btn-danger:disabled {
+  opacity: 0.45;
+}
+
+/* mali status ispod dugmeta (opciono) */
+.hint {
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.hint.ok {
+  color: #7CFF9A;
+}
+
+.hint.err {
+  color: #FF7C7C;
+}
+
 .side {
   display: flex;
   flex-direction: column;

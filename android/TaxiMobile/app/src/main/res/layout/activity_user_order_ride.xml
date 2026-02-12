@@ -337,6 +337,7 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_feedback_error_user"
                         android:padding="10dp"
+                        android:layout_marginTop="8dp"
                         android:textColor="@color/white"
                         android:textSize="13sp"
                         android:visibility="gone" />

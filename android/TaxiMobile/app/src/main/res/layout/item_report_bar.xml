@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="56dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:layout_marginEnd="10dp">
+
+    <FrameLayout
+        android:id="@+id/repBarArea"
+        android:layout_width="30dp"
+        android:layout_height="140dp"
+        android:background="@drawable/bg_pill_muted_user"
+        android:padding="4dp">
+
+        <View
+            android:id="@+id/repBar"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/bg_button_primary_user_blue" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/repBarLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="01.02"
+        android:textColor="@color/text_gray"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:paddingTop="6dp" />
+
+</LinearLayout>

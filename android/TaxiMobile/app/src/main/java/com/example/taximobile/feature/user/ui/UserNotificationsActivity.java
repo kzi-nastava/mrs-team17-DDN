@@ -1,5 +1,6 @@
 package com.example.taximobile.feature.user.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.taximobile.R;
 import com.example.taximobile.feature.user.data.NotificationsRepository;
 import com.example.taximobile.feature.user.data.dto.response.NotificationResponseDto;
+import com.example.taximobile.feature.user.notifications.NotificationLinkRouter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +24,7 @@ public class UserNotificationsActivity extends UserBaseActivity
     private NotificationsRepository repo;
 
     private ProgressBar progress;
+    private View emptyContainer;
     private TextView empty;
     private RecyclerView list;
 
@@ -33,11 +36,12 @@ public class UserNotificationsActivity extends UserBaseActivity
 
         View v = inflateContent(R.layout.activity_user_notifications);
 
-        toolbar.setTitle("Notifications");
+        toolbar.setTitle(getString(R.string.title_notifications));
 
         repo = new NotificationsRepository(this);
 
         progress = v.findViewById(R.id.nProgress);
+        emptyContainer = v.findViewById(R.id.nEmptyContainer);
         empty = v.findViewById(R.id.nEmpty);
         list = v.findViewById(R.id.nList);
 
@@ -55,7 +59,13 @@ public class UserNotificationsActivity extends UserBaseActivity
             public void onSuccess(List<NotificationResponseDto> items) {
                 adapter.setItems(items);
                 setLoading(false);
-                empty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+                boolean isEmpty = items == null || items.isEmpty();
+                if (emptyContainer != null) {
+                    emptyContainer.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                } else {
+                    empty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                }
+                list.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
             }
 
             @Override
@@ -69,6 +79,11 @@ public class UserNotificationsActivity extends UserBaseActivity
     private void setLoading(boolean loading) {
         progress.setVisibility(loading ? View.VISIBLE : View.GONE);
         list.setVisibility(loading ? View.GONE : View.VISIBLE);
+        if (emptyContainer != null) {
+            emptyContainer.setVisibility(View.GONE);
+        } else if (loading) {
+            empty.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -83,8 +98,12 @@ public class UserNotificationsActivity extends UserBaseActivity
             });
         }
 
-        if (n.getLinkUrl() != null && !n.getLinkUrl().isBlank()) {
-            Toast.makeText(this, n.getLinkUrl(), Toast.LENGTH_SHORT).show();
+        Intent target = NotificationLinkRouter.intentForNotification(this, n);
+        if (target.getComponent() != null
+                && UserNotificationsActivity.class.getName().equals(target.getComponent().getClassName())) {
+            return;
         }
+        target.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(target);
     }
 }

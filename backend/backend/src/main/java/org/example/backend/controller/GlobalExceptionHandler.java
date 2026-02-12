@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -56,6 +57,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleActiveRideConflict(ActiveRideConflictException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
                 "message", ex.getMessage()
+        ));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatus(ResponseStatusException ex) {
+        String msg = ex.getReason() == null || ex.getReason().isBlank()
+                ? "Request cannot be processed."
+                : ex.getReason();
+        return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
+                "message", msg
         ));
     }
 

@@ -3,8 +3,31 @@
     <div class="card-title">Ride status</div>
 
     <div class="toolbar">
-      <input class="input" [(ngModel)]="query" placeholder="Search driver (name / email)..." />
-      <button class="btn" (click)="reload()">Search</button>
+      <input
+        class="input"
+        [(ngModel)]="query"
+        (keyup.enter)="reload()"
+        placeholder="Search driver (name / email)..."
+        aria-label="Search by driver name or email"
+      />
+      <div class="toolbar-actions">
+        <button
+          class="btn btn-ghost"
+          *ngIf="query.trim().length > 0"
+          (click)="clearQuery()"
+          [disabled]="loading"
+        >
+          Clear
+        </button>
+        <button class="btn" (click)="reload()" [disabled]="loading">
+          {{ loading ? 'Searching...' : 'Search' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="list-meta" *ngIf="!loading && !error">
+      <span>{{ rows.length }} active ride{{ rows.length === 1 ? '' : 's' }}</span>
+      <span *ngIf="lastUpdatedAt">Updated {{ lastUpdatedAt | date:'shortTime' }}</span>
     </div>
 
     <div *ngIf="loading" class="hint">Loading...</div>
@@ -15,10 +38,19 @@
         <div
           class="item clickable"
           (click)="toggleDetails(r)"
+          (keydown)="onRowKeydown($event, r)"
+          tabindex="0"
+          role="button"
+          [attr.aria-expanded]="expandedRideId === r.rideId"
           [class.expanded]="expandedRideId === r.rideId"
         >
           <div class="left">
-            <div class="id">Ride #{{ r.rideId }}</div>
+            <div class="id-line">
+              <div class="id">Ride #{{ r.rideId }}</div>
+              <span class="status-badge" [ngClass]="statusClass(r.status)">
+                {{ statusLabel(r.status) }}
+              </span>
+            </div>
             <div class="user">
               Driver:
               {{ (r.driverFirstName || '') + ' ' + (r.driverLastName || '') }}
@@ -27,26 +59,28 @@
           </div>
 
           <div class="right">
-            <div class="time">{{ r.startedAt ? (r.startedAt | date:'short') : '—' }}</div>
-            <div class="time">{{ r.carLat.toFixed(5) }}, {{ r.carLng.toFixed(5) }}</div>
+            <div class="time">{{ formatStartedAt(r.startedAt) }}</div>
+            <div class="time muted-line">Live position available</div>
           </div>
         </div>
 
         <div class="details" *ngIf="expandedRideId === r.rideId">
           <div class="details-head">
             <div class="pill">
-              <span class="dot" [class.ok]="(details?.status || '') === 'ACTIVE'"></span>
-              <span>{{ details?.status || '—' }}</span>
+              <span class="pill-k">Status</span>
+              <span class="status-badge" [ngClass]="statusClass(details?.status)">
+                {{ statusLabel(details?.status) }}
+              </span>
             </div>
 
             <div class="meta">
               <div class="meta-item">
                 <div class="k">ETA</div>
-                <div class="v">{{ details?.etaMinutes != null ? (details?.etaMinutes + ' min') : '—' }}</div>
+                <div class="v">{{ etaLabel(details?.etaMinutes) }}</div>
               </div>
               <div class="meta-item">
                 <div class="k">Distance</div>
-                <div class="v">{{ details?.distanceKm != null ? (details?.distanceKm + ' km') : '—' }}</div>
+                <div class="v">{{ distanceLabel(details?.distanceKm) }}</div>
               </div>
             </div>
           </div>
@@ -55,43 +89,36 @@
           <div *ngIf="!detailsLoading && detailsError" class="hint">{{ detailsError }}</div>
 
           <div class="details-body" *ngIf="!detailsLoading && !detailsError">
-  <div class="mini-map-wrap">
-    <div class="mini-map" [id]="'mini-map-' + r.rideId"></div>
-    <div class="map-caption">
-      Car position:
-      {{ r.carLat.toFixed(5) }},
-      {{ r.carLng.toFixed(5) }}
-    </div>
-  </div>
+            <div class="mini-map-wrap">
+              <div class="mini-map" [id]="'mini-map-' + r.rideId"></div>
+              <div class="map-caption">Live ride map (car, route and checkpoints)</div>
+            </div>
 
-  <div class="grid">
-    <div class="kv">
-      <div class="k">Pickup</div>
-      <div class="v">
-        {{ details?.pickup?.lat?.toFixed(5) }}, {{ details?.pickup?.lng?.toFixed(5) }}
-      </div>
-    </div>
+            <div class="grid">
+              <div class="kv">
+                <div class="k">Route points</div>
+                <div class="v">{{ routePointCount(details?.route) }}</div>
+              </div>
 
-    <div class="kv">
-      <div class="k">Destination</div>
-      <div class="v">
-        {{ details?.destination?.lat?.toFixed(5) }}, {{ details?.destination?.lng?.toFixed(5) }}
-      </div>
-    </div>
+              <div class="kv">
+                <div class="k">Checkpoints</div>
+                <div class="v">{{ details?.checkpoints?.length || 0 }}</div>
+              </div>
 
-    <div class="kv full">
-      <div class="k">Checkpoints</div>
-      <div class="v">
-        <div *ngIf="(details?.checkpoints?.length || 0) === 0" class="muted">—</div>
-        <div class="cp" *ngFor="let cp of (details?.checkpoints || [])">
-          <span class="cp-ord">#{{ cp.order }}</span>
-          <span class="cp-addr">{{ cp.address }}</span>
-          <span class="cp-coord">({{ cp.lat.toFixed(5) }}, {{ cp.lng.toFixed(5) }})</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+              <div class="kv full">
+                <div class="k">Checkpoint list</div>
+                <div class="v">
+                  <div *ngIf="(details?.checkpoints?.length || 0) === 0" class="muted">
+                    No checkpoints on this ride.
+                  </div>
+                  <div class="cp" *ngFor="let cp of (details?.checkpoints || [])">
+                    <span class="cp-ord">#{{ cp.order }}</span>
+                    <span class="cp-addr">{{ cp.address || ('Checkpoint #' + cp.order) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
         </div>
       </div>

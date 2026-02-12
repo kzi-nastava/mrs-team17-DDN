@@ -5,7 +5,6 @@
   <div *ngIf="!loading && error" style="padding: 14px;">{{ error }}</div>
 
   <div class="cards-row" *ngIf="!loading && ride">
-    <!-- LEFT CARD -->
     <div class="card">
       <div class="card-body">
         <!-- RIDE INFO -->
@@ -49,6 +48,11 @@
             </div>
 
             <div class="item">
+              <span class="label">Canceled by</span>
+              <span class="value">{{ ride.canceledBy || '-' }}</span>
+            </div>
+
+            <div class="item">
               <span class="label">Panic</span>
               <span
                 class="badge"
@@ -75,7 +79,7 @@
             <span>{{ p.email }}</span>
           </div>
 
-          <div *ngIf="ride.passengers?.length === 0" style="padding: 10px 0;">
+          <div *ngIf="ride.passengers.length === 0" style="padding: 10px 0;">
             No passengers.
           </div>
         </div>
@@ -106,11 +110,6 @@
           ← Back to Ride History
         </button>
       </div>
-    </div>
-
-    <!-- RIGHT CARD (MAP PLACEHOLDER) -->
-    <div class="card map-card">
-      <span>Map will be displayed here</span>
     </div>
   </div>
 </div>
