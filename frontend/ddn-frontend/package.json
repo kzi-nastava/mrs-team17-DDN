@@ -6,7 +6,10 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:student1": "bash scripts/run-student-tests.sh student1",
+    "test:student2": "bash scripts/run-student-tests.sh student2",
+    "test:students12": "bash scripts/run-student-tests.sh all"
   },
   "prettier": {
     "printWidth": 100,
