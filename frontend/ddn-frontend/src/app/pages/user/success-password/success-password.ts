@@ -7,8 +7,6 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './success-password.html',
-  styleUrls: ['./success-password.css']
+  styleUrls: ['./success-password.css'],
 })
-export class SuccessPassword {
- 
-}
+export class SuccessPassword {}
