@@ -3,6 +3,8 @@ package com.example.taximobile.feature.driver.ui;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -39,6 +41,7 @@ public class DriverHomeActivity extends DriverBaseActivity {
     private TextView tvStart;
     private TextView tvEnd;
     private TextView tvMeta;
+    private TextView tvLiveRefreshHint;
     private TextView tvCheckpointsLabel;
     private TextView tvCheckpointsList;
     private TextView tvError;
@@ -64,6 +67,22 @@ public class DriverHomeActivity extends DriverBaseActivity {
     private boolean firstCamera = true;
     private boolean loading = false;
     private boolean starting = false;
+    private boolean acceptedRideRefreshInFlight = false;
+    private boolean trackingRefreshInFlight = false;
+    private boolean activeRideCheckInFlight = false;
+    private boolean initialDataLoaded = false;
+
+    private static final int START_PICKUP_THRESHOLD_M = 80;
+    private static final long AUTO_REFRESH_MS = 2000L;
+
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private final Runnable autoRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            runAutoRefreshTick();
+            refreshHandler.postDelayed(this, AUTO_REFRESH_MS);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +97,7 @@ public class DriverHomeActivity extends DriverBaseActivity {
         tvStart = contentView.findViewById(R.id.dhRouteStart);
         tvEnd = contentView.findViewById(R.id.dhRouteEnd);
         tvMeta = contentView.findViewById(R.id.dhMeta);
+        tvLiveRefreshHint = contentView.findViewById(R.id.dhLiveRefreshHint);
         tvCheckpointsLabel = contentView.findViewById(R.id.dhCheckpointsLabel);
         tvCheckpointsList = contentView.findViewById(R.id.dhCheckpointsList);
         tvError = contentView.findViewById(R.id.dhError);
@@ -111,6 +131,7 @@ public class DriverHomeActivity extends DriverBaseActivity {
             @Override
             public void onSuccess(DriverRideDetailsResponseDto dto) {
                 runOnUiThread(() -> {
+                    initialDataLoaded = true;
                     setLoading(false);
                     openActiveRide();
                 });
@@ -118,28 +139,32 @@ public class DriverHomeActivity extends DriverBaseActivity {
 
             @Override
             public void onEmpty() {
-                runOnUiThread(DriverHomeActivity.this::loadAcceptedRide);
+                runOnUiThread(() -> loadAcceptedRide(true, true));
             }
 
             @Override
             public void onError(String msg) {
                 runOnUiThread(() -> {
                     showError(getString(R.string.driver_start_ride_error_check_active, msg));
-                    loadAcceptedRide();
+                    loadAcceptedRide(true, true);
                 });
             }
         });
     }
 
-    private void loadAcceptedRide() {
-        setLoading(true);
-        clearRouteFromMap();
+    private void loadAcceptedRide(boolean showLoading, boolean clearMapBeforeLoad) {
+        if (acceptedRideRefreshInFlight) return;
+        acceptedRideRefreshInFlight = true;
+        if (showLoading) setLoading(true);
+        if (clearMapBeforeLoad) clearRouteFromMap();
 
         rideRepo.getAcceptedRides(new DriverRideRepository.AcceptedRidesCb() {
             @Override
             public void onSuccess(List<DriverRideDetailsResponseDto> rides) {
                 runOnUiThread(() -> {
-                    setLoading(false);
+                    acceptedRideRefreshInFlight = false;
+                    if (showLoading) setLoading(false);
+                    if (showLoading) initialDataLoaded = true;
 
                     if (rides == null || rides.isEmpty()) {
                         assignedRide = null;
@@ -148,13 +173,22 @@ public class DriverHomeActivity extends DriverBaseActivity {
                         return;
                     }
 
+                    Long previousRideId = assignedRide != null ? assignedRide.getRideId() : null;
                     assignedRide = rides.get(0);
-                    tracking = null;
+                    Long currentRideId = assignedRide.getRideId();
+                    boolean rideChanged = previousRideId == null
+                            ? currentRideId != null
+                            : !previousRideId.equals(currentRideId);
+                    if (rideChanged) {
+                        tracking = null;
+                        firstCamera = true;
+                        clearRouteFromMap();
+                    }
                     renderRide(assignedRide);
 
                     Long rideId = assignedRide.getRideId();
                     if (rideId != null) {
-                        loadTrackingOnce(rideId.longValue());
+                        loadTrackingOnce(rideId, showLoading);
                     }
                 });
             }
@@ -162,34 +196,49 @@ public class DriverHomeActivity extends DriverBaseActivity {
             @Override
             public void onError(String msg) {
                 runOnUiThread(() -> {
-                    setLoading(false);
-                    assignedRide = null;
-                    tracking = null;
-                    renderNoRide();
-                    showError(getString(R.string.driver_start_ride_error_load_assigned, msg));
+                    acceptedRideRefreshInFlight = false;
+                    if (showLoading) setLoading(false);
+                    if (showLoading) initialDataLoaded = true;
+                    if (showLoading) {
+                        assignedRide = null;
+                        tracking = null;
+                        renderNoRide();
+                        showError(getString(R.string.driver_start_ride_error_load_assigned, msg));
+                        return;
+                    }
+                    if (assignedRide == null) {
+                        renderNoRide();
+                    }
                 });
             }
         });
     }
 
-    private void loadTrackingOnce(long rideId) {
+    private void loadTrackingOnce(long rideId, boolean showErrorOnFailure) {
+        if (trackingRefreshInFlight) return;
+        trackingRefreshInFlight = true;
         trackingRepo.getTracking(rideId, new DriverRideTrackingRepository.TrackingCb() {
             @Override
             public void onSuccess(RideTrackingResponseDto dto) {
                 runOnUiThread(() -> {
+                    trackingRefreshInFlight = false;
                     tracking = dto;
                     renderMeta();
                     renderCheckpoints();
                     if (tracking != null) drawRouteOnMap(tracking);
+                    clearTooFarErrorIfNowNearPickup();
                 });
             }
 
             @Override
             public void onError(String msg) {
                 runOnUiThread(() -> {
-                    tracking = null;
-                    renderMeta();
-                    renderCheckpoints();
+                    trackingRefreshInFlight = false;
+                    if (showErrorOnFailure) {
+                        tracking = null;
+                        renderMeta();
+                        renderCheckpoints();
+                    }
                 });
             }
         });
@@ -204,6 +253,7 @@ public class DriverHomeActivity extends DriverBaseActivity {
         tvStart.setVisibility(View.GONE);
         tvEnd.setVisibility(View.GONE);
         tvMeta.setVisibility(View.GONE);
+        tvLiveRefreshHint.setVisibility(View.GONE);
         tvCheckpointsLabel.setVisibility(View.GONE);
         tvCheckpointsList.setVisibility(View.GONE);
 
@@ -211,6 +261,7 @@ public class DriverHomeActivity extends DriverBaseActivity {
         btnStart.setText(getString(R.string.driver_start_ride_start_button));
 
         map.setVisibility(View.GONE);
+        clearRouteFromMap();
 
         showError(null);
     }
@@ -223,6 +274,7 @@ public class DriverHomeActivity extends DriverBaseActivity {
         tvStart.setVisibility(View.VISIBLE);
         tvEnd.setVisibility(View.VISIBLE);
         tvMeta.setVisibility(View.VISIBLE);
+        tvLiveRefreshHint.setVisibility(View.VISIBLE);
 
         Long rideId = ride != null ? ride.getRideId() : null;
         tvTitle.setText(rideId != null ? ("Ride #" + rideId) : getString(R.string.driver_start_ride_title_default));
@@ -337,10 +389,114 @@ public class DriverHomeActivity extends DriverBaseActivity {
                     starting = false;
                     btnStart.setText(getString(R.string.driver_start_ride_start_button));
                     btnStart.setEnabled(true);
-                    showError(getString(R.string.driver_start_ride_error_start, msg));
+                    showError(buildStartRideErrorMessage(msg));
+                    refreshTrackingSilently();
                 });
             }
         });
+    }
+
+    private String buildStartRideErrorMessage(String rawMsg) {
+        String msg = rawMsg != null ? rawMsg.trim() : "";
+        String normalized = msg.toLowerCase(Locale.US);
+
+        if (normalized.contains("too far from pickup")) {
+            Double meters = estimateDistanceToPickupMeters();
+            if (meters != null) {
+                return getString(
+                        R.string.driver_start_ride_error_too_far_with_distance,
+                        Math.round(meters),
+                        START_PICKUP_THRESHOLD_M
+                );
+            }
+            return getString(R.string.driver_start_ride_error_too_far, START_PICKUP_THRESHOLD_M);
+        }
+
+        if (msg.isEmpty()) {
+            return getString(R.string.driver_start_ride_error_start_generic);
+        }
+        return getString(R.string.driver_start_ride_error_start, msg);
+    }
+
+    private Double estimateDistanceToPickupMeters() {
+        if (tracking == null || tracking.getPickup() == null || tracking.getCar() == null) return null;
+        LatLngDto pickup = tracking.getPickup();
+        LatLngDto car = tracking.getCar();
+        return haversineMeters(car.getLat(), car.getLng(), pickup.getLat(), pickup.getLng());
+    }
+
+    private void clearTooFarErrorIfNowNearPickup() {
+        if (tvError == null || tvError.getVisibility() != View.VISIBLE) return;
+        CharSequence current = tvError.getText();
+        if (current == null) return;
+        String normalized = current.toString().toLowerCase(Locale.US);
+        if (!normalized.contains("pickup")) return;
+        Double meters = estimateDistanceToPickupMeters();
+        if (meters != null && meters <= START_PICKUP_THRESHOLD_M) {
+            showError(null);
+        }
+    }
+
+    private double haversineMeters(double lat1, double lon1, double lat2, double lon2) {
+        final double earthRadius = 6371000.0;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        double a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                        + Math.cos(Math.toRadians(lat1))
+                        * Math.cos(Math.toRadians(lat2))
+                        * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return earthRadius * c;
+    }
+
+    private void runAutoRefreshTick() {
+        if (!initialDataLoaded) return;
+        if (starting) return;
+        checkActiveRideSilently();
+        refreshTrackingSilently();
+    }
+
+    private void checkActiveRideSilently() {
+        if (activeRideCheckInFlight) return;
+        activeRideCheckInFlight = true;
+        rideRepo.getActiveRide(new DriverRideRepository.ActiveRideCb() {
+            @Override
+            public void onSuccess(DriverRideDetailsResponseDto dto) {
+                runOnUiThread(() -> {
+                    activeRideCheckInFlight = false;
+                    openActiveRide();
+                });
+            }
+
+            @Override
+            public void onEmpty() {
+                runOnUiThread(() -> activeRideCheckInFlight = false);
+            }
+
+            @Override
+            public void onError(String msg) {
+                runOnUiThread(() -> activeRideCheckInFlight = false);
+            }
+        });
+    }
+
+    private void refreshTrackingSilently() {
+        if (assignedRide != null && assignedRide.getRideId() != null) {
+            loadTrackingOnce(assignedRide.getRideId(), false);
+            return;
+        }
+        loadAcceptedRide(false, false);
+    }
+
+    private void startAutoRefresh() {
+        refreshHandler.removeCallbacks(autoRefreshRunnable);
+        refreshHandler.post(autoRefreshRunnable);
+    }
+
+    private void stopAutoRefresh() {
+        refreshHandler.removeCallbacks(autoRefreshRunnable);
     }
 
     private void openActiveRide() {
@@ -483,10 +639,12 @@ public class DriverHomeActivity extends DriverBaseActivity {
     protected void onResume() {
         super.onResume();
         if (map != null) map.onResume();
+        startAutoRefresh();
     }
 
     @Override
     protected void onPause() {
+        stopAutoRefresh();
         if (map != null) map.onPause();
         super.onPause();
     }

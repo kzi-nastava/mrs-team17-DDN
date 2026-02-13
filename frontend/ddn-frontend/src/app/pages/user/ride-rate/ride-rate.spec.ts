@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
-import { vi } from 'vitest';
 
 import { RideRatingDataSource, RIDE_RATING_DS } from '../../../api/user/ride-rating.datasource';
 import { RideRatingResponse } from '../../../api/user/models/ride-rating.models';
@@ -17,11 +16,28 @@ type SetupOptions = {
 describe('RideRateComponent', () => {
   let fixture: ComponentFixture<RideRateComponent>;
   let component: RideRateComponent;
-  let dsMock: {
-    getRating: ReturnType<typeof vi.fn>;
-    submitRating: ReturnType<typeof vi.fn>;
+  let dsStub: {
+    getRatingCalls: number[];
+    submitRatingCalls: Array<{
+      rideId: number;
+      payload: {
+        driverRating: number;
+        vehicleRating: number;
+        comment?: string;
+      };
+    }>;
+    getRatingFactory: () => Observable<RideRatingResponse | null>;
+    submitRatingFactory: () => Observable<void>;
+    getRating: (rideId: number) => Observable<RideRatingResponse | null>;
+    submitRating: (
+      rideId: number,
+      payload: { driverRating: number; vehicleRating: number; comment?: string }
+    ) => Observable<void>;
   };
-  let navigateMock: ReturnType<typeof vi.fn>;
+  let routerStub: {
+    navigateCalls: unknown[];
+    navigate: (commands: unknown[]) => Promise<boolean>;
+  };
 
   const ratingResponse: RideRatingResponse = {
     rideId: 12,
@@ -43,18 +59,37 @@ describe('RideRateComponent', () => {
   };
 
   const createComponent = async (options: SetupOptions = {}) => {
-    dsMock = {
-      getRating: vi.fn().mockReturnValue(options.getRating$ ?? of(null)),
-      submitRating: vi.fn().mockReturnValue(options.submit$ ?? of(void 0)),
+    dsStub = {
+      getRatingCalls: [],
+      submitRatingCalls: [],
+      getRatingFactory: () => options.getRating$ ?? of(null),
+      submitRatingFactory: () => options.submit$ ?? of(void 0),
+      getRating: (rideId: number) => {
+        dsStub.getRatingCalls.push(rideId);
+        return dsStub.getRatingFactory();
+      },
+      submitRating: (
+        rideId: number,
+        payload: { driverRating: number; vehicleRating: number; comment?: string }
+      ) => {
+        dsStub.submitRatingCalls.push({ rideId, payload });
+        return dsStub.submitRatingFactory();
+      },
     };
-    navigateMock = vi.fn();
+    routerStub = {
+      navigateCalls: [],
+      navigate: (commands: unknown[]) => {
+        routerStub.navigateCalls.push(commands);
+        return Promise.resolve(true);
+      },
+    };
 
     await TestBed.configureTestingModule({
       imports: [RideRateComponent],
       providers: [
-        { provide: RIDE_RATING_DS, useValue: dsMock as unknown as RideRatingDataSource },
+        { provide: RIDE_RATING_DS, useValue: dsStub as unknown as RideRatingDataSource },
         { provide: ActivatedRoute, useValue: buildRoute(options.rideId ?? '12', options.startedAtQuery) },
-        { provide: Router, useValue: { navigate: navigateMock } },
+        { provide: Router, useValue: routerStub },
       ],
     }).compileComponents();
 
@@ -67,7 +102,7 @@ describe('RideRateComponent', () => {
   it('should load existing rating on init', async () => {
     await createComponent({ getRating$: of(ratingResponse) });
 
-    expect(dsMock.getRating).toHaveBeenCalledWith(12);
+    expect(dsStub.getRatingCalls).toEqual([12]);
     expect(component.existing).toEqual(ratingResponse);
     expect(component.info).toBe('You already rated this ride.');
   });
@@ -76,7 +111,7 @@ describe('RideRateComponent', () => {
     await createComponent({ rideId: '0' });
 
     expect(component.error).toBe('Invalid ride');
-    expect(dsMock.getRating).not.toHaveBeenCalled();
+    expect(dsStub.getRatingCalls.length).toBe(0);
   });
 
   it('should show error when rating fetch fails', async () => {
@@ -95,13 +130,18 @@ describe('RideRateComponent', () => {
 
     component.submit();
 
-    expect(dsMock.submitRating).toHaveBeenCalledWith(12, {
-      driverRating: 1,
-      vehicleRating: 5,
-      comment: 'Great driver and clean vehicle',
-    });
+    expect(dsStub.submitRatingCalls).toEqual([
+      {
+        rideId: 12,
+        payload: {
+          driverRating: 1,
+          vehicleRating: 5,
+          comment: 'Great driver and clean vehicle',
+        },
+      },
+    ]);
     expect(component.submitting).toBe(false);
-    expect(dsMock.getRating).toHaveBeenCalledTimes(2);
+    expect(dsStub.getRatingCalls.length).toBe(2);
   });
 
   it('should submit undefined comment when textarea is blank', async () => {
@@ -112,10 +152,13 @@ describe('RideRateComponent', () => {
     component.comment = '   ';
     component.submit();
 
-    expect(dsMock.submitRating).toHaveBeenCalledWith(12, {
-      driverRating: 5,
-      vehicleRating: 4,
-      comment: undefined,
+    expect(dsStub.submitRatingCalls[0]).toEqual({
+      rideId: 12,
+      payload: {
+        driverRating: 5,
+        vehicleRating: 4,
+        comment: undefined,
+      },
     });
   });
 
@@ -130,7 +173,7 @@ describe('RideRateComponent', () => {
     component.vehicleRating = 6;
     component.submit();
 
-    expect(dsMock.submitRating).not.toHaveBeenCalled();
+    expect(dsStub.submitRatingCalls.length).toBe(0);
   });
 
   it('should block submit when rating already exists', async () => {
@@ -138,7 +181,7 @@ describe('RideRateComponent', () => {
 
     component.submit();
 
-    expect(dsMock.submitRating).not.toHaveBeenCalled();
+    expect(dsStub.submitRatingCalls.length).toBe(0);
   });
 
   it('should set submit error when submit request fails', async () => {
@@ -150,7 +193,7 @@ describe('RideRateComponent', () => {
 
     expect(component.error).toBe('Submit failed');
     expect(component.submitting).toBe(false);
-    expect(dsMock.getRating).toHaveBeenCalledTimes(1);
+    expect(dsStub.getRatingCalls.length).toBe(1);
   });
 
   it('should block submit when rating window is expired from query param', async () => {
@@ -161,7 +204,7 @@ describe('RideRateComponent', () => {
     component.vehicleRating = 5;
     component.submit();
 
-    expect(dsMock.submitRating).not.toHaveBeenCalled();
+    expect(dsStub.submitRatingCalls.length).toBe(0);
     expect(component.error).toBe('Rating is available up to 3 days after ride completion.');
   });
 
@@ -184,6 +227,6 @@ describe('RideRateComponent', () => {
 
     component.goBack();
 
-    expect(navigateMock).toHaveBeenCalledWith(['/user']);
+    expect(routerStub.navigateCalls).toEqual([['/user']]);
   });
 });

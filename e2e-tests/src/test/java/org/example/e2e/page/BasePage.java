@@ -28,16 +28,32 @@ public abstract class BasePage {
         return By.cssSelector("[data-testid='" + testId + "']");
     }
 
+    protected By byCss(String selector) {
+        return By.cssSelector(selector);
+    }
+
     protected WebElement waitVisible(String testId) {
         return wait.until(ExpectedConditions.visibilityOfElementLocated(byTestId(testId)));
+    }
+
+    protected WebElement waitVisible(By by) {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(by));
     }
 
     protected WebElement waitClickable(String testId) {
         return wait.until(ExpectedConditions.elementToBeClickable(byTestId(testId)));
     }
 
+    protected WebElement waitClickable(By by) {
+        return wait.until(ExpectedConditions.elementToBeClickable(by));
+    }
+
     protected void click(String testId) {
         waitClickable(testId).click();
+    }
+
+    protected void click(By by) {
+        waitClickable(by).click();
     }
 
     protected void type(String testId, String value) {
@@ -50,9 +66,22 @@ public abstract class BasePage {
         return waitVisible(testId).getText().trim();
     }
 
+    protected String text(By by) {
+        return waitVisible(by).getText().trim();
+    }
+
     protected boolean isPresent(String testId) {
         try {
             wait.until(ExpectedConditions.presenceOfElementLocated(byTestId(testId)));
+            return true;
+        } catch (TimeoutException ex) {
+            return false;
+        }
+    }
+
+    protected boolean isPresent(By by) {
+        try {
+            wait.until(ExpectedConditions.presenceOfElementLocated(by));
             return true;
         } catch (TimeoutException ex) {
             return false;

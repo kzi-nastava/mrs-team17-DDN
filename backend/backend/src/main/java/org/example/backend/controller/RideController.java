@@ -47,10 +47,6 @@ public class RideController {
         this.driverRepository = driverRepository;
     }
 
-    // -------------------------
-    // NEW: "my active ride" APIs
-    // -------------------------
-
     @GetMapping("/active/tracking")
     public ResponseEntity<RideTrackingResponseDto> getMyActiveRideTracking() {
         long userId = requirePassengerUserId();
@@ -80,10 +76,6 @@ public class RideController {
         long userId = requirePassengerUserId();
         return ResponseEntity.ok(passengerRideHistoryService.getMyRideHistory(userId, from, to));
     }
-
-    // -------------------------
-    // Existing APIs (keep as-is)
-    // -------------------------
 
     @GetMapping("/{rideId}/tracking")
     public ResponseEntity<RideTrackingResponseDto> getRideTracking(@PathVariable Long rideId) {
@@ -126,7 +118,6 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
-    // --- RATING (2.8) ---
 
     @GetMapping("/{rideId}/rating")
     public ResponseEntity<RideRatingResponseDto> getRating(@PathVariable Long rideId) {
