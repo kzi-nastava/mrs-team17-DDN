@@ -1,6 +1,11 @@
-/Users/jekara/Documents/GitHub/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/Student2RideRatingE2ETest.java
-/Users/jekara/Documents/GitHub/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/fixture/RatingE2eFixture.java
-/Users/jekara/Documents/GitHub/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/BasePage.java
-/Users/jekara/Documents/GitHub/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/LoginPage.java
-/Users/jekara/Documents/GitHub/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/RideRatePage.java
-/Users/jekara/Documents/GitHub/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/UserHomePage.java
+/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/Student1FavoriteRouteOrderE2ETest.java
+/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/Student2RideRatingE2ETest.java
+/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/fixture/FavoriteRouteOrderE2eFixture.java
+/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/fixture/RatingE2eFixture.java
+/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/BasePage.java
+/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/FavouriteRideDetailsPage.java
+/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/FavouriteRidesPage.java
+/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/LoginPage.java
+/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/OrderRidePage.java
+/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/RideRatePage.java
+/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/UserHomePage.java
