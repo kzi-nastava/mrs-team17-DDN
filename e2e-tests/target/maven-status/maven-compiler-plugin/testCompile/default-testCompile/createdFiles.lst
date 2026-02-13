@@ -1,7 +1,7 @@
-org/example/e2e/Student2RideRatingE2ETest.class
 org/example/e2e/page/LoginPage.class
 org/example/e2e/page/BasePage.class
-org/example/e2e/page/RideRatePage.class
 org/example/e2e/fixture/RatingE2eFixture.class
 org/example/e2e/page/UserHomePage.class
+org/example/e2e/Student2RideRatingE2ETest.class
+org/example/e2e/page/RideRatePage.class
 org/example/e2e/fixture/RatingE2eFixture$SqlFunction.class
