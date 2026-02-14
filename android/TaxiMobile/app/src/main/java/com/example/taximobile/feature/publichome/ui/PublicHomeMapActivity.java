@@ -1,9 +1,12 @@
 package com.example.taximobile.feature.publichome.ui;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -23,6 +26,7 @@ import com.example.taximobile.feature.publichome.data.VehiclesRepository;
 import com.example.taximobile.feature.publichome.data.dto.response.ActiveVehicleResponseDto;
 import com.example.taximobile.feature.user.notifications.NotificationLinkRouter;
 import com.example.taximobile.feature.user.ui.PassengerActiveRideActivity;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.util.GeoPoint;
@@ -41,6 +45,7 @@ public class PublicHomeMapActivity extends AppCompatActivity {
 
     private final android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
     private final long REFRESH_MS = 2000; // 2s
+    private static final int REQ_POST_NOTIFICATIONS = 8201;
     private final Runnable refreshRunnable = new Runnable() {
         @Override public void run() {
             loadVehicles();
@@ -61,6 +66,8 @@ public class PublicHomeMapActivity extends AppCompatActivity {
         Configuration.getInstance().setUserAgentValue(getPackageName());
 
         setContentView(R.layout.activity_public_home_map);
+        maybeRequestNotificationPermission();
+        logCurrentFcmToken();
         map = findViewById(R.id.map);
         applyEdgeToEdgeInsets();
 
@@ -72,6 +79,27 @@ public class PublicHomeMapActivity extends AppCompatActivity {
 
         initMap();
         loadVehicles();
+    }
+
+    private void maybeRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return;
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQ_POST_NOTIFICATIONS);
+    }
+
+    private void logCurrentFcmToken() {
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.w("TaxiFCM", "Fetching FCM registration token failed", task.getException());
+                return;
+            }
+
+            String token = task.getResult();
+            Log.d("TaxiFCM", "Current FCM token: " + token);
+        });
     }
 
     private boolean handleRideTrackingDeepLink() {

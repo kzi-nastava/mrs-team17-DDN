@@ -1,10 +1,10 @@
 package com.example.taximobile.feature.user.ui;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -13,9 +13,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.taximobile.R;
+import com.example.taximobile.core.auth.JwtUtils;
 import com.example.taximobile.core.auth.LogoutManager;
-import com.example.taximobile.feature.user.notifications.UserForegroundNotificationPoller;
+import com.example.taximobile.core.network.TokenStorage;
+import com.example.taximobile.core.push.PushTokenRepository;
+import com.example.taximobile.core.push.TaxiFirebaseMessagingService;
+import com.example.taximobile.feature.user.data.NotificationsRepository;
 import com.example.taximobile.feature.support.ui.SupportChatActivity;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
 
@@ -25,10 +30,23 @@ public abstract class UserBaseActivity extends AppCompatActivity {
     protected DrawerLayout drawerLayout;
     protected NavigationView navView;
     protected FrameLayout baseContent;
-    private UserForegroundNotificationPoller notificationPoller;
+    private NotificationsRepository notificationsRepo;
+    private PushTokenRepository pushTokenRepository;
+    private SharedPreferences pushSyncPrefs;
 
-    private static final int REQ_POST_NOTIFICATIONS = 8101;
-    private static boolean notificationPermissionRequestedThisSession = false;
+    private final Handler unreadHandler = new Handler(Looper.getMainLooper());
+    private static final long UNREAD_POLL_MS = 5_000L;
+    private final Runnable unreadRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            refreshUnreadCount();
+            unreadHandler.postDelayed(this, UNREAD_POLL_MS);
+        }
+    };
+
+    private static final String PUSH_SYNC_PREFS = "push_token_sync";
+    private static final String PUSH_SYNC_LAST_USER_ID = "last_user_id";
+    private static final String PUSH_SYNC_LAST_TOKEN = "last_token";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +58,9 @@ public abstract class UserBaseActivity extends AppCompatActivity {
         drawerLayout = findViewById(R.id.baseDrawer);
         navView = findViewById(R.id.baseNav);
         baseContent = findViewById(R.id.baseContent);
-        notificationPoller = new UserForegroundNotificationPoller(this);
+        notificationsRepo = new NotificationsRepository(this);
+        pushTokenRepository = new PushTokenRepository(this);
+        pushSyncPrefs = getSharedPreferences(PUSH_SYNC_PREFS, MODE_PRIVATE);
 
         setSupportActionBar(toolbar);
 
@@ -109,55 +129,140 @@ public abstract class UserBaseActivity extends AppCompatActivity {
             drawerLayout.closeDrawers();
             return true;
         });
+
+        refreshUnreadCount();
+        registerPushTokenWithBackend();
+        markNotificationAsReadFromIntent();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (notificationPoller == null) return;
-
-        if (canStartForegroundNotificationPolling()) {
-            notificationPoller.start();
-        } else {
-            notificationPoller.stop();
-        }
+        registerPushTokenWithBackend();
+        markNotificationAsReadFromIntent();
+        startUnreadPolling();
     }
 
     @Override
     protected void onPause() {
-        if (notificationPoller != null) {
-            notificationPoller.stop();
-        }
+        stopUnreadPolling();
         super.onPause();
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent != null) {
+            setIntent(intent);
+        }
+        markNotificationAsReadFromIntent();
+    }
 
-        if (requestCode != REQ_POST_NOTIFICATIONS || notificationPoller == null) return;
+    private void startUnreadPolling() {
+        unreadHandler.removeCallbacks(unreadRefreshRunnable);
+        unreadHandler.post(unreadRefreshRunnable);
+    }
 
-        if (canStartForegroundNotificationPolling()) {
-            notificationPoller.start();
+    private void stopUnreadPolling() {
+        unreadHandler.removeCallbacks(unreadRefreshRunnable);
+    }
+
+    private void refreshUnreadCount() {
+        if (notificationsRepo == null || navView == null) return;
+
+        notificationsRepo.unreadCount(new NotificationsRepository.CountCb() {
+            @Override
+            public void onSuccess(long count) {
+                runOnUiThread(() -> updateNotificationsMenuTitle(count));
+            }
+
+            @Override
+            public void onError(String msg) {
+                // Keep the current title; transient network errors should not reset UI state.
+            }
+        });
+    }
+
+    private void markNotificationAsReadFromIntent() {
+        Intent in = getIntent();
+        if (in == null || notificationsRepo == null) return;
+
+        long notificationId = in.getLongExtra(TaxiFirebaseMessagingService.EXTRA_NOTIFICATION_ID, -1L);
+        if (notificationId <= 0) return;
+
+        in.removeExtra(TaxiFirebaseMessagingService.EXTRA_NOTIFICATION_ID);
+        notificationsRepo.markRead(notificationId, new NotificationsRepository.VoidCb() {
+            @Override
+            public void onSuccess() {
+                refreshUnreadCount();
+            }
+
+            @Override
+            public void onError(String msg) {
+                refreshUnreadCount();
+            }
+        });
+    }
+
+    private void updateNotificationsMenuTitle(long unreadCount) {
+        if (navView == null || navView.getMenu() == null) return;
+        android.view.MenuItem item = navView.getMenu().findItem(R.id.nav_notifications);
+        if (item == null) return;
+
+        String baseTitle = getString(R.string.menu_notifications);
+        if (unreadCount > 0) {
+            item.setTitle(baseTitle + " (" + unreadCount + ")");
         } else {
-            notificationPoller.stop();
+            item.setTitle(baseTitle);
         }
     }
 
-    private boolean canStartForegroundNotificationPolling() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            return true;
-        }
+    private void registerPushTokenWithBackend() {
+        Long userId = currentAuthenticatedUserId();
+        if (userId == null || userId <= 0 || pushTokenRepository == null) return;
 
-        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) return;
 
-        if (!notificationPermissionRequestedThisSession) {
-            notificationPermissionRequestedThisSession = true;
-            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQ_POST_NOTIFICATIONS);
-        }
-        return false;
+            String currentFcmToken = task.getResult();
+            if (currentFcmToken == null || currentFcmToken.trim().isEmpty()) return;
+
+            String normalizedToken = currentFcmToken.trim();
+            if (isPushTokenAlreadySynced(userId, normalizedToken)) return;
+
+            pushTokenRepository.registerToken(normalizedToken, "ANDROID", new PushTokenRepository.VoidCb() {
+                @Override
+                public void onSuccess() {
+                    savePushTokenSync(userId, normalizedToken);
+                }
+
+                @Override
+                public void onError(String msg) {
+                    // Try again on next resume/polling cycle.
+                }
+            });
+        });
+    }
+
+    private Long currentAuthenticatedUserId() {
+        String jwt = new TokenStorage(getApplicationContext()).getToken();
+        if (jwt == null || jwt.trim().isEmpty()) return null;
+        return JwtUtils.getUserIdFromSub(jwt);
+    }
+
+    private boolean isPushTokenAlreadySynced(long userId, String token) {
+        if (pushSyncPrefs == null || token == null || token.trim().isEmpty()) return false;
+        long lastUserId = pushSyncPrefs.getLong(PUSH_SYNC_LAST_USER_ID, -1L);
+        String lastToken = pushSyncPrefs.getString(PUSH_SYNC_LAST_TOKEN, null);
+        return userId == lastUserId && token.equals(lastToken);
+    }
+
+    private void savePushTokenSync(long userId, String token) {
+        if (pushSyncPrefs == null || token == null || token.trim().isEmpty()) return;
+        pushSyncPrefs.edit()
+                .putLong(PUSH_SYNC_LAST_USER_ID, userId)
+                .putString(PUSH_SYNC_LAST_TOKEN, token)
+                .apply();
     }
 
     protected View inflateContent(int layoutResId) {

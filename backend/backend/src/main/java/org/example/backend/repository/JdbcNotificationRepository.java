@@ -4,6 +4,8 @@ import org.example.backend.dto.response.NotificationResponseDto;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Repository
@@ -69,20 +71,43 @@ public class JdbcNotificationRepository implements NotificationRepository {
     }
 
     @Override
-    public void createForUsers(List<Long> userIds, String type, String title, String message, String linkUrl) {
-        if (userIds == null || userIds.isEmpty()) return;
+    public List<CreatedNotification> createForUsers(
+            List<Long> userIds,
+            String type,
+            String title,
+            String message,
+            String linkUrl
+    ) {
+        if (userIds == null || userIds.isEmpty()) return Collections.emptyList();
 
+        List<CreatedNotification> created = new ArrayList<>();
         for (Long uid : userIds) {
-            jdbc.sql("""
+            if (uid == null || uid <= 0) continue;
+
+            Long insertedId = jdbc.sql("""
                 insert into notifications(user_id, type, title, message, link_url)
                 values (:userId, :type, :title, :message, :linkUrl)
+                returning id
             """)
                     .param("userId", uid)
                     .param("type", type)
                     .param("title", title)
                     .param("message", message)
                     .param("linkUrl", linkUrl)
-                    .update();
+                    .query(Long.class)
+                    .single();
+
+            if (insertedId != null && insertedId > 0) {
+                created.add(new CreatedNotification(
+                        insertedId,
+                        uid,
+                        type,
+                        title,
+                        message,
+                        linkUrl
+                ));
+            }
         }
+        return created;
     }
 }

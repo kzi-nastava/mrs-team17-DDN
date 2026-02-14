@@ -28,7 +28,7 @@ import java.util.List;
 
 public final class UserForegroundNotificationPoller {
 
-    private static final long POLL_INTERVAL_MS = 15_000L;
+    private static final long POLL_INTERVAL_MS = 5_000L;
     private static final int POLL_LIMIT = 100;
 
     private static final String CHANNEL_ID = "ride_updates";
