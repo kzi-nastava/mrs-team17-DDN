@@ -1,5 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="BackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" singleton="false" nameIsGenerated="true">
+    <envs>
+      <env name="APP_PUSH_FCM_ENABLED" value="true" />
+      <env name="APP_PUSH_FCM_SERVICE_ACCOUNT_PATH" value="$PROJECT_DIR$/../../../taxiapp-service-account.json" />
+    </envs>
     <module name="backend" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="org.example.backend.BackendApplication" />
     <method v="2">

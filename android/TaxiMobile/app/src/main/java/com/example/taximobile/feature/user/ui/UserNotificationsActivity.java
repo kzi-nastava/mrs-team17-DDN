@@ -2,6 +2,8 @@ package com.example.taximobile.feature.user.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -22,6 +24,15 @@ public class UserNotificationsActivity extends UserBaseActivity
         implements NotificationsAdapter.OnNotificationClick {
 
     private NotificationsRepository repo;
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private static final long REFRESH_MS = 5_000L;
+    private final Runnable refreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            refreshSilently();
+            refreshHandler.postDelayed(this, REFRESH_MS);
+        }
+    };
 
     private ProgressBar progress;
     private View emptyContainer;
@@ -50,6 +61,19 @@ public class UserNotificationsActivity extends UserBaseActivity
         list.setAdapter(adapter);
 
         load();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshHandler.removeCallbacks(refreshRunnable);
+        refreshHandler.post(refreshRunnable);
+    }
+
+    @Override
+    protected void onPause() {
+        refreshHandler.removeCallbacks(refreshRunnable);
+        super.onPause();
     }
 
     private void load() {
@@ -84,6 +108,28 @@ public class UserNotificationsActivity extends UserBaseActivity
         } else if (loading) {
             empty.setVisibility(View.GONE);
         }
+    }
+
+    private void refreshSilently() {
+        repo.list(100, new NotificationsRepository.ListCb() {
+            @Override
+            public void onSuccess(List<NotificationResponseDto> items) {
+                adapter.setItems(items);
+                boolean isEmpty = items == null || items.isEmpty();
+                if (emptyContainer != null) {
+                    emptyContainer.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                } else {
+                    empty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                }
+                list.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+                progress.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onError(String msg) {
+                // Keep current UI. Transient polling errors should not interrupt interaction.
+            }
+        });
     }
 
     @Override
