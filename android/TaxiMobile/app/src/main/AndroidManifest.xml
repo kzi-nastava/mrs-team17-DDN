@@ -16,6 +16,14 @@
         android:theme="@style/Theme.TaxiMobile"
         android:usesCleartextTraffic="true">
 
+        <service
+            android:name=".core.push.TaxiFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <activity
             android:name=".feature.publichome.ui.PublicHomeMapActivity"
             android:exported="true">

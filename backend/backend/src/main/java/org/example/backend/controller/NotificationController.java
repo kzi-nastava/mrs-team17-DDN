@@ -1,7 +1,10 @@
 package org.example.backend.controller;
 
+import jakarta.validation.Valid;
+import org.example.backend.dto.request.RegisterDeviceTokenRequestDto;
 import org.example.backend.dto.response.NotificationResponseDto;
 import org.example.backend.repository.NotificationRepository;
+import org.example.backend.service.NotificationService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,9 +14,11 @@ import java.util.List;
 public class NotificationController {
 
     private final NotificationRepository repo;
+    private final NotificationService notificationService;
 
-    public NotificationController(NotificationRepository repo) {
+    public NotificationController(NotificationRepository repo, NotificationService notificationService) {
         this.repo = repo;
+        this.notificationService = notificationService;
     }
 
     @GetMapping("/me")
@@ -31,6 +36,11 @@ public class NotificationController {
     @PostMapping("/me/{id}/read")
     public void markRead(@PathVariable long id) {
         repo.markRead(currentUserId(), id);
+    }
+
+    @PostMapping("/me/device-token")
+    public void registerDeviceToken(@Valid @RequestBody RegisterDeviceTokenRequestDto req) {
+        notificationService.registerDeviceToken(currentUserId(), req.getToken(), req.getPlatform());
     }
 
     private long currentUserId() {
