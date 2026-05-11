@@ -61,11 +61,19 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/user/reset-password/reset-password').then((m) => m.ResetPassword),
   },
+{
+  
+    path: 'reset-password-confirmed',
+    loadComponent: () =>
+      import('./pages/user/reset-password-confirmed/reset-password-confirmed').then((m) => m.ResetPasswordConfirmed),
+  },
+
   {
     path: 'new-password',
     loadComponent: () =>
       import('./pages/user/new-password/new-password').then((m) => m.NewPassword),
   },
+
   {
     path: 'success',
     loadComponent: () =>

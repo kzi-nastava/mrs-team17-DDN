@@ -1,8 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+
 import { DriverStateService } from '../../state/driver-state.service';
 import { AuthStore } from '../../api/auth/auth.store';
+import { TrackingState } from '../../api/user/models/ride-tracking.models';
+
 
 @Component({
   selector: 'app-navbar',
@@ -11,17 +14,59 @@ import { AuthStore } from '../../api/auth/auth.store';
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.css'],
 })
-export class NavbarComponent {
-  private driverState = inject(DriverStateService);
-  private auth = inject(AuthStore);
-  private router = inject(Router);
+export class NavbarComponent implements OnInit {
 
-  driverAvailable$ = this.driverState.available$;
+  private driverState =
+    inject(DriverStateService);
+
+  private auth =
+    inject(AuthStore);
+
+  private router =
+    inject(Router);
+
+  driverAvailable$ =
+    this.driverState.available$;
+
+  // OVDE ČUVAŠ RESPONSE
+  trackingResponse:
+    TrackingState | null = null;
+
+  ngOnInit(): void {
+
+    // poziv backend-a
+    this.driverState
+      .loadActiveRideTracking();
+
+    // uzimanje response-a iz state-a
+    this.driverState
+      .trackingState$
+      .subscribe({
+
+        next: (response) => {
+
+          this.trackingResponse =
+            response;
+
+          console.log(
+            'TRACKING RESPONSE'
+          );
+
+          console.log(response);
+        }
+      });
+  }
 
   logout(): void {
+
     this.auth.clear();
+
     this.driverState.setDriverId(null);
+
     this.driverState.setAvailable(false);
+
+    this.driverState.clearTrackingState();
+
     this.router.navigate(['/login']);
   }
 }

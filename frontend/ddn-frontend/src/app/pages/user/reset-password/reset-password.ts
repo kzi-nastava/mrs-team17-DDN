@@ -47,7 +47,7 @@ export class ResetPassword {
         next: () => {
           this.loading = false;
           // Always show success message (do not reveal if email exists)
-          this.router.navigate(['/success'], {
+          this.router.navigate(['/reset-password-confirmed'], {
             queryParams: { mode: 'reset-request' },
           });
         },

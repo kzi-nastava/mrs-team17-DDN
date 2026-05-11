@@ -33,6 +33,8 @@ public interface RideRepository {
     // NEW: active ride for current passenger userId
     Optional<Long> findActiveRideIdForPassenger(long userId);
 
+    Optional<Long> findActiveRideIdForDriver(long driverId);
+
     // NEW: one-way switch when car reaches pickup (prevents ping-pong)
     boolean markPickedUp(Long rideId);
 

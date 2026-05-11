@@ -37,6 +37,11 @@ public class RideService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No active ride"));
     }
 
+    public Long getActiveRideIdForDriver(long driverId) {
+        return repository.findActiveRideIdForDriver(driverId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No active ride"));
+    }
+
 
     public RideTrackingResponseDto getRideTracking(Long rideId) {
         return repository.findTrackingByRideId(rideId)

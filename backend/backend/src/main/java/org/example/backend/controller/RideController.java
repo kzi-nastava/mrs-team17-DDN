@@ -140,6 +140,22 @@ public class RideController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/active-ride/driver")
+    public ResponseEntity<RideTrackingResponseDto> getDriverRideTracking() {
+        //Authentication auth = requireAuthentication();
+       // if (!hasRole(auth, "ROLE_DRIVER")) {
+           // throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only passengers can access this endpoint");
+       // }
+        Long driverId = requireDriverId();
+        Long rideId = rideService.getActiveRideIdForDriver(driverId);
+        var rideTracking = rideService.getRideTracking(rideId);
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(rideTracking);
+
+
+    }
+
     private long requirePassengerUserId() {
         Authentication auth = requireAuthentication();
         if (!hasRole(auth, "ROLE_PASSENGER")) {

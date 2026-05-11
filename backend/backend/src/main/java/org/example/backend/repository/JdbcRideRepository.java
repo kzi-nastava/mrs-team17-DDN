@@ -57,6 +57,34 @@ public class JdbcRideRepository implements RideRepository {
                 .optional();
     }
 
+    @Override
+    public Optional<Long> findActiveRideIdForDriver(long driverId) {
+        return jdbc.sql("""
+            select r.id
+            from rides r
+            
+             join drivers d
+                on r.driver_id = d.id
+           
+            where d.id = :driverId
+              and r.status = 'ACTIVE'
+              and r.canceled = false
+              and r.ended_at is null
+            order by r.started_at desc nulls last, r.id desc
+            limit 1
+        """)
+                .param("driverId", driverId)
+                .query(Long.class)
+                .optional();
+    }
+
+
+
+
+
+
+
+
     // NEW: last completed ride (<= 3 days) that is NOT rated yet, for this passenger (by email)
     @Override
     public Optional<Long> findRideIdToRateForPassenger(long userId) {
