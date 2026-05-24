@@ -1,5 +1,6 @@
 package org.example.backend.controller;
 
+import org.example.backend.dto.request.DriverStatusUpdateDto;
 import org.example.backend.dto.response.DriverRideDetailsResponseDto;
 import org.example.backend.dto.response.DriverRideHistoryResponseDto;
 import org.example.backend.repository.DriverRepository;
@@ -64,6 +65,14 @@ public class DriverController {
     @PutMapping("/rides/{rideId}/finish")
     public ResponseEntity<Void> finishRide(@PathVariable Long rideId) {
         driverRideService.finishRide(getCurrentDriverId(), rideId);
+        return ResponseEntity.ok().build();
+    }
+
+
+    @PatchMapping("/status")
+    public ResponseEntity<Void> setStatus(@RequestBody DriverStatusUpdateDto driverStatusUpdateDto){
+        var driverId = getCurrentDriverId();
+        driverRideService.setStatus(driverId,driverStatusUpdateDto.getValue());
         return ResponseEntity.ok().build();
     }
 

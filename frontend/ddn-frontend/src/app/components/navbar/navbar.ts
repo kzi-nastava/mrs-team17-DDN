@@ -59,14 +59,32 @@ export class NavbarComponent implements OnInit {
 
   logout(): void {
 
+    // prvo očisti auth
     this.auth.clear();
 
+    // pa state
     this.driverState.setDriverId(null);
 
-    this.driverState.setAvailable(false);
+    this.driverState.setStatus(false);
 
     this.driverState.clearTrackingState();
 
+    console.log(
+      this.driverState.getTrackingStateSnapshot()
+    );
+
+    // tek onda navigate
     this.router.navigate(['/login']);
   }
+  toggleAvailability(): void {
+
+    const current =
+      this.driverState.getAvailableSnapshot();
+
+    const newValue =
+      !current;
+
+    this.driverState.setStatus(newValue);
+  }
 }
+

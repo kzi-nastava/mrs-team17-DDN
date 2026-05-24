@@ -28,9 +28,10 @@
   </div>
 
   <div class="nav-right">
-    <div class="driver-status" [class.available]="(driverAvailable$ | async)">
-      {{ (driverAvailable$ | async) ? 'Available' : 'Busy' }}
-    </div>
+    <button class="driver-status" [class.available]="(driverAvailable$ | async)" (click)="toggleAvailability()"
+      [disabled]="trackingResponse !== null">
+      {{ (driverAvailable$ | async) ? 'Available' :  'Busy' }}
+    </button>
 
     <a class="nav-link" routerLink="/driver/support" routerLinkActive="active">
       Support
@@ -40,9 +41,9 @@
       Profile
     </a>
 
-<button class="nav-link logout-btn" type="button" (click)="logout()">
-  Log Out
-</button>
+    <button class="nav-link logout-btn" type="button" (click)="logout()" [disabled]="trackingResponse !== null">
+      Log Out
+    </button>
 
   </div>
 </nav>

@@ -64,7 +64,6 @@ export class DriverActiveRideComponent implements OnInit {
         },
       });
   }
-
   finishRide(): void {
     if (!this.ride?.rideId || this.finishing || this.finished) return;
 
@@ -81,9 +80,15 @@ export class DriverActiveRideComponent implements OnInit {
       )
       .subscribe({
         next: () => {
+
+          // KLJUČNO: reset tracking state kad se vožnja završi
+          this.driverState.clearTrackingState();
+
           this.finished = true;
+
           this.preparePostFinishState();
         },
+
         error: () => {
           this.error = 'Finish ride failed.';
         },

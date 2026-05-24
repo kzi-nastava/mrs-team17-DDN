@@ -149,8 +149,8 @@ export class DriverStateService {
 
   clearTrackingState(): void {
 
-    this.trackingStateSubject.next(null);
-  }
+  this.trackingStateSubject.next(null);
+}
 
   // =========================
   // LOAD ACTIVE RIDE
@@ -183,6 +183,37 @@ export class DriverStateService {
 
           console.error(
             'Failed to load tracking',
+            err
+          );
+        }
+      });
+  }
+
+
+
+  setStatus(value:boolean): void {
+
+    const endpoint =
+      `${this.baseUrl}/driver/status`;
+      console.log(endpoint)
+
+
+    this.http
+      .patch <null>(endpoint, {
+        value: value
+      })
+      .subscribe({
+
+        next: () => {
+
+        this.setAvailable(value )
+      
+      },
+
+        error: (err) => {
+
+          console.error(
+            'Failed to set status',
             err
           );
         }

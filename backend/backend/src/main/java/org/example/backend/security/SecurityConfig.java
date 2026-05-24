@@ -40,6 +40,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/registration/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/drivers/activation").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/vehicles/active").permitAll()
+                        .requestMatchers("/api/routing/**").permitAll()
+
 
                         // public password reset endpoints
                         .requestMatchers(HttpMethod.POST, "/api/password-reset/request").permitAll()
@@ -47,6 +49,7 @@ public class SecurityConfig {
 
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/driver/**").hasRole("DRIVER")
                         .anyRequest().authenticated()
                 )
 
