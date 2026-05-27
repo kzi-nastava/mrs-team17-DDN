@@ -21,13 +21,18 @@
       </div>
 
       <div class="head">
-        <div class="col-date">Date</div>
-        <div class="col-route">Route</div>
+        
+        <div class="col-date flex gap-2" ><p>Started At</p><img [class.active] = "sortBy == ESortBy.STARTED_AT"    class= "sort-btn " (click) = "doSort(ESortBy.STARTED_AT)" src = "/sort.svg"/></div>
+        <div class="col-date flex gap-2"><p>Ended At</p><img [class.active] = "sortBy == ESortBy.ENDED_AT" class= "sort-btn" (click) = "doSort(ESortBy.ENDED_AT)" src = "/sort.svg"/></div>
+        <div class="col-route flex gap-2"><p>Route</p></div>
+        
         <div class="col-actions"></div>
       </div>
 
       <div class="row" *ngFor="let r of rides">
         <div class="col-date">{{ formatDate(r.startedAt) }}</div>
+
+        <div class="col-date">{{ formatDate(r.endedAt) }}</div>
 
         <div class="col-route">
           <div class="route-one-line">

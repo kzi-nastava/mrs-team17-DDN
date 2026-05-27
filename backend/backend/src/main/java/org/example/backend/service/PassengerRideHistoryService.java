@@ -21,7 +21,7 @@ public class PassengerRideHistoryService {
         this.users = users;
     }
 
-    public List<PassengerRideHistoryResponseDto> getMyRideHistory(long userId, LocalDate from, LocalDate to) {
+    public List<PassengerRideHistoryResponseDto> getMyRideHistory(long userId, LocalDate from, LocalDate to, String sortBy, String sortDirecton) {
         UserLookupRepository.UserBasic u = users.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
 
@@ -30,6 +30,6 @@ public class PassengerRideHistoryService {
             return List.of();
         }
 
-        return repo.findPassengerRides(email, from, to);
+        return repo.findPassengerRides(email, from, to, sortBy, sortDirecton);
     }
 }

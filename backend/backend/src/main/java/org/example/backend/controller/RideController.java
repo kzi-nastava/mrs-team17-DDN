@@ -71,10 +71,13 @@ public class RideController {
     @GetMapping("/history")
     public ResponseEntity<List<PassengerRideHistoryResponseDto>> getMyRideHistory(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String  sortBy,
+            @RequestParam(required = false) String sortDirection
+
     ) {
         long userId = requirePassengerUserId();
-        return ResponseEntity.ok(passengerRideHistoryService.getMyRideHistory(userId, from, to));
+        return ResponseEntity.ok(passengerRideHistoryService.getMyRideHistory(userId, from, to, sortBy, sortDirection));
     }
 
     @GetMapping("/{rideId}/tracking")

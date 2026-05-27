@@ -6,5 +6,5 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface PassengerRideRepository {
-    List<PassengerRideHistoryResponseDto> findPassengerRides(String passengerEmail, LocalDate from, LocalDate to);
+    List<PassengerRideHistoryResponseDto> findPassengerRides(String passengerEmail, LocalDate from, LocalDate to,String sortBy, String sortDirection );
 }
