@@ -6,6 +6,8 @@ import org.example.backend.dto.response.PassengerRideHistoryResponseDto;
 import org.example.backend.dto.response.RideReportResponseDto;
 import org.example.backend.dto.response.RideRatingResponseDto;
 import org.example.backend.dto.response.RideTrackingResponseDto;
+import org.example.backend.enums.ESortBy;
+import org.example.backend.enums.ESortDirection;
 import org.example.backend.repository.DriverRepository;
 import org.example.backend.service.DriverRideService;
 import org.example.backend.service.PassengerRideHistoryService;
@@ -72,8 +74,8 @@ public class RideController {
     public ResponseEntity<List<PassengerRideHistoryResponseDto>> getMyRideHistory(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-            @RequestParam(required = false) String  sortBy,
-            @RequestParam(required = false) String sortDirection
+            @RequestParam(defaultValue = "STARTED_AT") ESortBy sortBy,
+            @RequestParam(defaultValue = "DESC") ESortDirection sortDirection
 
     ) {
         long userId = requirePassengerUserId();

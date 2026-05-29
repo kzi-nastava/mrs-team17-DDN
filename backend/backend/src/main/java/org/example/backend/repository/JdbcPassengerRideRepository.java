@@ -1,6 +1,8 @@
 package org.example.backend.repository;
 
 import org.example.backend.dto.response.PassengerRideHistoryResponseDto;
+import org.example.backend.enums.ESortBy;
+import org.example.backend.enums.ESortDirection;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -21,30 +23,27 @@ public class JdbcPassengerRideRepository implements PassengerRideRepository {
             String passengerEmail,
             LocalDate from,
             LocalDate to,
-            String sortBy,
-            String sortDirection
+            ESortBy sortBy,
+            ESortDirection sortDirection
     ) {
         if (passengerEmail == null || passengerEmail.trim().isEmpty()) {
             return List.of();
         }
 
-        String orderBy = resolveOrderBy(sortBy);
-        String direction = resolveSortDirection(sortDirection);
-
         String sql = """
-            select distinct
-                r.id as ride_id,
-                r.started_at,
-                r.start_address,
-                r.ended_at,
-                r.destination_address
-            from rides r
-            join ride_passengers rp on rp.ride_id = r.id
-            where lower(rp.email) = lower(:email)
-              and (cast(:from as date) is null or r.started_at::date >= cast(:from as date))
-              and (cast(:to   as date) is null or r.started_at::date <= cast(:to   as date))
-            order by %s %s
-        """.formatted(orderBy, direction);
+        select distinct
+            r.id as ride_id,
+            r.started_at,
+            r.start_address,
+            r.ended_at,
+            r.destination_address
+        from rides r
+        join ride_passengers rp on rp.ride_id = r.id
+        where lower(rp.email) = lower(:email)
+          and (cast(:from as date) is null or r.started_at::date >= cast(:from as date))
+          and (cast(:to   as date) is null or r.started_at::date <= cast(:to   as date))
+        order by %s %s
+    """.formatted(sortBy.getColumn(), sortDirection.getKeyword());
 
         List<PassengerRideHistoryResponseDto> list = jdbc.sql(sql)
                 .param("email", passengerEmail.trim())
@@ -52,14 +51,11 @@ public class JdbcPassengerRideRepository implements PassengerRideRepository {
                 .param("to", to)
                 .query((rs, rowNum) -> {
                     PassengerRideHistoryResponseDto dto = new PassengerRideHistoryResponseDto();
-
-                    Long rideId = rs.getLong("ride_id");
-                    dto.setRideId(rideId);
+                    dto.setRideId(rs.getLong("ride_id"));
                     dto.setStartedAt(rs.getObject("started_at", java.time.OffsetDateTime.class));
                     dto.setStartAddress(rs.getString("start_address"));
                     dto.setEndedAt(rs.getObject("ended_at", java.time.OffsetDateTime.class));
                     dto.setDestinationAddress(rs.getString("destination_address"));
-
                     return dto;
                 })
                 .list();
@@ -70,6 +66,7 @@ public class JdbcPassengerRideRepository implements PassengerRideRepository {
 
         return list;
     }
+
 
     private String resolveOrderBy(String sortBy) {
         if (sortBy == null || sortBy.isBlank()) {

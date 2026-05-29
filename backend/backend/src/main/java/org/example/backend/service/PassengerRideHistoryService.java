@@ -1,6 +1,8 @@
 package org.example.backend.service;
 
 import org.example.backend.dto.response.PassengerRideHistoryResponseDto;
+import org.example.backend.enums.ESortBy;
+import org.example.backend.enums.ESortDirection;
 import org.example.backend.repository.PassengerRideRepository;
 import org.example.backend.repository.UserLookupRepository;
 import org.springframework.http.HttpStatus;
@@ -21,7 +23,7 @@ public class PassengerRideHistoryService {
         this.users = users;
     }
 
-    public List<PassengerRideHistoryResponseDto> getMyRideHistory(long userId, LocalDate from, LocalDate to, String sortBy, String sortDirecton) {
+    public List<PassengerRideHistoryResponseDto> getMyRideHistory(long userId, LocalDate from, LocalDate to, ESortBy sortBy, ESortDirection sortDirection) {
         UserLookupRepository.UserBasic u = users.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
 
@@ -30,6 +32,6 @@ public class PassengerRideHistoryService {
             return List.of();
         }
 
-        return repo.findPassengerRides(email, from, to, sortBy, sortDirecton);
+        return repo.findPassengerRides(email, from, to, sortBy, sortDirection);
     }
 }
