@@ -6,6 +6,7 @@ export interface RideTrackingDataSource {
   watchMyActiveTracking(rideId?: number): Observable<TrackingState>;
   submitInconsistencyForMyActiveRide(text: string, rideId?: number): Observable<void>;
   listInconsistenciesForMyActiveRide(rideId?: number): Observable<InconsistencyReport[]>;
+  cancelMyRide(rideId: number, reason?: string): Observable<void>;
 }
 
 export const RIDE_TRACKING_DS = new InjectionToken<RideTrackingDataSource>(

@@ -551,4 +551,25 @@ public class JdbcRideRepository implements RideRepository {
         return updated > 0;
     }
 
+    @Override
+    public boolean cancelRide(Long rideId, String canceledBy, String reason) {
+        int updated = jdbc.sql("""
+        UPDATE rides
+        SET canceled = true,
+            canceled_by = :canceledBy,
+            cancel_reason = :reason,
+            status = 'COMPLETED',
+            ended_at = NOW()
+        WHERE id = :rideId
+    """)
+                .param("rideId", rideId)
+                .param("canceledBy", canceledBy)
+                .param("reason", reason)
+
+                .update();
+
+        return updated > 0;
+    }
+
+
 }

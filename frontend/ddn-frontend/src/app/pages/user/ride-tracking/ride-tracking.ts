@@ -120,35 +120,30 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   }
 
   // ✅ CANCEL RIDE
-  cancelRide(): void {
-    if (!this.canCancel || this.canceling) return;
+cancelRide(): void {
+  if (!this.canCancel || this.canceling) return;
 
-    const ok = confirm('Are you sure you want to cancel this ride?');
-    if (!ok) return;
+  const ok = confirm('Are you sure you want to cancel this ride?');
+  if (!ok) return;
 
-    this.canceling = true;
-    this.cancelError = null;
-    this.cancelSuccess = false;
+  this.canceling = true;
+  this.cancelError = null;
+  this.cancelSuccess = false;
 
-    // ✅ OVDE POVEŽI TVOJ ENDPOINT (kad ga imaš)
-    // Primer ako dodaš metodu u datasource:
-    // this.ds.cancelMyRide().subscribe({ ... })
+  // Poziv ka datasource metodi
+  this.ds.cancelMyRide(this.trackingRideId!, "Passenger changed plans").subscribe({
+    next: () => {
+      this.canceling = false;
+      this.cancelSuccess = true;
+      this.rideStatus = 'CANCELLED';
+    },
+    error: (err) => {
+      this.canceling = false;
+      this.cancelError = 'Failed to cancel ride';
+    }
+  });
+}
 
-    this.router.navigate([], {
-      queryParams: { rideId: null },
-      queryParamsHandling: 'merge',
-    })
-
-
-
-    // Za sada: mock (odmah success)
-
-    this.canceling = false;
-    this.cancelSuccess = true;
-    // Ako želiš, možeš i da “zamrzneš” UI:
-    // this.rideStatus = 'CANCELLED';
-
-  }
 
   private initMap(): void {
     this.map = L.map('tracking-map', {

@@ -30,6 +30,8 @@ public interface RideRepository {
 
     java.util.List<Long> findActiveRideIds();
 
+
+
     // NEW: active ride for current passenger userId
     Optional<Long> findActiveRideIdForPassenger(long userId);
 
@@ -61,4 +63,7 @@ public interface RideRepository {
     boolean setNextStopIndex(Long rideId, int nextStopIndex);
 
     record RideStopPoint(int stopOrder, double lat, double lng) {}
+
+    boolean cancelRide(Long rideId, String canceledBY, String reason);
+
 }

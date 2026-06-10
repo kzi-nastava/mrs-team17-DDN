@@ -1,5 +1,6 @@
 package org.example.backend.controller;
 
+import org.example.backend.dto.request.RideCancelRequestDto;
 import org.example.backend.dto.request.RideReportRequestDto;
 import org.example.backend.dto.request.RideRatingRequestDto;
 import org.example.backend.dto.response.PassengerRideHistoryResponseDto;
@@ -160,6 +161,40 @@ public class RideController {
 
 
     }
+
+
+    //cancel ride
+    @PatchMapping("/{rideId}/cancel")
+    public ResponseEntity<Void> cancelRide(
+            @PathVariable Long rideId,
+            @RequestBody(required = false) RideCancelRequestDto request,
+            Authentication auth
+    ) {
+        long userId = parseAuthenticatedUserId(auth);
+        boolean isDriver = hasRole(auth, "ROLE_DRIVER");
+        boolean isPassenger = hasRole(auth, "ROLE_PASSENGER");
+
+        // odluči ko je inicijator
+        String canceledBy;
+        if (isDriver) {
+            canceledBy = "DRIVER"; // napravi metodu koja vadi driverId iz tokena
+        } else if (isPassenger) {
+            canceledBy = "PASSENGER"; // passenger koristi userId
+        } else {
+            canceledBy = "PASSENGER"; // fallback
+        }
+
+        rideService.cancelRide(
+                rideId,
+                canceledBy,
+                request != null ? request.getReason() : null
+        );
+
+        return ResponseEntity.noContent().build();
+    }
+
+
+
 
     private long requirePassengerUserId() {
         Authentication auth = requireAuthentication();

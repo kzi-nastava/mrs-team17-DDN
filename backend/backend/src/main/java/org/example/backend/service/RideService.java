@@ -10,6 +10,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.print.DocFlavor;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -313,4 +314,16 @@ public class RideService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found or cannot be started");
         }
     }
+
+    public void cancelRide(Long rideId, String cancelBy, String reason) {
+        boolean ok = repository.cancelRide(rideId, cancelBy, reason);
+        if (!ok) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found or cannot be canceled");
+        }
+        // opciono: možeš dodati notifikacije, email obaveštenja itd.
+        //notificationService.notifyRideCanceled(rideId);
+    }
+
 }
+
+

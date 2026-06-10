@@ -72,16 +72,16 @@
     
     <div class="cancel-title">Select a reason for cancelling</div>
 
-    <select class="cancel-select">
-      <option value="" selected disabled>Cancel reason</option>
-      <option value="PASSENGER_NOT_PRESENT">Passenger is not at the pickup location</option>
-      <option value="HEALTH_ISSUE">Health issue</option>
-      <option value="VEHICLE_PROBLEM">Vehicle problem</option>
-      <option value="TRAFFIC_INCIDENT">Traffic incident / road blockage</option>
-      <option value="SAFETY_CONCERN">Safety concern</option>
-    </select>
+    <select class="cancel-select" [(ngModel)]="cancelReason">
+    <option value="" selected disabled>Cancel reason</option>
+    <option value="PASSENGER_NOT_PRESENT">Passenger is not at the pickup location</option>
+    <option value="HEALTH_ISSUE">Health issue</option>
+    <option value="VEHICLE_PROBLEM">Vehicle problem</option>
+    <option value="TRAFFIC_INCIDENT">Traffic incident / road blockage</option>
+    <option value="SAFETY_CONCERN">Safety concern</option>
+  </select>
 
 
-    <button class="cancel-send" type="button" (click)="closeCancelPopup()">Cancel</button>
+    <button class="cancel-send" type="button" (click)="cancelRide()">Cancel</button>
   </div>
 </div>
