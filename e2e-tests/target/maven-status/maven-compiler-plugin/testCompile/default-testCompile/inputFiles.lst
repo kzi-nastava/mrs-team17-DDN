@@ -1,11 +1,13 @@
-/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/Student1FavoriteRouteOrderE2ETest.java
-/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/Student2RideRatingE2ETest.java
-/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/fixture/FavoriteRouteOrderE2eFixture.java
-/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/fixture/RatingE2eFixture.java
-/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/BasePage.java
-/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/FavouriteRideDetailsPage.java
-/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/FavouriteRidesPage.java
-/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/LoginPage.java
-/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/OrderRidePage.java
-/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/RideRatePage.java
-/home/drazen/Desktop/mrs-team17-DDN/e2e-tests/src/test/java/org/example/e2e/page/UserHomePage.java
+C:\Users\Korisnik\OneDrive\Desktop\veliki projekat\mrs-team17-DDN\e2e-tests\src\test\java\org\example\e2e\fixture\FavoriteRouteOrderE2eFixture.java
+C:\Users\Korisnik\OneDrive\Desktop\veliki projekat\mrs-team17-DDN\e2e-tests\src\test\java\org\example\e2e\fixture\LoginE2eFixture.java
+C:\Users\Korisnik\OneDrive\Desktop\veliki projekat\mrs-team17-DDN\e2e-tests\src\test\java\org\example\e2e\fixture\RatingE2eFixture.java
+C:\Users\Korisnik\OneDrive\Desktop\veliki projekat\mrs-team17-DDN\e2e-tests\src\test\java\org\example\e2e\page\BasePage.java
+C:\Users\Korisnik\OneDrive\Desktop\veliki projekat\mrs-team17-DDN\e2e-tests\src\test\java\org\example\e2e\page\FavouriteRideDetailsPage.java
+C:\Users\Korisnik\OneDrive\Desktop\veliki projekat\mrs-team17-DDN\e2e-tests\src\test\java\org\example\e2e\page\FavouriteRidesPage.java
+C:\Users\Korisnik\OneDrive\Desktop\veliki projekat\mrs-team17-DDN\e2e-tests\src\test\java\org\example\e2e\page\LoginPage.java
+C:\Users\Korisnik\OneDrive\Desktop\veliki projekat\mrs-team17-DDN\e2e-tests\src\test\java\org\example\e2e\page\OrderRidePage.java
+C:\Users\Korisnik\OneDrive\Desktop\veliki projekat\mrs-team17-DDN\e2e-tests\src\test\java\org\example\e2e\page\RideRatePage.java
+C:\Users\Korisnik\OneDrive\Desktop\veliki projekat\mrs-team17-DDN\e2e-tests\src\test\java\org\example\e2e\page\UserHomePage.java
+C:\Users\Korisnik\OneDrive\Desktop\veliki projekat\mrs-team17-DDN\e2e-tests\src\test\java\org\example\e2e\Student1FavoriteRouteOrderE2ETest.java
+C:\Users\Korisnik\OneDrive\Desktop\veliki projekat\mrs-team17-DDN\e2e-tests\src\test\java\org\example\e2e\Student2RideRatingE2ETest.java
+C:\Users\Korisnik\OneDrive\Desktop\veliki projekat\mrs-team17-DDN\e2e-tests\src\test\java\org\example\e2e\Student3LoginE2ETest.java
