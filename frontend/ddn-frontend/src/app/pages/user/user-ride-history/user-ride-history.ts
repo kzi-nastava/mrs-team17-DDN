@@ -9,6 +9,12 @@ import { AuthStore } from '../../../api/auth/auth.store';
 import { PassengerRidesHttpDataSource } from '../../../api/user/passenger-rides.http.datasource';
 import { PassengerRideHistoryItem } from '../../../api/user/models/passenger-rides.models';
 import { FavoriteRoutesApiService } from '../../../api/user/favorite-routes.http-data-source';
+import { ESortBy } from '../../../api/user/models/enums/ESortBy';
+import { ESortDirection } from '../../../api/user/models/enums/ESortDirection';
+
+
+
+
 
 @Component({
   selector: 'app-user-ride-history',
@@ -16,11 +22,18 @@ import { FavoriteRoutesApiService } from '../../../api/user/favorite-routes.http
   imports: [CommonModule, FormsModule],
   templateUrl: './user-ride-history.html',
   styleUrl: './user-ride-history.css',
+
+  
+
+
 })
 export class UserRideHistory implements OnInit {
   private readonly authStore = inject(AuthStore);
   private readonly router = inject(Router);
   private readonly ratingWindowMs = 3 * 24 * 60 * 60 * 1000;
+  public readonly ESortBy = ESortBy;
+  public sortDirection = ESortDirection.DESC
+  public sortBy = ESortBy.STARTED_AT
 
   userId!: number;
 
@@ -32,6 +45,11 @@ export class UserRideHistory implements OnInit {
   toDate: string | null = null;
 
   addingRideId: number | null = null;
+
+  
+
+
+
   readonly addedRideIds = new Set<number>();
 
   constructor(
@@ -67,7 +85,7 @@ export class UserRideHistory implements OnInit {
     this.errorMsg = '';
 
     this.ridesApi
-      .getMyRideHistory(this.fromDate, this.toDate)
+      .getMyRideHistory(this.fromDate, this.toDate, this.sortBy, this.sortDirection)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: data => {
@@ -161,4 +179,23 @@ export class UserRideHistory implements OnInit {
     const ts = new Date(value).getTime();
     return Number.isFinite(ts) ? ts : null;
   }
+
+  doSort(sortBy : ESortBy){
+
+    if (this.sortBy == sortBy) {
+      this.sortDirection = this.sortDirection == ESortDirection.ASC ? ESortDirection.DESC:ESortDirection.ASC
+
+    } else {
+      this.sortDirection = ESortDirection.DESC
+    }
+    this.sortBy = sortBy
+
+
+    this.load()
+
+  }
+
+
+
+
 }

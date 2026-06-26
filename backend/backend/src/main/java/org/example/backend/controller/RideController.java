@@ -1,11 +1,14 @@
 package org.example.backend.controller;
 
+import org.example.backend.dto.request.RideCancelRequestDto;
 import org.example.backend.dto.request.RideReportRequestDto;
 import org.example.backend.dto.request.RideRatingRequestDto;
 import org.example.backend.dto.response.PassengerRideHistoryResponseDto;
 import org.example.backend.dto.response.RideReportResponseDto;
 import org.example.backend.dto.response.RideRatingResponseDto;
 import org.example.backend.dto.response.RideTrackingResponseDto;
+import org.example.backend.enums.ESortBy;
+import org.example.backend.enums.ESortDirection;
 import org.example.backend.repository.DriverRepository;
 import org.example.backend.service.DriverRideService;
 import org.example.backend.service.PassengerRideHistoryService;
@@ -71,10 +74,13 @@ public class RideController {
     @GetMapping("/history")
     public ResponseEntity<List<PassengerRideHistoryResponseDto>> getMyRideHistory(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(defaultValue = "STARTED_AT") ESortBy sortBy,
+            @RequestParam(defaultValue = "DESC") ESortDirection sortDirection
+
     ) {
         long userId = requirePassengerUserId();
-        return ResponseEntity.ok(passengerRideHistoryService.getMyRideHistory(userId, from, to));
+        return ResponseEntity.ok(passengerRideHistoryService.getMyRideHistory(userId, from, to, sortBy, sortDirection));
     }
 
     @GetMapping("/{rideId}/tracking")
@@ -139,6 +145,56 @@ public class RideController {
         driverRideService.startRide(driverId, rideId);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/active-ride/driver")
+    public ResponseEntity<RideTrackingResponseDto> getDriverRideTracking() {
+        //Authentication auth = requireAuthentication();
+       // if (!hasRole(auth, "ROLE_DRIVER")) {
+           // throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only passengers can access this endpoint");
+       // }
+        Long driverId = requireDriverId();
+        Long rideId = rideService.getActiveRideIdForDriver(driverId);
+        var rideTracking = rideService.getRideTracking(rideId);
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(rideTracking);
+
+
+    }
+
+
+    //cancel ride
+    @PatchMapping("/{rideId}/cancel")
+    public ResponseEntity<Void> cancelRide(
+            @PathVariable Long rideId,
+            @RequestBody(required = false) RideCancelRequestDto request,
+            Authentication auth
+    ) {
+        long userId = parseAuthenticatedUserId(auth);
+        boolean isDriver = hasRole(auth, "ROLE_DRIVER");
+        boolean isPassenger = hasRole(auth, "ROLE_PASSENGER");
+
+        // odluči ko je inicijator
+        String canceledBy;
+        if (isDriver) {
+            canceledBy = "DRIVER"; // napravi metodu koja vadi driverId iz tokena
+        } else if (isPassenger) {
+            canceledBy = "PASSENGER"; // passenger koristi userId
+        } else {
+            canceledBy = "PASSENGER"; // fallback
+        }
+
+        rideService.cancelRide(
+                rideId,
+                canceledBy,
+                request != null ? request.getReason() : null
+        );
+
+        return ResponseEntity.noContent().build();
+    }
+
+
+
 
     private long requirePassengerUserId() {
         Authentication auth = requireAuthentication();

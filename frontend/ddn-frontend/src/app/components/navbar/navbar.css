@@ -127,6 +127,19 @@
   border-color: #2ecc71;
 }
 
+.driver-status {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+.driver-status:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ===== LOGOUT BUTTON ===== */
 .logout-btn {
   border: 1px solid #444;
@@ -148,4 +161,9 @@
 
 button.logout-btn {
   background-color: rgba(255, 255, 255, 0.08);
+}
+
+.logout-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

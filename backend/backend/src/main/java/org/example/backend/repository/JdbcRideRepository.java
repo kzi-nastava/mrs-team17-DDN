@@ -57,6 +57,34 @@ public class JdbcRideRepository implements RideRepository {
                 .optional();
     }
 
+    @Override
+    public Optional<Long> findActiveRideIdForDriver(long driverId) {
+        return jdbc.sql("""
+            select r.id
+            from rides r
+            
+             join drivers d
+                on r.driver_id = d.id
+           
+            where d.id = :driverId
+              and r.status = 'ACTIVE'
+              and r.canceled = false
+              and r.ended_at is null
+            order by r.started_at desc nulls last, r.id desc
+            limit 1
+        """)
+                .param("driverId", driverId)
+                .query(Long.class)
+                .optional();
+    }
+
+
+
+
+
+
+
+
     // NEW: last completed ride (<= 3 days) that is NOT rated yet, for this passenger (by email)
     @Override
     public Optional<Long> findRideIdToRateForPassenger(long userId) {
@@ -522,5 +550,26 @@ public class JdbcRideRepository implements RideRepository {
 
         return updated > 0;
     }
+
+    @Override
+    public boolean cancelRide(Long rideId, String canceledBy, String reason) {
+        int updated = jdbc.sql("""
+        UPDATE rides
+        SET canceled = true,
+            canceled_by = :canceledBy,
+            cancel_reason = :reason,
+            status = 'COMPLETED',
+            ended_at = NOW()
+        WHERE id = :rideId
+    """)
+                .param("rideId", rideId)
+                .param("canceledBy", canceledBy)
+                .param("reason", reason)
+
+                .update();
+
+        return updated > 0;
+    }
+
 
 }

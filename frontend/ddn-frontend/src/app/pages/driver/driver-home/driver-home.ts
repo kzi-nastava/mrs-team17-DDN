@@ -10,6 +10,8 @@ import { API_BASE_URL } from '../../../app.config';
 import { DriverRidesHttpDataSource } from '../../../api/driver/driver-rides-http.datasource';
 import { DriverRideDetails } from '../../../api/driver/models/driver-rides.models';
 import { DriverStateService } from '../../../state/driver-state.service';
+import { RIDE_TRACKING_DS } from '../../../api/user/ride-tracking.datasource';
+import { FormsModule } from '@angular/forms';
 
 type LatLng = { lat: number; lng: number };
 type RideCheckpoint = {
@@ -33,7 +35,7 @@ type TrackingState = {
 @Component({
   selector: 'app-driver-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,FormsModule],
   templateUrl: './driver-home.html',
   styleUrl: './driver-home.css',
 })
@@ -43,7 +45,8 @@ export class DriverHomeComponent implements AfterViewInit, OnDestroy {
   private baseUrl = inject(API_BASE_URL);
   private driverState = inject(DriverStateService);
   private router = inject(Router);
-
+  private ds = inject(RIDE_TRACKING_DS);
+  public cancelReason: string = '';
   private map!: L.Map;
   private routeLine: L.Polyline | null = null;
   private markerLayers: L.Layer[] = [];
@@ -63,6 +66,10 @@ export class DriverHomeComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.initMap();
+    this.init()
+  }
+
+  init():void{
 
     this.ridesApi.getActiveRide().pipe(take(1)).subscribe({
       next: () => {
@@ -73,6 +80,8 @@ export class DriverHomeComponent implements AfterViewInit, OnDestroy {
         if (err?.status === 404) {
           this.driverState.setAvailable(true);
           this.loadAcceptedRide();
+          this.ride = null;
+          this.tracking = null;
         } else {
           this.error = 'Unable to check active ride.';
         }
@@ -84,7 +93,7 @@ export class DriverHomeComponent implements AfterViewInit, OnDestroy {
     this.trackingSub?.unsubscribe();
     this.trackingSub = null;
     if (this.carAnimFrame != null) {
-      try { cancelAnimationFrame(this.carAnimFrame); } catch {}
+      try { cancelAnimationFrame(this.carAnimFrame); } catch { }
       this.carAnimFrame = null;
     }
     try {
@@ -186,9 +195,9 @@ export class DriverHomeComponent implements AfterViewInit, OnDestroy {
       t.route && t.route.length >= 2
         ? t.route.map(p => [p.lat, p.lng] as L.LatLngExpression)
         : [
-            [t.pickup.lat, t.pickup.lng] as L.LatLngExpression,
-            [t.destination.lat, t.destination.lng] as L.LatLngExpression,
-          ];
+          [t.pickup.lat, t.pickup.lng] as L.LatLngExpression,
+          [t.destination.lat, t.destination.lng] as L.LatLngExpression,
+        ];
 
     this.routeLine = L.polyline(pts, {
       weight: 5,
@@ -267,7 +276,7 @@ export class DriverHomeComponent implements AfterViewInit, OnDestroy {
     const from = this.lastCar ?? target;
 
     if (this.carAnimFrame != null) {
-      try { cancelAnimationFrame(this.carAnimFrame); } catch {}
+      try { cancelAnimationFrame(this.carAnimFrame); } catch { }
       this.carAnimFrame = null;
     }
 
@@ -319,7 +328,7 @@ export class DriverHomeComponent implements AfterViewInit, OnDestroy {
       this.carMarker = null;
     }
     if (this.carAnimFrame != null) {
-      try { cancelAnimationFrame(this.carAnimFrame); } catch {}
+      try { cancelAnimationFrame(this.carAnimFrame); } catch { }
       this.carAnimFrame = null;
     }
     this.lastCar = null;
@@ -330,6 +339,7 @@ export class DriverHomeComponent implements AfterViewInit, OnDestroy {
   }
 
   startRide(): void {
+
     if (!this.ride || this.starting) return;
 
     this.starting = true;
@@ -338,16 +348,50 @@ export class DriverHomeComponent implements AfterViewInit, OnDestroy {
     this.ridesApi
       .startRide(this.ride.rideId)
       .pipe(
+
+        exhaustMap(() =>
+          this.http.get<TrackingState>(
+            `${this.baseUrl}/rides/active-ride/driver`
+          )
+        ),
+
         take(1),
-        finalize(() => (this.starting = false))
+
+        finalize(() => (
+          this.starting = false
+        ))
       )
       .subscribe({
-        next: () => {
+
+        next: (tracking) => {
+
+          // driver postaje busy
           this.driverState.setAvailable(false);
-          this.router.navigate(['/driver/active-ride']);
+
+          // set tracking state
+          this.driverState.setTrackingState(
+            tracking
+          );
+
+          console.log(
+            'TRACKING STATE SET AFTER START'
+          );
+
+          console.log(tracking);
+
+          // navigate tek nakon state update-a
+          this.router.navigate([
+            '/driver/active-ride'
+          ]);
         },
+
         error: (err) => {
-          this.error = this.extractErrorMessage(err, 'The drive start failed. Please try again.');
+
+          this.error =
+            this.extractErrorMessage(
+              err,
+              'The drive start failed. Please try again.'
+            );
         },
       });
   }
@@ -366,4 +410,25 @@ export class DriverHomeComponent implements AfterViewInit, OnDestroy {
     if (err?.message) return err.message;
     return fallback;
   }
+
+  // ✅ CANCEL RIDE
+cancelRide(): void {
+  if (!this.cancelReason) {
+    alert('Please select a reason before cancelling.');
+    return;
+  }
+  console.log(this.ride)
+  this.ds.cancelMyRide(this.ride?.rideId!, this.cancelReason).subscribe({
+    next: () => {
+      this.showCancelPopup = false;
+      console.log('Ride cancelled with reason:', this.cancelReason);
+      this.init()
+    },
+    error: (err) => {
+      console.error('Failed to cancel ride', err);
+    }
+  });
+}
+
+
 }

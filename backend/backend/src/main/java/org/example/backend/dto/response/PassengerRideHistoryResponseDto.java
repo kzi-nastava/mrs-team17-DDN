@@ -8,6 +8,7 @@ public class PassengerRideHistoryResponseDto {
     private Long rideId;
 
     private OffsetDateTime startedAt;
+    private OffsetDateTime endedAt;
 
     private String startAddress;
     private String destinationAddress;
@@ -22,6 +23,8 @@ public class PassengerRideHistoryResponseDto {
     public OffsetDateTime getStartedAt() { return startedAt; }
     public void setStartedAt(OffsetDateTime startedAt) { this.startedAt = startedAt; }
 
+
+
     public String getStartAddress() { return startAddress; }
     public void setStartAddress(String startAddress) { this.startAddress = startAddress; }
 
@@ -30,4 +33,12 @@ public class PassengerRideHistoryResponseDto {
 
     public List<String> getStops() { return stops; }
     public void setStops(List<String> stops) { this.stops = stops; }
+
+    public OffsetDateTime getEndedAt() {
+        return endedAt;
+    }
+
+    public void setEndedAt(OffsetDateTime endedAt) {
+        this.endedAt = endedAt;
+    }
 }

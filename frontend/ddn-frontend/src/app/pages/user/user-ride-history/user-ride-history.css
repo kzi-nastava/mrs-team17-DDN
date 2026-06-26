@@ -86,7 +86,7 @@
 .head,
 .row {
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr) auto;
+  grid-template-columns: 200px 200px minmax(0, 1fr) auto;
   align-items: start;
   column-gap: 18px;
 }
@@ -254,6 +254,18 @@
   opacity: 0.95;
 }
 
+.sort-btn{
+  opacity: 0.5;
+  &:hover{
+    opacity: 1!important;
+  }
+  &.active{
+    opacity: 0.9;
+  }
+
+}
+
+
 @media (max-width: 980px) {
   .card-fixed {
     padding: 26px 20px;
@@ -273,4 +285,8 @@
   .route-to {
     white-space: normal;
   }
+
+
+
+
 }

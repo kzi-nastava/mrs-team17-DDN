@@ -61,11 +61,19 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/user/reset-password/reset-password').then((m) => m.ResetPassword),
   },
+{
+  
+    path: 'reset-password-confirmed',
+    loadComponent: () =>
+      import('./pages/user/reset-password-confirmed/reset-password-confirmed').then((m) => m.ResetPasswordConfirmed),
+  },
+
   {
     path: 'new-password',
     loadComponent: () =>
       import('./pages/user/new-password/new-password').then((m) => m.NewPassword),
   },
+
   {
     path: 'success',
     loadComponent: () =>
@@ -138,40 +146,47 @@ export const routes: Routes = [
   },
 
   // DRIVER
-  {
-    path: 'driver',
-    component: DriverLayoutComponent,
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['DRIVER'] },
-    children: [
-      {
-        path: 'support',
-        loadComponent: () => import('./pages/user/user-chat/user-chat').then(m => m.UserChat),
-        providers: [{ provide: CHAT_DS, useClass: ChatHttpDataSource }],
-      },
-      { path: 'home', component: DriverHomeComponent },
-      {
-        path: 'future-rides',
-        loadComponent: () =>
-          import('./pages/driver/driver-future-rides/driver-future-rides').then(m => m.DriverFutureRidesComponent),
-      },
-      {
-        path: 'active-ride',
-        component: DriverActiveRideComponent,
-        providers: [{ provide: RIDE_LIFECYCLE_DS, useClass: RideLifecycleHttpDataSource }],
-      },
-      { path: 'ride-history', component: DriverRideHistoryComponent },
-      { path: 'ride-details/:rideId', component: DriverRideDetailsComponent },
-      { path: 'password-change', component: DriverPasswordChangeComponent },
-      { path: 'profile', component: DriverProfile },
-      {
-        path: 'reports',
-        loadComponent: () =>
-          import('./pages/driver/driver-reports/driver-reports').then((m) => m.DriverReports),
-      },
-      { path: '', redirectTo: 'home', pathMatch: 'full' },
-    ],
-  },
+{
+  path: 'driver',
+  component: DriverLayoutComponent,
+  canActivate: [authGuard, roleGuard],
+  data: { roles: ['DRIVER'] },
+  children: [
+    {
+      path: 'support',
+      loadComponent: () => import('./pages/user/user-chat/user-chat').then(m => m.UserChat),
+      providers: [{ provide: CHAT_DS, useClass: ChatHttpDataSource }],
+    },
+    {
+      path: 'home',
+      component: DriverHomeComponent,
+      providers: [{ provide: RIDE_TRACKING_DS, useClass: RideTrackingHttpDataSource }]
+    },
+    {
+      path: 'future-rides',
+      loadComponent: () =>
+        import('./pages/driver/driver-future-rides/driver-future-rides').then(m => m.DriverFutureRidesComponent),
+    },
+    {
+      path: 'active-ride',
+      component: DriverActiveRideComponent,
+      providers: [
+        { provide: RIDE_LIFECYCLE_DS, useClass: RideLifecycleHttpDataSource },
+        { provide: RIDE_TRACKING_DS, useClass: RideTrackingHttpDataSource }
+      ],
+    },
+    { path: 'ride-history', component: DriverRideHistoryComponent },
+    { path: 'ride-details/:rideId', component: DriverRideDetailsComponent },
+    { path: 'password-change', component: DriverPasswordChangeComponent },
+    { path: 'profile', component: DriverProfile },
+    {
+      path: 'reports',
+      loadComponent: () =>
+        import('./pages/driver/driver-reports/driver-reports').then((m) => m.DriverReports),
+    },
+    { path: '', redirectTo: 'home', pathMatch: 'full' },
+  ],
+},
 
   // ADMIN
   {

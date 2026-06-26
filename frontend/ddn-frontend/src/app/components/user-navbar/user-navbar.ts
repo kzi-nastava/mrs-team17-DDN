@@ -19,6 +19,7 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
   private readonly pollMs = 5000;
   private readonly notificationsLimit = 3;
   private pollTimer: any = null;
+  
 
   notifications: Notification[] = [];
   unreadCount = 0;
@@ -107,4 +108,6 @@ export class UserNavbarComponent implements OnInit, OnDestroy {
     this.auth.clear();
     this.router.navigate(['/login']);
   }
+
+  
 }

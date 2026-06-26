@@ -3,7 +3,7 @@ import * as L from 'leaflet';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { UserNavbarComponent } from '../../../components/user-navbar/user-navbar';
 import { RIDE_TRACKING_DS } from '../../../api/user/ride-tracking.datasource';
 import { RideCheckpoint, TrackingState } from '../../../api/user/models/ride-tracking.models';
@@ -20,6 +20,7 @@ type LatLng = { lat: number; lng: number };
 export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   private ds = inject(RIDE_TRACKING_DS);
   private route = inject(ActivatedRoute);
+  private router = inject(Router)
 
   private map!: L.Map;
   private sub: Subscription | null = null;
@@ -33,6 +34,8 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
 
   private lastCar: LatLng | null = null;
   private carAnimFrame: number | null = null;
+
+
 
   etaMinutes = 0;
   distanceKm = 0;
@@ -117,28 +120,30 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
   }
 
   // ✅ CANCEL RIDE
-  cancelRide(): void {
-    if (!this.canCancel || this.canceling) return;
+cancelRide(): void {
+  if (!this.canCancel || this.canceling) return;
 
-    const ok = confirm('Are you sure you want to cancel this ride?');
-    if (!ok) return;
+  const ok = confirm('Are you sure you want to cancel this ride?');
+  if (!ok) return;
 
-    this.canceling = true;
-    this.cancelError = null;
-    this.cancelSuccess = false;
+  this.canceling = true;
+  this.cancelError = null;
+  this.cancelSuccess = false;
 
-    // ✅ OVDE POVEŽI TVOJ ENDPOINT (kad ga imaš)
-    // Primer ako dodaš metodu u datasource:
-    // this.ds.cancelMyRide().subscribe({ ... })
-
-    // Za sada: mock (odmah success)
-    setTimeout(() => {
+  // Poziv ka datasource metodi
+  this.ds.cancelMyRide(this.trackingRideId!, "Passenger changed plans").subscribe({
+    next: () => {
       this.canceling = false;
       this.cancelSuccess = true;
-      // Ako želiš, možeš i da “zamrzneš” UI:
-      // this.rideStatus = 'CANCELLED';
-    }, 500);
-  }
+      this.rideStatus = 'CANCELLED';
+    },
+    error: (err) => {
+      this.canceling = false;
+      this.cancelError = 'Failed to cancel ride';
+    }
+  });
+}
+
 
   private initMap(): void {
     this.map = L.map('tracking-map', {
@@ -154,6 +159,12 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
 
   private startTracking(): void {
     this.sub?.unsubscribe();
+
+    if (!this.trackingRideId) {
+      this.rideStatus = 'NO_ACTIVE_RIDE';
+      return;
+    }
+
     this.sub = this.ds.watchMyActiveTracking(this.trackingRideId).subscribe({
       next: (s) => this.applyState(s),
       error: () => (this.rideStatus = 'Tracking not available'),
@@ -189,7 +200,7 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
     this.routeLine = null;
 
     this.checkpointMarkers.forEach((m) => {
-      try { m.remove(); } catch {}
+      try { m.remove(); } catch { }
     });
     this.checkpointMarkers = [];
 
@@ -282,7 +293,7 @@ export class RideTrackingComponent implements AfterViewInit, OnDestroy {
     this.checkpointMarkers.forEach((m) => {
       try {
         m.remove();
-      } catch {}
+      } catch { }
     });
     this.checkpointMarkers = [];
 

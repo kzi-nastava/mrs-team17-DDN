@@ -9,4 +9,16 @@ body {
 
   background: url('/bg.jpg') no-repeat center center fixed;
   background-size: cover;
+
+  .flex{
+    display: flex;
+}
+
+.justify-between{
+    justify-content: space-between;
+}
+
+.gap-2{
+  gap: 8px;
+}
 }

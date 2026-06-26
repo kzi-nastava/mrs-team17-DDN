@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { finalize, take } from 'rxjs';
 import { Router } from '@angular/router';
@@ -14,7 +14,7 @@ import { DriverRideDetails } from '../../../api/driver/models/driver-rides.model
   templateUrl: './driver-active-ride.html',
   styleUrl: './driver-active-ride.css',
 })
-export class DriverActiveRideComponent implements OnInit {
+export class DriverActiveRideComponent implements OnInit, OnDestroy {
   private lifecycle = inject(RIDE_LIFECYCLE_DS);
   private ridesApi = inject(DriverRidesHttpDataSource);
   private driverState = inject(DriverStateService);
@@ -31,8 +31,20 @@ export class DriverActiveRideComponent implements OnInit {
   postFinishRideId: number | null = null;
   postFinishMessage: string | null = null;
 
+  private refreshInterval: any;
+
   ngOnInit(): void {
     this.loadActiveRide();
+
+    // ✅ automatski refresh svakih 5 sekundi
+    this.refreshInterval = setInterval(() => this.loadActiveRide(), 5000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+      this.refreshInterval = null;
+    }
   }
 
   private loadActiveRide(): void {
@@ -81,6 +93,8 @@ export class DriverActiveRideComponent implements OnInit {
       )
       .subscribe({
         next: () => {
+          // reset tracking state kad se vožnja završi
+          this.driverState.clearTrackingState();
           this.finished = true;
           this.preparePostFinishState();
         },
@@ -108,7 +122,6 @@ export class DriverActiveRideComponent implements OnInit {
         });
         return;
       }
-
       this.router.navigate(['/driver/future-rides']);
       return;
     }
