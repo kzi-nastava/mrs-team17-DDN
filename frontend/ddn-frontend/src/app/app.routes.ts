@@ -230,6 +230,20 @@ export const routes: Routes = [
       { path: 'update-requests', component: AdminUpdateRequests },
       { path: 'create-driver', component: AdminCreateDriver },
       {
+        path: 'drivers-ride-history',
+        loadComponent: () =>
+          import('./pages/admin/admin-drivers-ride-history/admin-drivers-ride-history').then(
+            (m) => m.AdminDriversRideHistory,
+          ),
+      },
+      {
+        path: 'users-ride-history',
+        loadComponent: () =>
+          import('./pages/admin/admin-users-ride-history/admin-users-ride-history').then(
+            (m) => m.AdminUsersRideHistory,
+          ),
+      },
+      {
         path: 'profile',
         loadComponent: () =>
           import('./pages/admin/admin-profile/admin-profile').then((m) => m.AdminProfile),

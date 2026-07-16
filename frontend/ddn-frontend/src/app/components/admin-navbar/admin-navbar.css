@@ -140,6 +140,9 @@ button.logout-btn {
   font-size: 14px;
   font-weight: 300;
   border-bottom: 1px solid #222;
+
+  /* Dodato da bude isti font kao navbar */
+  font-family: 'Montserrat', sans-serif;
 }
 
 .more-item:last-child {

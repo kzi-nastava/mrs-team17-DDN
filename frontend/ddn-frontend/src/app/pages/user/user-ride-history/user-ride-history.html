@@ -21,17 +21,20 @@
       </div>
 
       <div class="head">
-        
-        <div class="col-date flex gap-2" ><p>Started At</p><img [class.active] = "sortBy == ESortBy.STARTED_AT"    class= "sort-btn " (click) = "doSort(ESortBy.STARTED_AT)" src = "/sort.svg"/></div>
-        <div class="col-date flex gap-2"><p>Ended At</p><img [class.active] = "sortBy == ESortBy.ENDED_AT" class= "sort-btn" (click) = "doSort(ESortBy.ENDED_AT)" src = "/sort.svg"/></div>
+        <div class="col-date flex gap-2">
+          <p>Started At</p>
+          <img [class.active]="sortBy == ESortBy.STARTED_AT" class="sort-btn" (click)="doSort(ESortBy.STARTED_AT)" src="/sort.svg"/>
+        </div>
+        <div class="col-date flex gap-2">
+          <p>Ended At</p>
+          <img [class.active]="sortBy == ESortBy.ENDED_AT" class="sort-btn" (click)="doSort(ESortBy.ENDED_AT)" src="/sort.svg"/>
+        </div>
         <div class="col-route flex gap-2"><p>Route</p></div>
-        
         <div class="col-actions"></div>
       </div>
 
       <div class="row" *ngFor="let r of rides">
         <div class="col-date">{{ formatDate(r.startedAt) }}</div>
-
         <div class="col-date">{{ formatDate(r.endedAt) }}</div>
 
         <div class="col-route">
@@ -43,11 +46,9 @@
 
           <div class="stops">
             <span class="stops-label">Checkpoints:</span>
-
             <div class="stops-lines" *ngIf="cleanStops(r.stops).length > 0; else noStops">
               <div class="stop-line" *ngFor="let s of cleanStops(r.stops)">{{ s }}</div>
             </div>
-
             <ng-template #noStops>
               <span class="stops-text">—</span>
             </ng-template>
@@ -77,6 +78,14 @@
           >
             {{ rateButtonLabel(r) }}
           </button>
+
+          <button
+            class="info-btn"
+            type="button"
+            (click)="openRideInfo(r)"
+          >
+            Info
+          </button>
         </div>
       </div>
 
@@ -85,5 +94,110 @@
       <div *ngIf="errorMsg" class="state err">{{ errorMsg }}</div>
     </div>
 
+  </div>
+
+  <!-- Ride Info Modal -->
+  <div class="ride-info-backdrop" *ngIf="detailsLoading || detailsError || selectedRide" (click)="closeRideInfo()">
+    <div class="ride-info-modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h2>Ride details</h2>
+        <button class="close-x" type="button" (click)="closeRideInfo()">&times;</button>
+      </div>
+
+      <div *ngIf="detailsLoading" class="state">Loading ride details...</div>
+      <div *ngIf="detailsError" class="state err">{{ detailsError }}</div>
+
+      <ng-container *ngIf="selectedRide as ride">
+
+        <div #rideMap class="ride-map"></div>
+
+        <div class="details-grid">
+
+          <div class="details-section">
+            <h3>Route</h3>
+            <div class="route-block">
+              <div class="route-point">
+                <span class="route-point-label">From:</span>
+                <span class="route-point-text">{{ ride.startAddress }}</span>
+              </div>
+              <div class="route-point">
+                <span class="route-point-label">To:</span>
+                <span class="route-point-text">{{ ride.destinationAddress }}</span>
+              </div>
+            </div>
+            <div class="stops" *ngIf="ride.stops?.length">
+              <span class="stops-label">Checkpoints:</span>
+              <div class="stops-lines">
+                <div class="stop-line" *ngFor="let s of ride.stops">{{ s.address }}</div>
+              </div>
+            </div>
+            <div class="time-info">
+              <p class="muted">Started: {{ formatDate(ride.startedAt) }}</p>
+              <p class="muted">Ended: {{ formatDate(ride.endedAt) }}</p>
+            </div>
+            <p class="muted" *ngIf="ride.distanceKm">Distance: {{ ride.distanceKm }} km</p>
+          </div>
+
+          <div class="details-section">
+            <h3>Driver</h3>
+            <p *ngIf="ride.driver">
+              {{ driverDisplayName(ride) }}<br />
+              <span class="muted" *ngIf="ride.driver.vehicleModel">
+                {{ ride.driver.vehicleModel }} ({{ ride.driver.vehicleType }})
+                <span *ngIf="ride.driver.licensePlate"> · {{ ride.driver.licensePlate }}</span>
+              </span>
+            </p>
+            <p class="muted" *ngIf="!ride.driver">No driver info available.</p>
+          </div>
+
+          <div class="details-section">
+            <h3>Reported inconsistencies</h3>
+            <div *ngIf="ride.reports?.length; else noReports">
+              <div class="report-line" *ngFor="let r of ride.reports">
+                <span class="muted">{{ formatDate(r.created_at) }}</span> — {{ r.description }}
+              </div>
+            </div>
+            <ng-template #noReports>
+              <p class="muted">No issues reported for this ride.</p>
+            </ng-template>
+          </div>
+
+          <div class="details-section">
+            <h3>Rating</h3>
+            <p *ngIf="ride.rating">
+              Driver: {{ ride.rating.driverRating }}/5 · Vehicle: {{ ride.rating.vehicleRating }}/5
+              <span *ngIf="ride.rating.comment"><br />"{{ ride.rating.comment }}"</span>
+            </p>
+            <p class="muted" *ngIf="!ride.rating">Not rated yet.</p>
+          </div>
+
+        </div>
+
+        <div class="repeat-section">
+          <div *ngIf="repeatError" class="state err">{{ repeatError }}</div>
+          <div *ngIf="repeatSuccessMsg" class="state">{{ repeatSuccessMsg }}</div>
+
+          <ng-container [ngSwitch]="repeatMode">
+
+            <div *ngSwitchCase="'idle'" class="repeat-buttons">
+              <button class="fav-btn" type="button" (click)="startRepeatNow()">Order now</button>
+              <button class="rate-btn" type="button" (click)="startRepeatLater()">Order later</button>
+            </div>
+
+            <div *ngSwitchCase="'choosing-time'" class="repeat-schedule">
+              <input type="datetime-local" class="date-input" [(ngModel)]="scheduledAtLocal" />
+              <button class="fav-btn" type="button" (click)="confirmRepeatLater()">Confirm</button>
+              <button class="rate-btn" type="button" (click)="cancelRepeatLater()">Cancel</button>
+            </div>
+
+            <div *ngSwitchCase="'submitting'" class="state">Placing order...</div>
+
+          </ng-container>
+        </div>
+
+      </ng-container>
+
+    </div>
   </div>
 </div>
