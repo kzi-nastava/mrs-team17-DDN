@@ -55,16 +55,18 @@ public class JwtService {
     }
 
     public JwtUser parseToken(String token) {
-        Claims c = Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+    Claims c = Jwts.parser()
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
 
-        long userId = Long.parseLong(c.getSubject());
-        String email = c.get("email", String.class);
-        String role = c.get("role", String.class);
+    long userId = Long.parseLong(c.getSubject());
+    String email = c.get("email", String.class);
+    String role = c.get("role", String.class);
 
-        return new JwtUser(userId, email, role);
-    }
+
+    return new JwtUser(userId, email, role);
+}
+
 }

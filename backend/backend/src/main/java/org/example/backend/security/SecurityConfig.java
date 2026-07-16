@@ -42,6 +42,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/vehicles/active").permitAll()
                         .requestMatchers("/api/routing/**").permitAll()
 
+                        // 👇 dodato da procena vožnje bude public
+                        .requestMatchers(HttpMethod.POST, "/api/rides/estimate").permitAll()
 
                         // public password reset endpoints
                         .requestMatchers(HttpMethod.POST, "/api/password-reset/request").permitAll()
@@ -52,8 +54,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/driver/**").hasRole("DRIVER")
                         .anyRequest().authenticated()
                 )
-
-
 
                 // JWT filter pre Spring auth filtera
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

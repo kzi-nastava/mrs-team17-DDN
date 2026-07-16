@@ -5,12 +5,14 @@ import org.example.backend.dto.request.RideReportRequestDto;
 import org.example.backend.dto.request.RideRatingRequestDto;
 import org.example.backend.dto.response.PassengerRideHistoryResponseDto;
 import org.example.backend.dto.response.RideReportResponseDto;
+import org.example.backend.dto.response.RidePassengerDetailsResponseDto;
 import org.example.backend.dto.response.RideRatingResponseDto;
 import org.example.backend.dto.response.RideTrackingResponseDto;
 import org.example.backend.enums.ESortBy;
 import org.example.backend.enums.ESortDirection;
 import org.example.backend.repository.DriverRepository;
 import org.example.backend.service.DriverRideService;
+import org.example.backend.service.PassengerRideDetailsService;
 import org.example.backend.service.PassengerRideHistoryService;
 import org.example.backend.service.RideRatingService;
 import org.example.backend.service.RideService;
@@ -33,6 +35,7 @@ public class RideController {
     private final RideService rideService;
     private final RideRatingService rideRatingService;
     private final PassengerRideHistoryService passengerRideHistoryService;
+    private final PassengerRideDetailsService passengerRideDetailsService;
     private final DriverRideService driverRideService;
     private final DriverRepository driverRepository;
 
@@ -40,12 +43,14 @@ public class RideController {
             RideService rideService,
             RideRatingService rideRatingService,
             PassengerRideHistoryService passengerRideHistoryService,
+            PassengerRideDetailsService passengerRideDetailsService,
             DriverRideService driverRideService,
             DriverRepository driverRepository
     ) {
         this.rideService = rideService;
         this.rideRatingService = rideRatingService;
         this.passengerRideHistoryService = passengerRideHistoryService;
+        this.passengerRideDetailsService = passengerRideDetailsService;
         this.driverRideService = driverRideService;
         this.driverRepository = driverRepository;
     }
@@ -81,6 +86,15 @@ public class RideController {
     ) {
         long userId = requirePassengerUserId();
         return ResponseEntity.ok(passengerRideHistoryService.getMyRideHistory(userId, from, to, sortBy, sortDirection));
+    }
+
+    // Full details for the "Info" popup in ride history: route/map, checkpoints,
+    // ride reports (inconsistencies), rating, driver+vehicle info, and data
+    // needed to prefill "repeat ride" (now / later).
+    @GetMapping("/{rideId}/passenger-details")
+    public ResponseEntity<RidePassengerDetailsResponseDto> getMyRidePassengerDetails(@PathVariable Long rideId) {
+        long userId = requirePassengerUserId();
+        return ResponseEntity.ok(passengerRideDetailsService.getMyRideDetails(userId, rideId));
     }
 
     @GetMapping("/{rideId}/tracking")

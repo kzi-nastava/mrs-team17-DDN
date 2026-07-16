@@ -3,9 +3,13 @@ package org.example.backend.dto.response;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-public class AdminRideDetailsResponseDto {
+public class RidePassengerDetailsResponseDto {
 
     private Long rideId;
+    private String status;
+
+    private OffsetDateTime startedAt;
+    private OffsetDateTime endedAt;
 
     private String startAddress;
     private String destinationAddress;
@@ -13,45 +17,39 @@ public class AdminRideDetailsResponseDto {
     private LatLngDto start;
     private LatLngDto destination;
 
-    // ride_stops, with coordinates, in order -> used to draw the route and to prefill "order again"
+    // ride_stops, with address + coordinates -> also used to prefill "repeat ride"
     private List<RideCheckpointDto> stops;
 
     // OSRM road-following polyline: start -> stops -> destination
     private List<LatLngDto> route;
     private double distanceKm;
 
-    private OffsetDateTime startDate;
-    private OffsetDateTime endDate;
+    private List<RideReportDto> reports;
 
-    private String status;
-
-    private boolean canceled;
-    private String canceledBy;
-    private String cancelReason;
-
-    private double price;
-    private boolean panicActivated;
+    // null if not rated (yet / at all)
+    private RideRatingResponseDto rating;
 
     // null if no driver was ever assigned
     private DriverPublicInfoResponseDto driver;
 
-    private List<PassengerInfoResponseDto> passengers;
-
-    // reports of ride inconsistencies
-    private List<RideReportResponseDto> reports;
-
-    // null if the ride hasn't been rated (yet / at all)
-    private RideRatingResponseDto rating;
-
-    // needed to prefill "order again"
+    // needed to prefill "repeat ride"
     private String vehicleType;
     private boolean babyTransport;
     private boolean petTransport;
 
-    public AdminRideDetailsResponseDto() {}
+    public RidePassengerDetailsResponseDto() {}
 
     public Long getRideId() { return rideId; }
     public void setRideId(Long rideId) { this.rideId = rideId; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public OffsetDateTime getStartedAt() { return startedAt; }
+    public void setStartedAt(OffsetDateTime startedAt) { this.startedAt = startedAt; }
+
+    public OffsetDateTime getEndedAt() { return endedAt; }
+    public void setEndedAt(OffsetDateTime endedAt) { this.endedAt = endedAt; }
 
     public String getStartAddress() { return startAddress; }
     public void setStartAddress(String startAddress) { this.startAddress = startAddress; }
@@ -74,41 +72,14 @@ public class AdminRideDetailsResponseDto {
     public double getDistanceKm() { return distanceKm; }
     public void setDistanceKm(double distanceKm) { this.distanceKm = distanceKm; }
 
-    public OffsetDateTime getStartDate() { return startDate; }
-    public void setStartDate(OffsetDateTime startDate) { this.startDate = startDate; }
-
-    public OffsetDateTime getEndDate() { return endDate; }
-    public void setEndDate(OffsetDateTime endDate) { this.endDate = endDate; }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
-    public boolean isCanceled() { return canceled; }
-    public void setCanceled(boolean canceled) { this.canceled = canceled; }
-
-    public String getCanceledBy() { return canceledBy; }
-    public void setCanceledBy(String canceledBy) { this.canceledBy = canceledBy; }
-
-    public String getCancelReason() { return cancelReason; }
-    public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
-
-    public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
-
-    public boolean isPanicActivated() { return panicActivated; }
-    public void setPanicActivated(boolean panicActivated) { this.panicActivated = panicActivated; }
-
-    public DriverPublicInfoResponseDto getDriver() { return driver; }
-    public void setDriver(DriverPublicInfoResponseDto driver) { this.driver = driver; }
-
-    public List<PassengerInfoResponseDto> getPassengers() { return passengers; }
-    public void setPassengers(List<PassengerInfoResponseDto> passengers) { this.passengers = passengers; }
-
-    public List<RideReportResponseDto> getReports() { return reports; }
-    public void setReports(List<RideReportResponseDto> reports) { this.reports = reports; }
+    public List<RideReportDto> getReports() { return reports; }
+    public void setReports(List<RideReportDto> reports) { this.reports = reports; }
 
     public RideRatingResponseDto getRating() { return rating; }
     public void setRating(RideRatingResponseDto rating) { this.rating = rating; }
+
+    public DriverPublicInfoResponseDto getDriver() { return driver; }
+    public void setDriver(DriverPublicInfoResponseDto driver) { this.driver = driver; }
 
     public String getVehicleType() { return vehicleType; }
     public void setVehicleType(String vehicleType) { this.vehicleType = vehicleType; }

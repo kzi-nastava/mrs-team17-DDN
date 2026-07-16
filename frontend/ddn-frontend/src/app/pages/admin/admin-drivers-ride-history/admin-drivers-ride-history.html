@@ -1,0 +1,169 @@
+<div class="content">
+  <div class="card">
+    <div class="card-title">Drivers Ride History</div>
+
+    <div class="toolbar-grid">
+      <div class="filter-section">
+        <label class="label" for="driverSelect">Driver</label>
+        <select id="driverSelect" class="input" [(ngModel)]="selectedDriver" (change)="load()">
+          <option [ngValue]="''">All drivers</option>
+          <option *ngFor="let d of drivers" [ngValue]="d.id">{{ driverName(d) }}</option>
+        </select>
+      </div>
+
+      <div class="filter-section">
+        <label class="label" for="fromDate">From</label>
+        <input id="fromDate" type="date" class="input" [(ngModel)]="fromDate" />
+      </div>
+
+      <div class="filter-section">
+        <label class="label" for="toDate">To</label>
+        <input id="toDate" type="date" class="input" [(ngModel)]="toDate" />
+      </div>
+
+      <div class="filter-section filter-actions">
+        <button class="btn" type="button" (click)="load()" [disabled]="isLoading">
+          {{ isLoading ? 'Loading...' : 'Filter' }}
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="isLoading" class="hint">Loading...</div>
+    <div *ngIf="!isLoading && errorMsg" class="hint">{{ errorMsg }}</div>
+
+    <div class="table" *ngIf="!isLoading && !errorMsg">
+      <div class="head">
+        <button class="col-route sortable" type="button" (click)="sortBy('route')">
+          Route <span class="sort-arrow">{{ sortIndicator('route') }}</span>
+        </button>
+        <button class="col-date sortable" type="button" (click)="sortBy('startDate')">
+          Started <span class="sort-arrow">{{ sortIndicator('startDate') }}</span>
+        </button>
+        <button class="col-date sortable" type="button" (click)="sortBy('endDate')">
+          Ended <span class="sort-arrow">{{ sortIndicator('endDate') }}</span>
+        </button>
+        <button class="col-status sortable" type="button" (click)="sortBy('status')">
+          Status <span class="sort-arrow">{{ sortIndicator('status') }}</span>
+        </button>
+        <button class="col-canceled sortable" type="button" (click)="sortBy('canceledBy')">
+          Canceled by <span class="sort-arrow">{{ sortIndicator('canceledBy') }}</span>
+        </button>
+        <button class="col-price sortable" type="button" (click)="sortBy('price')">
+          Price <span class="sort-arrow">{{ sortIndicator('price') }}</span>
+        </button>
+        <button class="col-panic sortable" type="button" (click)="sortBy('panicActivated')">
+          Panic <span class="sort-arrow">{{ sortIndicator('panicActivated') }}</span>
+        </button>
+        <div class="col-actions"></div>
+      </div>
+
+      <div class="row" *ngFor="let r of rides">
+        <div
+          class="item"
+          [class.expanded]="expandedRideId === r.rideId"
+        >
+          <div class="col-route">
+            <div class="route-block">
+              <div class="route-point">
+                <span class="route-point-label">From:</span>
+                <span class="route-point-text">{{ r.startAddress }}</span>
+              </div>
+              <div class="route-point">
+                <span class="route-point-label">To:</span>
+                <span class="route-point-text">{{ r.destinationAddress }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-date">{{ formatDate(r.startDate) }}</div>
+          <div class="col-date">{{ formatDate(r.endDate) }}</div>
+          <div class="col-status">
+            <span class="status-badge" [ngClass]="statusClass(r.status)">{{ r.status }}</span>
+          </div>
+          <div class="col-canceled">
+            <span *ngIf="r.canceled" class="status-badge status-canceled">{{ r.canceledBy || 'Yes' }}</span>
+            <span *ngIf="!r.canceled" class="muted-line">No</span>
+          </div>
+          <div class="col-price">{{ formatPrice(r.price) }}</div>
+          <div class="col-panic">
+            <span *ngIf="r.panicActivated" class="status-badge status-canceled">PANIC</span>
+            <span *ngIf="!r.panicActivated" class="muted-line">—</span>
+          </div>
+          <div class="col-actions">
+            <button class="btn btn-ghost btn-info" type="button" (click)="toggleDetails(r)">
+              {{ expandedRideId === r.rideId ? 'Hide' : 'Info' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="details" *ngIf="expandedRideId === r.rideId">
+          <div *ngIf="detailsLoading" class="hint">Loading details...</div>
+          <div *ngIf="!detailsLoading && detailsError" class="hint">{{ detailsError }}</div>
+
+          <div class="details-body" *ngIf="!detailsLoading && !detailsError && details">
+            <div class="mini-map-wrap">
+              <div class="mini-map" [id]="'admin-driver-ride-map-' + r.rideId"></div>
+              <div class="map-caption">Ride #{{ r.rideId }} · {{ details.distanceKm }} km</div>
+            </div>
+
+            <div class="grid">
+              <div class="kv full" *ngIf="details.driver">
+                <div class="k">Driver</div>
+                <div class="v">
+                  {{ details.driver.firstName }} {{ details.driver.lastName }}
+                  <span class="muted-line" *ngIf="details.driver.vehicleModel">
+                    · {{ details.driver.vehicleModel }} ({{ details.driver.vehicleType }}, {{ details.driver.licensePlate }})
+                  </span>
+                </div>
+              </div>
+
+              <div class="kv full">
+                <div class="k">Passengers</div>
+                <div class="v">
+                  <div *ngIf="(details.passengers?.length || 0) === 0" class="muted">No passengers on record.</div>
+                  <div *ngFor="let p of details.passengers">{{ p.name }} ({{ p.email }})</div>
+                </div>
+              </div>
+
+              <div class="kv full">
+                <div class="k">Checkpoints</div>
+                <div class="v">
+                  <div *ngIf="(details.stops?.length || 0) === 0" class="muted">No checkpoints on this route.</div>
+                  <div class="cp" *ngFor="let s of details.stops">
+                    <span class="cp-addr">#{{ s.stopOrder }} — {{ s.address }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="kv" *ngIf="details.canceled">
+                <div class="k">Cancel reason</div>
+                <div class="v">{{ details.cancelReason || '—' }}</div>
+              </div>
+
+              <div class="kv">
+                <div class="k">Rating</div>
+                <div class="v" *ngIf="details.rating">
+                  Driver {{ details.rating.driverRating }}/5 · Vehicle {{ details.rating.vehicleRating }}/5
+                  <span class="muted-line" *ngIf="details.rating.comment">— "{{ details.rating.comment }}"</span>
+                </div>
+                <div class="v muted-line" *ngIf="!details.rating">Not rated</div>
+              </div>
+
+              <div class="kv full">
+                <div class="k">Inconsistency reports</div>
+                <div class="v">
+                  <div *ngIf="(details.reports?.length || 0) === 0" class="muted">No reports for this ride.</div>
+                  <div class="cp" *ngFor="let rep of details.reports">
+                    <span class="cp-addr">{{ rep.description }}</span>
+                    <span class="muted-line">{{ formatDate(rep.createdAt) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="rides.length === 0" class="hint">No rides found.</div>
+    </div>
+  </div>
+</div>
